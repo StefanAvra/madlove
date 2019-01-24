@@ -21,15 +21,16 @@ class Scene(object):
 
 
 class GameScene(Scene):
-    def __init__(self):
+    def __init__(self, level_no):
         super(GameScene, self).__init__()
-        level = 0
         self.bg = pg.Surface((32, 32))
         self.bg.convert()
         self.bg.fill(bg_color)
 
+        # todo: load level
+
     def render(self, screen):
-        yield
+        screen.blit(self.bg)
 
     def update(self):
         pressed = pg.key.get_pressed()
@@ -45,16 +46,19 @@ class TitleScene(object):
 
     def __init__(self):
         super(TitleScene, self).__init__()
-        self.font = pg.font.SysFont('Arial', 56)
-        self.sfont = pg.font.SysFont('Arial', 32)
+        self.title_font = pg.font.Font(config.FONT, 24)
+        self.subtitle_font = pg.font.Font(config.FONT, 16)
 
     def render(self, screen):
-        # ugly!
         screen.fill(bg_color)
-        line1 = self.font.render(config.GAME_TITLE, True, (0, 0, 0))
-        line2 = self.sfont.render('The Game', True, (0, 0, 0))
-        screen.blit(line1, (200, 50))
-        screen.blit(line2, (200, 350))
+        line1 = self.title_font.render(config.GAME_TITLE, True, (0, 0, 0))
+        line2 = self.subtitle_font.render(config.GAME_SUBTITLE, True, (0, 0, 0))
+        pos_line1 = line1.get_rect()
+        pos_line1.center = (screen.get_width() / 2, screen.get_height() / 2 - 24)
+        pos_line2 = line2.get_rect()
+        pos_line2.center = (screen.get_width() / 2, screen.get_height() / 2 + 16)
+        screen.blit(line1, pos_line1)
+        screen.blit(line2, pos_line2)
 
     def update(self):
         pass
@@ -83,7 +87,7 @@ def main():
 
     font = pg.font.Font(config.FONT, 16)
 
-    scene = GameScene()
+    manager = SceneManager()
 
     while running:
         clock.tick(config.FRAMERATE)
@@ -92,19 +96,21 @@ def main():
             running = False
             return
 
-        if config.SHOW_FPS:
-            fps = font.render(str(int(clock.get_fps())), True, pg.Color('white'))
-            screen.blit(fps, (50, 50))
+
 
         pressed = pg.key.get_pressed()
         up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
 
-        # manager.scene.handle_events(pg.event.get())
-        # manager.scene.update()
-        # manager.scene.render(screen)
+        manager.scene.handle_events(pg.event.get())
+        manager.scene.update()
+        manager.scene.render(screen)
+        if config.SHOW_FPS:
+            fps = font.render(str(int(clock.get_fps())), True, pg.Color('white'))
+            screen.blit(fps, (50, 50))
         pg.display.flip()
 
     pg.display.quit()
+    sys.exit()
 
 
 if __name__ == "__main__":
