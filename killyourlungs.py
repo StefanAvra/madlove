@@ -1,24 +1,9 @@
 import pygame as pg
 import sys
+import config
 
 
-WIDTH = 480
-HEIGHT = 640
-DISPLAY = (WIDTH, HEIGHT)
-DEPTH = 0
-GAME_TITLE = "Kill Your Lungs"
-CAPTION = GAME_TITLE
-FRAMERATE = 60
-SHOW_FPS = 1
-FLAGS = 0
-# pg.FULLSCREEN   create a fullscreen display
-# pg.DOUBLEBUF    recommended for HWSURFACE or OPENGL
-# pg.HWSURFACE    hardware accelerated, only in FULLSCREEN
-# pg.OPENGL       create an OpenGL-renderable display
-# pg.RESIZABLE    display window should be sizeable
-# pg.NOFRAME      display window will have no border or controls
-
-PINK = pg.Color("#fabfd0")
+bg_color = pg.Color(config.BACKGROUND_COLOR)
 
 
 class Scene(object):
@@ -41,7 +26,7 @@ class GameScene(Scene):
         level = 0
         self.bg = pg.Surface((32, 32))
         self.bg.convert()
-        self.bg.fill(PINK)
+        self.bg.fill(bg_color)
 
     def render(self, screen):
         yield
@@ -65,8 +50,8 @@ class TitleScene(object):
 
     def render(self, screen):
         # ugly!
-        screen.fill(PINK)
-        line1 = self.font.render(GAME_TITLE, True, (0, 0, 0))
+        screen.fill(bg_color)
+        line1 = self.font.render(config.GAME_TITLE, True, (0, 0, 0))
         line2 = self.sfont.render('The Game', True, (0, 0, 0))
         screen.blit(line1, (200, 50))
         screen.blit(line2, (200, 350))
@@ -91,33 +76,35 @@ class SceneManager(object):
 
 def main():
     pg.init()
-    screen = pg.display.set_mode(DISPLAY, FLAGS, DEPTH)
-    pg.display.set_caption(CAPTION)
+    screen = pg.display.set_mode(config.DISPLAY, config.FLAGS, config.DEPTH)
+    pg.display.set_caption(config.CAPTION)
     clock = pg.time.Clock()
     running = True
 
-    font = pg.font.Font(None, 30)
+    font = pg.font.Font(config.FONT, 16)
 
     scene = GameScene()
 
     while running:
-        clock.tick(FRAMERATE)
+        clock.tick(config.FRAMERATE)
 
         if pg.event.get(pg.QUIT):
             running = False
             return
 
-        if SHOW_FPS:
+        if config.SHOW_FPS:
             fps = font.render(str(int(clock.get_fps())), True, pg.Color('white'))
             screen.blit(fps, (50, 50))
 
         pressed = pg.key.get_pressed()
-        up, left, right = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT)]
+        up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
 
         # manager.scene.handle_events(pg.event.get())
         # manager.scene.update()
         # manager.scene.render(screen)
         pg.display.flip()
+
+    pg.display.quit()
 
 
 if __name__ == "__main__":
