@@ -1,9 +1,14 @@
 import pygame as pg
 import sys
 import config
+import menus
 
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
+font_16 = None
+font_24 = None
+stages = ['0', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB']
+score = 0
 
 
 class Scene(object):
@@ -26,26 +31,33 @@ class GameScene(Scene):
         self.bg = pg.Surface((32, 32))
         self.bg.convert()
         self.bg.fill(bg_color)
+        self.level_no = level_no
+        self.current_stage = 0
+        self.lives = 3
 
         # todo: load level
 
     def render(self, screen):
-        screen.blit(self.bg)
+        screen.fill(bg_color)
+        stage_text = font_16.render('STAGE: {}'.format(stages[self.current_stage]), True, (0, 0, 0))
+        screen.blit(stage_text, (10, 10))
+        lives_text = font_16.render('SMOKES: {}'.format(self.lives), True, (0, 0, 0))
+        screen.blit(lives_text, (screen.get_width() - 150, 10))
 
     def update(self):
         pressed = pg.key.get_pressed()
-        up, left, right = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT)]
+        up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
 
     def handle_events(self, events):
         for e in events:
             if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
-                pass  # open menu
+                self.manager.go_to(OverlayMenuScene(self, 'ingame'))
 
 
-class TitleScene(object):
-
+class TitleScene(Scene):
     def __init__(self):
         super(TitleScene, self).__init__()
+        # change these with titlescreen art later
         self.title_font = pg.font.Font(config.FONT, 24)
         self.subtitle_font = pg.font.Font(config.FONT, 16)
 
@@ -67,6 +79,39 @@ class TitleScene(object):
         for e in events:
             if e.type == pg.KEYDOWN and e.key == pg.K_SPACE:
                 self.manager.go_to(GameScene(0))
+            if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
+                self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
+
+
+class OverlayMenuScene(Scene):
+    def __init__(self, paused_scene, menu_type):
+        super(OverlayMenuScene, self).__init__()
+        self.menu_entries = menus.get_entries(menu_type)
+        self.menu_surf = menus.get_surf(menu_type)
+        self.menu_title = menus.get_title(menu_type)
+        self.paused_scene = paused_scene
+        self.cursor = 0
+
+    def render(self, screen):
+        make_outline(self.menu_surf, bg_color)
+        title = font_16.render(self.menu_title, True, config.MENU_COLOR)
+        title_pos = title.get_rect()
+        title_pos
+        for entries in self.menu_entries:
+            pass
+
+        screen.blit(self.menu_surf, (50, 50))
+
+    def update(self):
+        pass
+
+    def handle_events(self, events):
+        for e in events:
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_SPACE:
+                    self.manager.go_to(GameScene(0))
+                if e.key == pg.K_ESCAPE:
+                    self.manager.go_to(self.paused_scene)
 
 
 class SceneManager(object):
@@ -78,6 +123,11 @@ class SceneManager(object):
         self.scene.manager = self
 
 
+def make_outline(surface, fill_color, outline_color=config.MENU_COLOR, border=4):
+    surface.fill(outline_color)
+    surface.fill(fill_color, surface.get_rect().inflate(-border, -border))
+
+
 def main():
     pg.init()
     screen = pg.display.set_mode(config.DISPLAY, config.FLAGS, config.DEPTH)
@@ -85,7 +135,10 @@ def main():
     clock = pg.time.Clock()
     running = True
 
-    font = pg.font.Font(config.FONT, 16)
+    global font_16
+    global font_24
+    font_16 = pg.font.Font(config.FONT, 16)
+    font_24 = pg.font.Font(config.FONT, 24)
 
     manager = SceneManager()
 
@@ -96,17 +149,12 @@ def main():
             running = False
             return
 
-
-
-        pressed = pg.key.get_pressed()
-        up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
-
         manager.scene.handle_events(pg.event.get())
         manager.scene.update()
         manager.scene.render(screen)
         if config.SHOW_FPS:
-            fps = font.render(str(int(clock.get_fps())), True, pg.Color('white'))
-            screen.blit(fps, (50, 50))
+            fps = font_16.render(str(int(clock.get_fps())), True, pg.Color('white'))
+            screen.blit(fps, (0, 0))
         pg.display.flip()
 
     pg.display.quit()
