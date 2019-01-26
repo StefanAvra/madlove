@@ -2,6 +2,7 @@ import pygame as pg
 import sys
 import config
 import menus
+import numpy
 
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
@@ -9,6 +10,7 @@ font_16 = None
 font_24 = None
 stages = ['0', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB']
 score = 0
+time_passed = 0
 
 
 class Scene(object):
@@ -58,17 +60,18 @@ class TitleScene(Scene):
     def __init__(self):
         super(TitleScene, self).__init__()
         # change these with titlescreen art later
-        self.title_font = pg.font.Font(config.FONT, 24)
-        self.subtitle_font = pg.font.Font(config.FONT, 16)
+        self.title_font = font_24
+        self.subtitle_font = font_16
 
     def render(self, screen):
         screen.fill(bg_color)
         line1 = self.title_font.render(config.GAME_TITLE, True, (0, 0, 0))
         line2 = self.subtitle_font.render(config.GAME_SUBTITLE, True, (0, 0, 0))
-        pos_line1 = line1.get_rect()
-        pos_line1.center = (screen.get_width() / 2, screen.get_height() / 2 - 24)
-        pos_line2 = line2.get_rect()
-        pos_line2.center = (screen.get_width() / 2, screen.get_height() / 2 + 16)
+        pos_line1 = center_to(screen, line1)
+        pos_line1 = (pos_line1[0], pos_line1[1] - 24)
+        pos_line2 = center_to(screen, line2)
+        pos_line2 = (pos_line2[0], pos_line2[1] + 16)
+
         screen.blit(line1, pos_line1)
         screen.blit(line2, pos_line2)
 
@@ -77,10 +80,11 @@ class TitleScene(Scene):
 
     def handle_events(self, events):
         for e in events:
-            if e.type == pg.KEYDOWN and e.key == pg.K_SPACE:
-                self.manager.go_to(GameScene(0))
-            if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
-                self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
+            if e.type == pg.KEYDOWN:
+                if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                    self.manager.go_to(GameScene(0))
+                if e.key == pg.K_ESCAPE:
+                    self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
 
 
 class OverlayMenuScene(Scene):
@@ -89,18 +93,33 @@ class OverlayMenuScene(Scene):
         self.menu_entries = menus.get_entries(menu_type)
         self.menu_surf = menus.get_surf(menu_type)
         self.menu_title = menus.get_title(menu_type)
+        self.menu_funcs = menus.get_funcs(menu_type)
         self.paused_scene = paused_scene
         self.cursor = 0
+        self.highlight_clock = 0
+        self.highlight_color = config.MENU_COLOR_HIGHLIGHT
 
     def render(self, screen):
-        make_outline(self.menu_surf, bg_color)
+        self.highlight_clock += time_passed
+        menus.make_outline(self.menu_surf, bg_color)
+        menu_pos = center_to(screen, self.menu_surf)
         title = font_16.render(self.menu_title, True, config.MENU_COLOR)
-        title_pos = title.get_rect()
-        title_pos
-        for entries in self.menu_entries:
-            pass
+        title_pos = (x_center_to(self.menu_surf, title), menus.PADDING)
+        self.menu_surf.blit(title, title_pos)
+        for idx, entry in enumerate(self.menu_entries):
+            if self.cursor == idx:
+                if self.highlight_clock >= 50:
+                    self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+                    self.highlight_clock = 0
+                color = self.highlight_color
+            else:
+                color = config.MENU_COLOR
+            entry_surf = font_16.render(entry, True, color)
+            entry_pos = (x_center_to(self.menu_surf, entry_surf),
+                         menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_OFFSET)
+            self.menu_surf.blit(entry_surf, entry_pos)
 
-        screen.blit(self.menu_surf, (50, 50))
+        screen.blit(self.menu_surf, menu_pos)
 
     def update(self):
         pass
@@ -108,10 +127,25 @@ class OverlayMenuScene(Scene):
     def handle_events(self, events):
         for e in events:
             if e.type == pg.KEYDOWN:
-                if e.key == pg.K_SPACE:
-                    self.manager.go_to(GameScene(0))
+                if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                    f = self.menu_funcs[self.cursor]
+                    if f == 'back':
+                        self.go_back()
+                    else:
+                        f()
                 if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(self.paused_scene)
+                    self.go_back()
+                if e.key == pg.K_DOWN:
+                    self.cursor += 1
+                    if self.cursor >= len(self.menu_entries):
+                        self.cursor = 0
+                if e.key == pg.K_UP:
+                    self.cursor -= 1
+                    if self.cursor < 0:
+                        self.cursor = len(self.menu_entries) - 1
+
+    def go_back(self):
+        self.manager.go_to(self.paused_scene)
 
 
 class SceneManager(object):
@@ -123,12 +157,34 @@ class SceneManager(object):
         self.scene.manager = self
 
 
-def make_outline(surface, fill_color, outline_color=config.MENU_COLOR, border=4):
-    surface.fill(outline_color)
-    surface.fill(fill_color, surface.get_rect().inflate(-border, -border))
+def center_to(center_surface, surface):
+    """will return the position needed to set surface to the center of center_surface"""
+    pos = surface.get_rect()
+    pos.center = center_surface.get_rect().center
+    return pos
+
+
+def y_center_to(center_surface, surface):
+    """will return the position needed to set surface to the vertical center of center_surface"""
+    pos = surface.get_rect()
+    pos.center = (pos.center[0], center_surface.get_rect().height / 2)
+    return pos.y
+
+
+def x_center_to(center_surface, surface):
+    """will return the position needed to set surface to the horizontal center of center_surface"""
+    pos = surface.get_rect()
+    pos.center = (center_surface.get_rect().width / 2, pos.center[1])
+    return pos.x
+
+
+def quit_game():
+    pg.display.quit()
+    sys.exit()
 
 
 def main():
+    global time_passed
     pg.init()
     screen = pg.display.set_mode(config.DISPLAY, config.FLAGS, config.DEPTH)
     pg.display.set_caption(config.CAPTION)
@@ -143,7 +199,7 @@ def main():
     manager = SceneManager()
 
     while running:
-        clock.tick(config.FRAMERATE)
+        time_passed = clock.tick(config.FRAMERATE)
 
         if pg.event.get(pg.QUIT):
             running = False
@@ -157,8 +213,7 @@ def main():
             screen.blit(fps, (0, 0))
         pg.display.flip()
 
-    pg.display.quit()
-    sys.exit()
+    quit_game()
 
 
 if __name__ == "__main__":
