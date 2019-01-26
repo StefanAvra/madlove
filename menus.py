@@ -3,7 +3,7 @@ import config
 import killyourlungs
 
 PADDING = 24
-HEADER_SIZE = 32
+HEADER_SIZE = 40
 MENU_OFFSET = 24
 
 
