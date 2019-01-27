@@ -20,3 +20,4 @@ BACKGROUND_COLOR = "#fabfd0"
 FONT = "assets/font/PressStart2P-Regular.ttf"
 MENU_COLOR = (0, 0, 0)
 MENU_COLOR_HIGHLIGHT = (255, 255, 255)
+BALL_COLOR = (0, 0, 0)

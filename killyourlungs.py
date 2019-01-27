@@ -3,6 +3,7 @@ import sys
 import config
 import menus
 import numpy
+import math
 
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
@@ -36,6 +37,8 @@ class GameScene(Scene):
         self.level_no = level_no
         self.current_stage = 0
         self.lives = 3
+        # self.player
+        self.balls = [Ball(), ]
 
         # todo: load level
 
@@ -45,10 +48,14 @@ class GameScene(Scene):
         screen.blit(stage_text, (10, 10))
         lives_text = font_16.render('SMOKES: {}'.format(self.lives), True, (0, 0, 0))
         screen.blit(lives_text, (screen.get_width() - 150, 10))
+        for ball in self.balls:
+            screen.blit(ball.surface, (ball.x, ball.y))
 
     def update(self):
         pressed = pg.key.get_pressed()
         up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
+        for ball in self.balls:
+            ball.update()
 
     def handle_events(self, events):
         for e in events:
@@ -108,7 +115,7 @@ class OverlayMenuScene(Scene):
         self.menu_surf.blit(title, title_pos)
         for idx, entry in enumerate(self.menu_entries):
             if self.cursor == idx:
-                if self.highlight_clock >= 50:
+                if self.highlight_clock >= 100:
                     self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
                     self.highlight_clock = 0
                 color = self.highlight_color
@@ -155,6 +162,32 @@ class SceneManager(object):
     def go_to(self, scene):
         self.scene = scene
         self.scene.manager = self
+
+
+class Ball(pg.sprite.Sprite):
+    def __init__(self, x=240, y=600, speed=3, direction=166, size=6):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.speed = speed
+        self.direction = direction
+        self.size = size
+        self.color = config.BALL_COLOR
+        self.surface = pg.Surface((self.size, )*2)
+        self.surface.fill(bg_color)
+        self.surface.set_colorkey(bg_color)
+        self.rect = pg.draw.circle(self.surface, self.color, (int(self.size/2),)*2, int(self.size/2))
+
+    def bounce(self):
+        self.direction = (self.direction + 180) % 360
+
+    def update(self):
+        direction_rad = math.radians(self.direction)
+        self.x += self.speed * math.sin(direction_rad)
+        self.y += self.speed * math.cos(direction_rad)
+
+    def manipulate(self, direction, speed):
+        pass
 
 
 def center_to(center_surface, surface):
