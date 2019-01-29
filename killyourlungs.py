@@ -1,9 +1,10 @@
 import pygame as pg
 import sys
+
+import sound
 import config
 import menus
 import numpy
-import math
 import os
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
@@ -42,10 +43,13 @@ class GameScene(Scene):
         self.balls.add(Ball())
         self.blocks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
+        self.can_lose = True
 
         # todo: load level
         self.all_sprites = pg.sprite.Group()
-        self.all_sprites.add(self.player, *self.balls, self.blocks, self.bombs)
+        self.all_sprites.add(self.player, self.balls, self.blocks, self.bombs)
+        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
+        pg.mixer.music.play(-1)
 
     def render(self, screen):
         screen.fill(bg_color)
@@ -53,10 +57,7 @@ class GameScene(Scene):
         screen.blit(stage_text, (10, 10))
         lives_text = font_16.render('SMOKES: {}'.format(self.lives), True, (0, 0, 0))
         screen.blit(lives_text, (screen.get_width() - 150, 10))
-
         self.all_sprites.draw(screen)
-        # for ball in self.balls:
-        #     screen.blit(ball.image, (ball.x, ball.y))
 
     def update(self):
         pressed = pg.key.get_pressed()
@@ -68,12 +69,39 @@ class GameScene(Scene):
         self.player.update(left, right, up)
         pg.sprite.groupcollide(self.balls, self.blocks, False, True)
         if not self.balls.has(self.balls):
-            self.manager.go_to(GameOver(self))
+            # make a lost life scene?
+            if self.can_lose:
+                self.lives -= 1
+                self.can_lose = False
+                pg.mixer.music.stop()
+            if self.lives == 0:
+                self.manager.go_to(GameOver(self))
+            else:
+                if up:
+                    self.reset_ball()
+
+    def reset_ball(self):
+        self.balls.add(Ball(velocity=(2, -2)))
+        self.all_sprites.add(self.balls)
+        self.can_lose = True
+        pg.mixer.music.play(-1)
 
     def handle_events(self, events):
         for e in events:
-            if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
-                self.manager.go_to(OverlayMenuScene(self, 'ingame'))
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_ESCAPE:
+                    self.manager.go_to(OverlayMenuScene(self, 'ingame'))
+                if e.key == pg.K_o:
+                    for ball in self.balls:
+                        ball.speed_up(0.9)
+                if e.key == pg.K_p:
+                    for ball in self.balls:
+                        ball.speed_up(1.1)
+                if e.key == pg.K_m:
+                    if pg.mixer.music.get_busy():
+                        pg.mixer.music.stop()
+                    else:
+                        pg.mixer.music.play(-1)
 
 
 class TitleScene(Scene):
@@ -117,7 +145,11 @@ class GameOver(Scene):
         self.lives_left = game.lives
         score = 0
         print('ded.')
+        if pg.mixer.music.get_busy():
+            pg.mixer.music.stop()
+        sound.sfx_lib.get('game_over').play()
 
+        # todo: calc score, load highscores, input name if highscore
 
     def render(self, screen):
         pass
@@ -126,7 +158,12 @@ class GameOver(Scene):
         pass
 
     def handle_events(self, events):
-        pass
+        for e in events:
+            if e.type == pg.KEYDOWN:
+                if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                    self.manager.go_to(TitleScene())
+                if e.key == pg.K_ESCAPE:
+                    self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
 
 
 class OverlayMenuScene(Scene):
@@ -140,6 +177,7 @@ class OverlayMenuScene(Scene):
         self.cursor = 0
         self.highlight_clock = 0
         self.highlight_color = config.MENU_COLOR_HIGHLIGHT
+        pg.mixer.music.pause()
 
     def render(self, screen):
         self.highlight_clock += time_passed
@@ -187,6 +225,7 @@ class OverlayMenuScene(Scene):
                         self.cursor = len(self.menu_entries) - 1
 
     def go_back(self):
+        pg.mixer.music.unpause()
         self.manager.go_to(self.paused_scene)
 
 
@@ -200,7 +239,7 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, pos_x=240, pos_y=550, velocity=(1.5, -3), size=6):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(1.5, 1), size=6):
         super().__init__()
         self.velocity = velocity
         self.x = pos_x
@@ -216,12 +255,15 @@ class Ball(pg.sprite.Sprite):
         self.rect.y = self.y
 
     def hit_paddle(self, x_hit):
+        sound.sfx_lib.get('hit_wall').play()
         self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -self.velocity[1])
 
     def hit_wall(self):
+        sound.sfx_lib.get('hit_wall').play()
         self.velocity = (self.velocity[0] * -1, self.velocity[1])
 
     def hit_top(self):
+        sound.sfx_lib.get('hit_wall').play()
         self.velocity = (self.velocity[0], -self.velocity[1])
 
     def update(self):
