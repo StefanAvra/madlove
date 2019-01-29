@@ -4,7 +4,7 @@ import config
 import menus
 import numpy
 import math
-
+import os
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_16 = None
@@ -37,10 +37,15 @@ class GameScene(Scene):
         self.level_no = level_no
         self.current_stage = 0
         self.lives = 3
-        # self.player
-        self.balls = [Ball(), ]
+        self.player = Player()
+        self.balls = pg.sprite.Group()
+        self.balls.add(Ball())
+        self.blocks = pg.sprite.Group()
+        self.bombs = pg.sprite.Group()
 
         # todo: load level
+        self.all_sprites = pg.sprite.Group()
+        self.all_sprites.add(self.player, *self.balls, self.blocks, self.bombs)
 
     def render(self, screen):
         screen.fill(bg_color)
@@ -48,14 +53,22 @@ class GameScene(Scene):
         screen.blit(stage_text, (10, 10))
         lives_text = font_16.render('SMOKES: {}'.format(self.lives), True, (0, 0, 0))
         screen.blit(lives_text, (screen.get_width() - 150, 10))
-        for ball in self.balls:
-            screen.blit(ball.surface, (ball.x, ball.y))
+
+        self.all_sprites.draw(screen)
+        # for ball in self.balls:
+        #     screen.blit(ball.image, (ball.x, ball.y))
 
     def update(self):
         pressed = pg.key.get_pressed()
         up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
         for ball in self.balls:
             ball.update()
+            if pg.sprite.collide_rect(ball, self.player):
+                ball.hit_paddle(self.player.rect.center[0])
+        self.player.update(left, right, up)
+        pg.sprite.groupcollide(self.balls, self.blocks, False, True)
+        if not self.balls.has(self.balls):
+            self.manager.go_to(GameOver(self))
 
     def handle_events(self, events):
         for e in events:
@@ -92,6 +105,28 @@ class TitleScene(Scene):
                     self.manager.go_to(GameScene(0))
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
+
+
+class GameOver(Scene):
+    def __init__(self, game):
+        super(GameOver, self).__init__()
+        global score
+        self.score = score
+        self.reached_lvl = game.level_no
+        self.reached_stage = game.current_stage
+        self.lives_left = game.lives
+        score = 0
+        print('ded.')
+
+
+    def render(self, screen):
+        pass
+
+    def update(self):
+        pass
+
+    def handle_events(self, events):
+        pass
 
 
 class OverlayMenuScene(Scene):
@@ -165,29 +200,70 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, x=240, y=600, speed=3, direction=166, size=6):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(1.5, -3), size=6):
         super().__init__()
-        self.x = x
-        self.y = y
-        self.speed = speed
-        self.direction = direction
+        self.velocity = velocity
+        self.x = pos_x
+        self.y = pos_y
         self.size = size
         self.color = config.BALL_COLOR
-        self.surface = pg.Surface((self.size, )*2)
-        self.surface.fill(bg_color)
-        self.surface.set_colorkey(bg_color)
-        self.rect = pg.draw.circle(self.surface, self.color, (int(self.size/2),)*2, int(self.size/2))
+        self.image = pg.Surface((self.size,) * 2)
+        self.image.fill(bg_color)
+        self.image.set_colorkey(bg_color)
+        pg.draw.circle(self.image, self.color, (int(self.size / 2),) * 2, int(self.size / 2))
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
 
-    def bounce(self):
-        self.direction = (self.direction + 180) % 360
+    def hit_paddle(self, x_hit):
+        self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -self.velocity[1])
+
+    def hit_wall(self):
+        self.velocity = (self.velocity[0] * -1, self.velocity[1])
+
+    def hit_top(self):
+        self.velocity = (self.velocity[0], -self.velocity[1])
 
     def update(self):
-        direction_rad = math.radians(self.direction)
-        self.x += self.speed * math.sin(direction_rad)
-        self.y += self.speed * math.cos(direction_rad)
+        # x and y are used for storing floats so finer movement is possible
+        self.x += self.velocity[0]
+        self.y += self.velocity[1]
+        self.rect.x = self.x
+        self.rect.y = self.y
+        if self.rect.center[0] not in range(int(self.rect.width / 2),
+                                            pg.display.get_surface().get_width() - int(self.rect.width / 2)):
+            self.hit_wall()
+        if self.rect.top < 0:
+            self.hit_top()
+        if self.rect.y > pg.display.get_surface().get_height():
+            self.kill()
 
-    def manipulate(self, direction, speed):
-        pass
+    def speed_up(self, factor=1.1):
+        self.velocity = (self.velocity[0] * factor, self.velocity[1] * factor)
+
+
+class Player(pg.sprite.Sprite):
+    def __init__(self, x=200, length=45, speed=7):
+        super().__init__()
+        self.length = length
+        self.speed = speed
+        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle.png'))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = 630
+        self.max_x = pg.display.get_surface().get_width()
+
+    def update(self, left, right, up):
+        if up:
+            pass
+        if left:
+            self.rect.x -= self.speed
+            if self.rect.x < 0:
+                self.rect.x = 0
+        if right:
+            self.rect.x += self.speed
+            if self.rect.x + self.rect.width > self.max_x:
+                self.rect.x = self.max_x - self.rect.width
 
 
 def center_to(center_surface, surface):
