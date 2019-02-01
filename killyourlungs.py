@@ -1,11 +1,13 @@
 import pygame as pg
 import sys
+import numpy
+import os
 
 import sound
 import config
 import menus
-import numpy
-import os
+import string_resource as str_r
+import levels
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_16 = None
@@ -35,28 +37,38 @@ class GameScene(Scene):
         self.bg = pg.Surface((32, 32))
         self.bg.convert()
         self.bg.fill(bg_color)
-        self.level_no = level_no
         self.current_stage = 0
         self.lives = 3
         self.player = Player()
         self.balls = pg.sprite.Group()
         self.balls.add(Ball())
-        self.blocks = pg.sprite.Group()
+        self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
-        self.can_lose = True
+        self.level_data = levels.Level(level_no)
 
-        # todo: load level
+        tile_offset_y = 0
+        for line in self.level_data.bricks:
+            tile_offset_x = 0
+            for tile in line:
+                if tile == 'b':
+                    brick = Brick(tile_offset_x, tile_offset_y)
+                    self.bricks.add(brick)
+                tile_offset_x += levels.TILE[0]
+            tile_offset_y += levels.TILE[1]
+        print('Level data for Level {}:\n{}'.format(self.level_data.no, self.level_data.bricks))
         self.all_sprites = pg.sprite.Group()
-        self.all_sprites.add(self.player, self.balls, self.blocks, self.bombs)
+        self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
+        pg.mixer.music.set_volume(0.5)
         pg.mixer.music.play(-1)
 
     def render(self, screen):
         screen.fill(bg_color)
-        stage_text = font_16.render('STAGE: {}'.format(stages[self.current_stage]), True, (0, 0, 0))
+        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, (0, 0, 0))
         screen.blit(stage_text, (10, 10))
-        lives_text = font_16.render('SMOKES: {}'.format(self.lives), True, (0, 0, 0))
+        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, (0, 0, 0))
         screen.blit(lives_text, (screen.get_width() - 150, 10))
+
         self.all_sprites.draw(screen)
 
     def update(self):
@@ -65,25 +77,17 @@ class GameScene(Scene):
         for ball in self.balls:
             ball.update()
             if pg.sprite.collide_rect(ball, self.player):
-                ball.hit_paddle(self.player.rect.center[0])
+                ball.hit_paddle(self.player.rect)
         self.player.update(left, right, up)
-        pg.sprite.groupcollide(self.balls, self.blocks, False, True)
+        pg.sprite.groupcollide(self.balls, self.bricks, False, True)
         if not self.balls.has(self.balls):
             # make a lost life scene?
-            if self.can_lose:
-                self.lives -= 1
-                self.can_lose = False
-                pg.mixer.music.stop()
-            if self.lives == 0:
-                self.manager.go_to(GameOver(self))
-            else:
-                if up:
-                    self.reset_ball()
+            self.manager.go_to(LostLifeScene(self))
 
-    def reset_ball(self):
-        self.balls.add(Ball(velocity=(2, -2)))
+    def reset_round(self):
+        self.balls.add(Ball())
         self.all_sprites.add(self.balls)
-        self.can_lose = True
+        self.player.rect.centerx = pg.display.get_surface().get_rect().centerx
         pg.mixer.music.play(-1)
 
     def handle_events(self, events):
@@ -102,6 +106,46 @@ class GameScene(Scene):
                         pg.mixer.music.stop()
                     else:
                         pg.mixer.music.play(-1)
+
+
+class LostLifeScene(Scene):
+    def __init__(self, game_state):
+        super(LostLifeScene, self).__init__()
+        self.game_state = game_state
+        self.game_state.lives -= 1
+        self.game_over = False
+        pg.mixer.music.stop()
+
+        if self.game_state.lives <= 0:
+            self.game_over = True
+        else:
+            print('lost a life')
+
+    def render(self, screen):
+        if not self.game_over:
+            lost_text = str_r.get_string('lost_life').splitlines()
+            for idx, line in enumerate(lost_text):
+                lost_text_surfs = font_16.render(line, True, (0, 0, 0))
+                lost_rect = lost_text_surfs.get_rect()
+                lost_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx*20)
+                screen.blit(lost_text_surfs, lost_rect)
+
+    def update(self):
+        if self.game_over:
+            self.manager.go_to(GameOver(self.game_state))
+
+    def handle_events(self, events):
+        for e in events:
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_SPACE:
+                    self.game_state.reset_round()
+                    self.go_back()
+            if e.type == pg.K_ESCAPE:
+                pass
+
+    def go_back(self):
+        pg.mixer.music.unpause()
+        self.manager.go_to(self.game_state)
 
 
 class TitleScene(Scene):
@@ -136,13 +180,14 @@ class TitleScene(Scene):
 
 
 class GameOver(Scene):
-    def __init__(self, game):
+    def __init__(self, game_state):
         super(GameOver, self).__init__()
         global score
         self.score = score
-        self.reached_lvl = game.level_no
-        self.reached_stage = game.current_stage
-        self.lives_left = game.lives
+        self.reached_lvl = game_state.level_data.no
+        self.reached_stage = game_state.current_stage
+        self.lives_left = game_state.lives
+
         score = 0
         print('ded.')
         if pg.mixer.music.get_busy():
@@ -152,7 +197,14 @@ class GameOver(Scene):
         # todo: calc score, load highscores, input name if highscore
 
     def render(self, screen):
-        pass
+        screen.fill(bg_color)
+        game_over_txt = str_r.get_string('game_over').splitlines()
+        for idx, line in enumerate(game_over_txt):
+            over_text_surf = font_16.render(line, True, (0, 0, 0))
+
+            over_rect = over_text_surf.get_rect()
+            over_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + idx*20)
+            screen.blit(over_text_surf, over_rect)
 
     def update(self):
         pass
@@ -239,7 +291,7 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, pos_x=240, pos_y=550, velocity=(1.5, 1), size=6):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(2, -4), size=6):
         super().__init__()
         self.velocity = velocity
         self.x = pos_x
@@ -254,9 +306,12 @@ class Ball(pg.sprite.Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
-    def hit_paddle(self, x_hit):
+    def hit_paddle(self, paddle_rect):
+        x_hit = paddle_rect.center[0]
         sound.sfx_lib.get('hit_wall').play()
         self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -self.velocity[1])
+        if self.rect.bottom > paddle_rect.top:
+            self.rect.bottom = paddle_rect.top - 1
 
     def hit_wall(self):
         sound.sfx_lib.get('hit_wall').play()
@@ -308,6 +363,17 @@ class Player(pg.sprite.Sprite):
                 self.rect.x = self.max_x - self.rect.width
 
 
+class Brick(pg.sprite.Sprite):
+    def __init__(self, x=0, y=0, color=(0, 0, 0), health=1):
+        super().__init__()
+        self.image = pg.Surface(levels.TILE)
+        self.image.fill(color)
+        self.health = health
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
 def center_to(center_surface, surface):
     """will return the position needed to set surface to the center of center_surface"""
     pos = surface.get_rect()
@@ -318,14 +384,14 @@ def center_to(center_surface, surface):
 def y_center_to(center_surface, surface):
     """will return the position needed to set surface to the vertical center of center_surface"""
     pos = surface.get_rect()
-    pos.center = (pos.center[0], center_surface.get_rect().height / 2)
+    pos.centery = center_surface.get_rect().centery
     return pos.y
 
 
 def x_center_to(center_surface, surface):
     """will return the position needed to set surface to the horizontal center of center_surface"""
     pos = surface.get_rect()
-    pos.center = (center_surface.get_rect().width / 2, pos.center[1])
+    pos.centerx = center_surface.get_rect().centerx
     return pos.x
 
 
