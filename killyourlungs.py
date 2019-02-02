@@ -81,6 +81,8 @@ class GameScene(Scene):
         if not self.balls.has(self.balls):
             # make a lost life scene?
             self.manager.go_to(LostLifeScene(self))
+        if not self.bricks.has(self.bricks):
+            self.manager.go_to(FinishedLevelScene(self))
 
     def reset_round(self):
         self.balls.add(Ball())
@@ -107,6 +109,39 @@ class GameScene(Scene):
                 if e.key == pg.K_b:
                     self.balls.add(Ball())
                     self.all_sprites.add(self.balls)
+
+
+class FinishedLevelScene(Scene):
+    def __init__(self, game_state):
+        super(FinishedLevelScene, self).__init__()
+        self.finished_lvl = game_state.level_data.no
+        self.current_stage = game_state.current_stage
+        self.lives = game_state.lives
+        self.next_level = self.finished_lvl + 1
+        global score
+        pg.mixer.music.stop()
+
+    def render(self, screen):
+        screen.fill(bg_color)
+        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, (0, 0, 0))
+        screen.blit(stage_text, (10, 10))
+        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, (0, 0, 0))
+        screen.blit(lives_text, (screen.get_width() - 150, 10))
+        finished_text = font_16.render(str_r.get_string('finished'), True, (0, 0, 0))
+        finished_pos = finished_text.get_rect()
+        finished_pos.center = screen.get_rect().center
+        screen.blit(finished_text, finished_pos)
+
+    def update(self):
+        pass
+
+    def handle_events(self, events):
+        for e in events:
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_ESCAPE:
+                    self.manager.go_to(OverlayMenuScene(self, 'ingame'))
+                if e.key == pg.K_SPACE:
+                    self.manager.go_to(GameScene(self.next_level))
 
 
 class LostLifeScene(Scene):

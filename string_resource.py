@@ -3,7 +3,8 @@ __strings = {
     'stage_text': 'STAGE: {}',
     'lives_text': 'SMOKES: {}',
     'game_over': 'GAME OVER\nCANCER FAILED\n YOUR BODY IS A TEMPLE',
-    'metastasis': 'METASTASIS UNLOCKED'
+    'metastasis': 'METASTASIS UNLOCKED',
+    'finished': 'YOU KILLED THESE LUNGS!'
 }
 
 
