@@ -8,6 +8,7 @@ import config
 import menus
 import string_resource as str_r
 import levels
+import bot
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_16 = None
@@ -75,6 +76,8 @@ class GameScene(Scene):
     def update(self):
         pressed = pg.key.get_pressed()
         up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
+        if config.ENABLE_BOT:
+            left, right = bot.play(self.player, self.balls)
         for ball in self.balls:
             ball.update(self.player, self.bricks, self.bombs)
 
@@ -112,6 +115,8 @@ class GameScene(Scene):
                 if e.key == pg.K_b:
                     self.balls.add(Ball())
                     self.all_sprites.add(self.balls)
+                if e.key == pg.K_COMMA:
+                    config.ENABLE_BOT = not config.ENABLE_BOT
 
 
 class FinishedLevelScene(Scene):
