@@ -87,7 +87,6 @@ class GameScene(Scene):
         if not self.bricks.has(self.bricks):
             self.manager.go_to(FinishedLevelScene(self))
 
-        # calc current stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages), 0]))
 
     def reset_round(self):
@@ -184,8 +183,8 @@ class LostLifeScene(Scene):
                 if e.key == pg.K_SPACE:
                     self.game_state.reset_round()
                     self.go_back()
-            if e.type == pg.K_ESCAPE:
-                pass
+                if e.key == pg.K_ESCAPE:
+                    pass
 
     def go_back(self):
         pg.mixer.music.unpause()
@@ -355,18 +354,19 @@ class Ball(pg.sprite.Sprite):
     def check_collision(self, rect):
         # intended to be called only after collision detected!
         self.collisions[0] = rect.collidepoint(self.rect.midtop)
-        #self.collisions[1] = rect.collidepoint(self.rect.topright)
+        # self.collisions[1] = rect.collidepoint(self.rect.topright)
         self.collisions[2] = rect.collidepoint(self.rect.midright)
-        #self.collisions[3] = rect.collidepoint(self.rect.bottomright)
+        # self.collisions[3] = rect.collidepoint(self.rect.bottomright)
         self.collisions[4] = rect.collidepoint(self.rect.midbottom)
-        #self.collisions[5] = rect.collidepoint(self.rect.bottomleft)
+        # self.collisions[5] = rect.collidepoint(self.rect.bottomleft)
         self.collisions[6] = rect.collidepoint(self.rect.midleft)
-        #self.collisions[7] = rect.collidepoint(self.rect.topleft)
+        # self.collisions[7] = rect.collidepoint(self.rect.topleft)
 
     def hit_paddle(self, paddle_rect):
         x_hit = paddle_rect.center[0]
         sound.sfx_lib.get('hit_wall').play()
-        self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -abs(self.velocity[1]))
+        # self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -abs(self.velocity[1]))
+        self.velocity = ((self.rect.centerx - x_hit)/5, -abs(self.velocity[1]))
         self.rect.bottom = paddle_rect.y - 1
 
     def hit_wall(self, left_right):
@@ -487,6 +487,7 @@ def x_center_to(center_surface, surface):
     pos = surface.get_rect()
     pos.centerx = center_surface.get_rect().centerx
     return pos.x
+
 
 def quit_game():
     pg.display.quit()
