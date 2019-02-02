@@ -55,6 +55,7 @@ class GameScene(Scene):
                     self.bricks.add(brick)
                 tile_offset_x += levels.TILE[0]
             tile_offset_y += levels.TILE[1]
+        self.total_bricks = len(self.bricks)
         print('Level data for Level {}:\n{}'.format(self.level_data.no, self.level_data.bricks))
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
@@ -79,10 +80,12 @@ class GameScene(Scene):
 
         self.player.update(left, right, up)
         if not self.balls.has(self.balls):
-            # make a lost life scene?
             self.manager.go_to(LostLifeScene(self))
         if not self.bricks.has(self.bricks):
             self.manager.go_to(FinishedLevelScene(self))
+
+        # calc current stage
+        self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages), 0]))
 
     def reset_round(self):
         self.balls.add(Ball())
@@ -479,7 +482,6 @@ def x_center_to(center_surface, surface):
     pos = surface.get_rect()
     pos.centerx = center_surface.get_rect().centerx
     return pos.x
-
 
 def quit_game():
     pg.display.quit()
