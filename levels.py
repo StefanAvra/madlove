@@ -2,7 +2,7 @@ TILE_MAP = (15, 32)
 TILE = (32, 20)
 
 _levels = {
-    0: {
+    1: {
         'bricks':  ['               ',
                     '               ',
                     '               ',
@@ -29,7 +29,33 @@ _levels = {
                     '               ',
                     '               '],
     },
-    1: {}
+    0: {
+        'bricks': ['               ',
+                   '               ',
+                   '               ',
+                   '               ',
+                   '               ',
+                   '               ',
+                   '               ',
+                   'bbbbbbbbbbbbbbb',
+                   '               ',
+                   'bbbbbbbbbbbbbbb',
+                   '  bbbb   bbbb  ',
+                   'bbbbbbbbbbbbbbb',
+                   'bbbbbbbbbbbbbbb',
+                   '               ',
+                   'bbbbbbbbbbbbbbb',
+                   '               ',
+                   'bbbbbbbbbbbbbbb',
+                   '               ',
+                   'bbbbbbbbbb bbbb',
+                   '          b    ',
+                   '               ',
+                   '               ',
+                   '               ',
+                   '               ',
+                   '               '],
+    }
 }
 
 

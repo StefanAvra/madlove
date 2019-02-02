@@ -104,6 +104,9 @@ class GameScene(Scene):
                         pg.mixer.music.stop()
                     else:
                         pg.mixer.music.play(-1)
+                if e.key == pg.K_b:
+                    self.balls.add(Ball())
+                    self.all_sprites.add(self.balls)
 
 
 class LostLifeScene(Scene):
@@ -211,6 +214,7 @@ class GameOver(Scene):
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                    sound.sfx_lib.get('game_over').stop()
                     self.manager.go_to(TitleScene())
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
@@ -289,7 +293,7 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, pos_x=240, pos_y=550, velocity=(2, -4), size=6):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(2, -4), size=7):
         super().__init__()
         self.velocity = velocity
         self.x = pos_x
@@ -308,28 +312,28 @@ class Ball(pg.sprite.Sprite):
     def check_collision(self, rect):
         # intended to be called only after collision detected!
         self.collisions[0] = rect.collidepoint(self.rect.midtop)
-        self.collisions[1] = rect.collidepoint(self.rect.topright)
+        #self.collisions[1] = rect.collidepoint(self.rect.topright)
         self.collisions[2] = rect.collidepoint(self.rect.midright)
-        self.collisions[3] = rect.collidepoint(self.rect.bottomright)
+        #self.collisions[3] = rect.collidepoint(self.rect.bottomright)
         self.collisions[4] = rect.collidepoint(self.rect.midbottom)
-        self.collisions[5] = rect.collidepoint(self.rect.bottomleft)
+        #self.collisions[5] = rect.collidepoint(self.rect.bottomleft)
         self.collisions[6] = rect.collidepoint(self.rect.midleft)
-        self.collisions[7] = rect.collidepoint(self.rect.topleft)
+        #self.collisions[7] = rect.collidepoint(self.rect.topleft)
 
     def hit_paddle(self, paddle_rect):
         x_hit = paddle_rect.center[0]
         sound.sfx_lib.get('hit_wall').play()
-        self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -self.velocity[1])
+        self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -abs(self.velocity[1]))
         self.rect.bottom = paddle_rect.y - 1
 
     def hit_wall(self, left_right):
         sound.sfx_lib.get('hit_wall').play()
         if left_right == 0:
             self.bounce(6)
-            self.rect.x = 1
+            self.rect.left = 1
         else:
             self.bounce(2)
-            self.rect.x = pg.display.get_surface().get_width() - 1
+            self.rect.right = pg.display.get_surface().get_width() - 1
 
     def hit_top(self):
         sound.sfx_lib.get('hit_wall').play()
@@ -340,21 +344,25 @@ class Ball(pg.sprite.Sprite):
         """direction can be 0 to 7, referring to the direction BEFORE bouncing, starting north going clockwise."""
         if not direction % 2 == 0:
             self.velocity = (-self.velocity[0], -self.velocity[1])
-        elif direction in [0, 4]:
-            self.velocity = (self.velocity[0], -self.velocity[1])
-        elif direction in [2, 6]:
-            self.velocity = (-self.velocity[0], self.velocity[1])
+        elif direction == 0:
+            self.velocity = (self.velocity[0], abs(self.velocity[1]))
+        elif direction == 4:
+            self.velocity = (self.velocity[0], -abs(self.velocity[1]))
+        elif direction == 2:
+            self.velocity = (-abs(self.velocity[0]), self.velocity[1])
+        elif direction == 6:
+            self.velocity = (abs(self.velocity[0]), self.velocity[1])
 
     def hit_brick(self, brick):
         self.check_collision(brick.rect)
         if True in self.collisions[::2]:
-            self.bounce(self.collisions[::2].index(True))
-        else:
-            self.bounce(self.collisions.index(True))
-        brick.health -= 1
-        if brick.health <= 0:
-            brick.kill()
-        sound.sfx_lib.get('hit_brick').play()
+            self.bounce(self.collisions[::2].index(True) * 2)
+        # else:
+        #     self.bounce(self.collisions.index(True))
+            brick.health -= 1
+            if brick.health <= 0:
+                brick.kill()
+            sound.sfx_lib.get('hit_brick').play()
 
     def update(self, player, bricks, bombs):
         # x and y are used for storing floats so finer movement is possible
@@ -362,7 +370,7 @@ class Ball(pg.sprite.Sprite):
         self.y += self.velocity[1]
         self.rect.x = self.x
         self.rect.y = self.y
-        if self.rect.x <= 0:
+        if self.rect.left <= 0:
             self.hit_wall(0)
         elif self.rect.right >= pg.display.get_surface().get_width():
             self.hit_wall(1)
