@@ -1,4 +1,5 @@
 import collections
+import random
 
 import pygame as pg
 import sys
@@ -362,7 +363,8 @@ class Ball(pg.sprite.Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
         self.collisions = [False] * 8
-        self.last_bounces = collections.deque([], 10)
+        self.last_bounces = collections.deque([], 18)
+        self.last_bounce_times = collections.deque([], 3)
 
     def check_collision(self, rect):
         # intended to be called only after collision detected!
@@ -419,7 +421,12 @@ class Ball(pg.sprite.Sprite):
 
     def update_bounces(self):
         self.last_bounces.append(self.rect.center)
-        # if
+        if collections.Counter(self.last_bounces).most_common(1)[0][1] >= 6:
+            self.last_bounces.clear()
+            print('giving that ball a spin...')
+            self.velocity = (random.randint(-4, 4), random.randint(-4, 4))
+
+        # check for combo here
 
     def hit_brick(self, brick):
         self.check_collision(brick.rect)
