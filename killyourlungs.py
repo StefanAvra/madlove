@@ -1,3 +1,5 @@
+import collections
+
 import pygame as pg
 import sys
 import numpy
@@ -11,6 +13,7 @@ import levels
 import bot
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
+font_8 = None
 font_16 = None
 font_24 = None
 stages = ['0', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB']
@@ -66,12 +69,17 @@ class GameScene(Scene):
 
     def render(self, screen):
         screen.fill(bg_color)
-        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, (0, 0, 0))
+        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, config.TEXT_COLOR)
         screen.blit(stage_text, (10, 10))
-        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, (0, 0, 0))
+        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
         screen.blit(lives_text, (screen.get_width() - 150, 10))
-
         self.all_sprites.draw(screen)
+        if config.SHOW_VELOCITY:
+            # first ball only
+            velocity = self.balls.sprites()[0].velocity
+            velocity = font_8.render(str((round(velocity[0], 2),
+                                          round(velocity[1], 2))), True, config.DEBUG_COLOR)
+            screen.blit(velocity, (40, 0))
 
     def update(self):
         pressed = pg.key.get_pressed()
@@ -116,6 +124,9 @@ class GameScene(Scene):
                     self.all_sprites.add(self.balls)
                 if e.key == pg.K_COMMA:
                     config.ENABLE_BOT = not config.ENABLE_BOT
+                if e.key == pg.K_f:
+                    config.SHOW_FPS = not config.SHOW_FPS
+                    config.SHOW_VELOCITY = not config.SHOW_VELOCITY
 
 
 class FinishedLevelScene(Scene):
@@ -130,11 +141,11 @@ class FinishedLevelScene(Scene):
 
     def render(self, screen):
         screen.fill(bg_color)
-        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, (0, 0, 0))
+        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, config.TEXT_COLOR)
         screen.blit(stage_text, (10, 10))
-        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, (0, 0, 0))
+        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
         screen.blit(lives_text, (screen.get_width() - 150, 10))
-        finished_text = font_16.render(str_r.get_string('finished'), True, (0, 0, 0))
+        finished_text = font_16.render(str_r.get_string('finished'), True, config.TEXT_COLOR)
         finished_pos = finished_text.get_rect()
         finished_pos.center = screen.get_rect().center
         screen.blit(finished_text, finished_pos)
@@ -168,7 +179,7 @@ class LostLifeScene(Scene):
         if not self.game_over:
             lost_text = str_r.get_string('lost_life').splitlines()
             for idx, line in enumerate(lost_text):
-                lost_text_surfs = font_16.render(line, True, (0, 0, 0))
+                lost_text_surfs = font_16.render(line, True, config.TEXT_COLOR)
                 lost_rect = lost_text_surfs.get_rect()
                 lost_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx*20)
                 screen.blit(lost_text_surfs, lost_rect)
@@ -195,20 +206,21 @@ class TitleScene(Scene):
     def __init__(self):
         super(TitleScene, self).__init__()
         # change these with titlescreen art later
-        self.title_font = font_24
-        self.subtitle_font = font_16
+        self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
+        self.line2 = font_16.render(config.GAME_SUBTITLE, True, config.TEXT_COLOR)
 
     def render(self, screen):
         screen.fill(bg_color)
-        line1 = self.title_font.render(config.GAME_TITLE, True, (0, 0, 0))
-        line2 = self.subtitle_font.render(config.GAME_SUBTITLE, True, (0, 0, 0))
-        pos_line1 = center_to(screen, line1)
+        pos_line1 = center_to(screen, self.line1)
         pos_line1 = (pos_line1[0], pos_line1[1] - 24)
-        pos_line2 = center_to(screen, line2)
+        pos_line2 = center_to(screen, self.line2)
         pos_line2 = (pos_line2[0], pos_line2[1] + 16)
-
-        screen.blit(line1, pos_line1)
-        screen.blit(line2, pos_line2)
+        copyright = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
+        pos_copy = copyright.get_rect()
+        pos_copy.center = (screen.get_rect().centerx, screen.get_rect().height * 0.8)
+        screen.blit(self.line1, pos_line1)
+        screen.blit(self.line2, pos_line2)
+        screen.blit(copyright, pos_copy)
 
     def update(self):
         pass
@@ -243,7 +255,7 @@ class GameOver(Scene):
         screen.fill(bg_color)
         game_over_txt = str_r.get_string('game_over').splitlines()
         for idx, line in enumerate(game_over_txt):
-            over_text_surf = font_16.render(line, True, (0, 0, 0))
+            over_text_surf = font_16.render(line, True, config.TEXT_COLOR)
 
             over_rect = over_text_surf.get_rect()
             over_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + idx*20)
@@ -279,7 +291,7 @@ class OverlayMenuScene(Scene):
         self.highlight_clock += time_passed
         menus.make_outline(self.menu_surf, bg_color)
         menu_pos = center_to(screen, self.menu_surf)
-        title = font_16.render(self.menu_title, True, config.MENU_COLOR)
+        title = font_16.render(self.menu_title, True, config.TEXT_COLOR)
         title_pos = (x_center_to(self.menu_surf, title), menus.PADDING)
         self.menu_surf.blit(title, title_pos)
         for idx, entry in enumerate(self.menu_entries):
@@ -289,7 +301,7 @@ class OverlayMenuScene(Scene):
                     self.highlight_clock = 0
                 color = self.highlight_color
             else:
-                color = config.MENU_COLOR
+                color = config.TEXT_COLOR
             entry_surf = font_16.render(entry, True, color)
             entry_pos = (x_center_to(self.menu_surf, entry_surf),
                          menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_OFFSET)
@@ -350,17 +362,18 @@ class Ball(pg.sprite.Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
         self.collisions = [False] * 8
+        self.last_bounces = collections.deque([], 10)
 
     def check_collision(self, rect):
         # intended to be called only after collision detected!
         self.collisions[0] = rect.collidepoint(self.rect.midtop)
-        # self.collisions[1] = rect.collidepoint(self.rect.topright)
+        self.collisions[1] = rect.collidepoint(self.rect.topright)
         self.collisions[2] = rect.collidepoint(self.rect.midright)
-        # self.collisions[3] = rect.collidepoint(self.rect.bottomright)
+        self.collisions[3] = rect.collidepoint(self.rect.bottomright)
         self.collisions[4] = rect.collidepoint(self.rect.midbottom)
-        # self.collisions[5] = rect.collidepoint(self.rect.bottomleft)
+        self.collisions[5] = rect.collidepoint(self.rect.bottomleft)
         self.collisions[6] = rect.collidepoint(self.rect.midleft)
-        # self.collisions[7] = rect.collidepoint(self.rect.topleft)
+        self.collisions[7] = rect.collidepoint(self.rect.topleft)
 
     def hit_paddle(self, paddle_rect):
         x_hit = paddle_rect.center[0]
@@ -385,9 +398,7 @@ class Ball(pg.sprite.Sprite):
 
     def bounce(self, direction):
         """direction can be 0 to 7, referring to the direction BEFORE bouncing, starting north going clockwise."""
-        if not direction % 2 == 0:
-            self.velocity = (-self.velocity[0], -self.velocity[1])
-        elif direction == 0:
+        if direction == 0:
             self.velocity = (self.velocity[0], abs(self.velocity[1]))
         elif direction == 4:
             self.velocity = (self.velocity[0], -abs(self.velocity[1]))
@@ -395,17 +406,32 @@ class Ball(pg.sprite.Sprite):
             self.velocity = (-abs(self.velocity[0]), self.velocity[1])
         elif direction == 6:
             self.velocity = (abs(self.velocity[0]), self.velocity[1])
+        elif direction == 1:
+            self.velocity = (-abs(self.velocity[0]), abs(self.velocity[1]))
+        elif direction == 3:
+            self.velocity = (-abs(self.velocity[0]), -abs(self.velocity[1]))
+        elif direction == 5:
+            self.velocity = (abs(self.velocity[0]), -abs(self.velocity[1]))
+        elif direction == 7:
+            self.velocity = (abs(self.velocity[0]), abs(self.velocity[1]))
+
+        self.update_bounces()
+
+    def update_bounces(self):
+        self.last_bounces.append(self.rect.center)
+        # if
 
     def hit_brick(self, brick):
         self.check_collision(brick.rect)
         if True in self.collisions[::2]:
             self.bounce(self.collisions[::2].index(True) * 2)
-        # else:
-        #     self.bounce(self.collisions.index(True))
-            brick.health -= 1
-            if brick.health <= 0:
-                brick.kill()
-            sound.sfx_lib.get('hit_brick').play()
+        else:
+            self.bounce(self.collisions.index(True))
+        brick.health -= 1
+        brick.update()
+        if brick.health <= 0:
+            brick.kill()
+        sound.sfx_lib.get('hit_brick').play()
 
     def update(self, player, bricks, bombs):
         # x and y are used for storing floats so finer movement is possible
@@ -424,7 +450,7 @@ class Ball(pg.sprite.Sprite):
         if pg.sprite.collide_rect(self, player):
             self.hit_paddle(player.rect)
         collided_brick = pg.sprite.spritecollideany(self, bricks)
-        # todo: check collision via sub-rects, that go almost to the corners of ball.rect
+        # todo: check collision via sub-rects, that go almost to the corners of ball.rect -- or maybe not? maybe circle?
 
         if collided_brick:
             self.hit_brick(collided_brick)
@@ -458,7 +484,7 @@ class Player(pg.sprite.Sprite):
 
 
 class Brick(pg.sprite.Sprite):
-    def __init__(self, x=0, y=0, color=(0, 0, 0), health=1):
+    def __init__(self, x=0, y=0, color=(255, 0, 0), health=2):
         super().__init__()
         self.image = pg.Surface(levels.TILE)
         self.image.fill(color)
@@ -466,6 +492,10 @@ class Brick(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.color = [(0, 0, 0), color]
+
+    def update(self):
+        self.image.fill(self.color[self.health-1])
 
 
 def center_to(center_surface, surface):
@@ -502,8 +532,10 @@ def main():
     clock = pg.time.Clock()
     running = True
 
+    global font_8
     global font_16
     global font_24
+    font_8 = pg.font.Font(config.FONT, 8)
     font_16 = pg.font.Font(config.FONT, 16)
     font_24 = pg.font.Font(config.FONT, 24)
 
@@ -520,7 +552,7 @@ def main():
         manager.scene.update()
         manager.scene.render(screen)
         if config.SHOW_FPS:
-            fps = font_16.render(str(int(clock.get_fps())), True, pg.Color('white'))
+            fps = font_8.render(str(int(clock.get_fps())), True, config.DEBUG_COLOR)
             screen.blit(fps, (0, 0))
         pg.display.flip()
 

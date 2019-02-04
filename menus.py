@@ -42,7 +42,7 @@ def get_surf(menu_type):
     return pg.Surface((x, y))
 
 
-def make_outline(surface, fill_color, outline_color=config.MENU_COLOR, border=4):
+def make_outline(surface, fill_color, outline_color=config.TEXT_COLOR, border=4):
     surface.fill(outline_color)
     surface.fill(fill_color, surface.get_rect().inflate(-border, -border))
 

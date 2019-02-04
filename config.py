@@ -6,7 +6,6 @@ GAME_TITLE = "KILL YOUR LUNGS"
 GAME_SUBTITLE = 'THE GAME'
 CAPTION = GAME_TITLE
 FRAMERATE = 60
-SHOW_FPS = 1
 FLAGS = 0
 
 # pg.FULLSCREEN   create a fullscreen display
@@ -18,7 +17,10 @@ FLAGS = 0
 
 BACKGROUND_COLOR = "#fabfd0"
 FONT = "assets/font/PressStart2P-Regular.ttf"
-MENU_COLOR = (0, 0, 0)
+TEXT_COLOR = (0, 0, 0)
 MENU_COLOR_HIGHLIGHT = (255, 255, 255)
 BALL_COLOR = (0, 0, 0)
+DEBUG_COLOR = (255, 255, 255)
 ENABLE_BOT = False
+SHOW_FPS = True
+SHOW_VELOCITY = True

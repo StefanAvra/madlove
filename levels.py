@@ -2,10 +2,10 @@ TILE_MAP = (15, 32)
 TILE = (32, 20)
 
 _levels = {
-    1: {
+    0: {
         'bricks':  ['               ',
                     '               ',
-                    '               ',
+                    ' bb   bbb   bb ',
                     '               ',
                     '               ',
                     '               ',
@@ -27,9 +27,9 @@ _levels = {
                     '               ',
                     '               ',
                     '               ',
-                    '               '],
+                    ' bb  bb bb  bb '],
     },
-    0: {
+    1: {
         'bricks': ['               ',
                    '               ',
                    '     bbbbbb    ',
@@ -63,5 +63,7 @@ class Level:
     def __init__(self, no):
         global _levels
         self.no = no
-        self.bricks = _levels.get(no).get('bricks')
-
+        try:
+            self.bricks = _levels.get(no).get('bricks')
+        except AttributeError:
+            print('Level {} not found.'.format(no))

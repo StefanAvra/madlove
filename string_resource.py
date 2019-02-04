@@ -4,7 +4,9 @@ __strings = {
     'lives_text': 'SMOKES: {}',
     'game_over': 'GAME OVER\nCANCER FAILED\n YOUR BODY IS A TEMPLE',
     'metastasis': 'METASTASIS UNLOCKED',
-    'finished': 'YOU KILLED THESE LUNGS!'
+    'finished': 'YOU KILLED THESE LUNGS!',
+    'copyright': '© 2019 GURKIMAN, AVRA',
+    'combo': 'COMBO BONUS X{}'
 }
 
 
