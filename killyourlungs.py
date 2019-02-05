@@ -12,6 +12,7 @@ import menus
 import string_resource as str_r
 import levels
 import bot
+import scores
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
@@ -50,6 +51,7 @@ class GameScene(Scene):
         self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
         self.level_data = levels.Level(level_no)
+        self.notif_stack = []
 
         tile_offset_y = 0
         for line in self.level_data.bricks:
@@ -69,11 +71,19 @@ class GameScene(Scene):
         pg.mixer.music.play(-1)
 
     def render(self, screen):
+        global score
         screen.fill(bg_color)
-        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, config.TEXT_COLOR)
-        screen.blit(stage_text, (10, 10))
+        stage_text = font_16.render(stages[self.current_stage], True, config.TEXT_COLOR)
+        stage_pos = stage_text.get_rect()
+        stage_pos.midtop = (screen.get_width() / 2, 8)
+        screen.blit(stage_text, stage_pos)
         lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
-        screen.blit(lives_text, (screen.get_width() - 150, 10))
+        screen.blit(lives_text, (screen.get_width() - 150, 8))
+        score_text = font_16.render(str(score), True, config.TEXT_COLOR)
+        score_pos = score_text.get_rect()
+        score_pos.topleft = (8, 8)
+        screen.blit(score_text, score_pos)
+
         self.all_sprites.draw(screen)
 
         # for ball in self.balls:
@@ -149,10 +159,16 @@ class FinishedLevelScene(Scene):
 
     def render(self, screen):
         screen.fill(bg_color)
-        stage_text = font_16.render(str_r.get_string('stage_text').format(stages[self.current_stage]), True, config.TEXT_COLOR)
-        screen.blit(stage_text, (10, 10))
+        stage_text = font_16.render(stages[self.current_stage], True, config.TEXT_COLOR)
+        stage_pos = stage_text.get_rect()
+        stage_pos.midtop = (screen.get_width() / 2, 8)
+        screen.blit(stage_text, stage_pos)
         lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
-        screen.blit(lives_text, (screen.get_width() - 150, 10))
+        screen.blit(lives_text, (screen.get_width() - 150, 8))
+        score_text = font_16.render(str(score), True, config.TEXT_COLOR)
+        score_pos = score_text.get_rect()
+        score_pos.topleft = (8, 8)
+        screen.blit(score_text, score_pos)
         finished_text = font_16.render(str_r.get_string('finished'), True, config.TEXT_COLOR)
         finished_pos = finished_text.get_rect()
         finished_pos.center = screen.get_rect().center
@@ -432,11 +448,12 @@ class Ball(pg.sprite.Sprite):
         if collections.Counter(self.last_bounces).most_common(1)[0][1] >= 6:
             self.last_bounces.clear()
             print('giving that ball a spin...')
-            self.velocity = (random.randint(-4, 4), random.randint(-4, 4))
+            self.velocity = (random.randint(-4, 4), self.velocity[1])
 
         # check for combo here
 
     def hit_brick(self, brick):
+        global score
         self.check_collision(brick.rect)
         if True in self.collisions[::2]:
             self.bounce(self.collisions[::2].index(True) * 2)
@@ -444,8 +461,10 @@ class Ball(pg.sprite.Sprite):
             self.bounce(self.collisions.index(True))
         brick.health -= 1
         brick.update()
+        score += scores.increase_score()
         if brick.health <= 0:
             brick.kill()
+            score += scores.increase_score('killed_brick')
         sound.sfx_lib.get('hit_brick').play()
 
     def update(self, player, bricks, bombs):

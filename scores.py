@@ -2,8 +2,10 @@ import config
 import operator
 import pickle
 
-highscores = [('a', 323), ('b', 444), ('c', 400), ('e', 333), ('f', 5), ('t', 44), ('u', 77), ('ooo', 555),
-              ('hh', 2111), ('ppp', 8), ('LOL', 999999999999)]
+highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333), ('Granger', 500), ('Grawp', 44), ('Umbridge', 77), ('Rosmerta', 555),
+              ('Krum', 2111), ('Elphias', 8)]
+
+multiplier = 1
 
 
 def load_highscores():
@@ -27,4 +29,16 @@ def update_highscores(new_score=None):
 def save_highscores():
     with open(config.HIGHSCORE_FILE, 'wb') as f:
         pickle.dump(highscores, f)
+
+
+def increase_score(reason='hit_brick'):
+    if reason == 'hit_brick':
+        add = 10
+    elif reason == 'killed_brick':
+        add = 20
+    elif reason == 'phagocyte':
+        add = 15
+    elif reason == 'powerup':
+        add = 85
+    return add * multiplier
 
