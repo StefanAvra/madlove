@@ -75,6 +75,13 @@ class GameScene(Scene):
         lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
         screen.blit(lives_text, (screen.get_width() - 150, 10))
         self.all_sprites.draw(screen)
+
+        # for ball in self.balls:
+        #     if len(ball.tail) > 2:
+        #         for idx, element in enumerate(ball.tail):
+        #             pg.draw.circle(ball.tail_surfs[idx], (0, 0, 0, 100), element, int(ball.rect.width/2))
+        #             screen.blit(ball.tail_surfs[idx], element)
+
         if config.SHOW_VELOCITY:
             # first ball only
             velocity = self.balls.sprites()[0].velocity
@@ -365,6 +372,7 @@ class Ball(pg.sprite.Sprite):
         self.collisions = [False] * 8
         self.last_bounces = collections.deque([], 18)
         self.last_bounce_times = collections.deque([], 3)
+        self.tail = collections.deque([], 10)
 
     def check_collision(self, rect):
         # intended to be called only after collision detected!
@@ -381,7 +389,7 @@ class Ball(pg.sprite.Sprite):
         x_hit = paddle_rect.center[0]
         sound.sfx_lib.get('hit_wall').play()
         # self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -abs(self.velocity[1]))
-        self.velocity = ((self.rect.centerx - x_hit)/5, -abs(self.velocity[1]))
+        self.velocity = (round((self.rect.centerx - x_hit)/5), -abs(self.velocity[1]))
         self.rect.bottom = paddle_rect.y - 1
 
     def hit_wall(self, left_right):
@@ -441,6 +449,7 @@ class Ball(pg.sprite.Sprite):
         sound.sfx_lib.get('hit_brick').play()
 
     def update(self, player, bricks, bombs):
+        self.tail.append((self.rect.centerx, self.rect.centery))
         # x and y are used for storing floats so finer movement is possible
         self.x += self.velocity[0]
         self.y += self.velocity[1]
@@ -471,7 +480,7 @@ class Player(pg.sprite.Sprite):
         super().__init__()
         self.length = length
         self.speed = speed
-        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle.png'))
+        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle.png')).convert()
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = 630
