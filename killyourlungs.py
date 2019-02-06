@@ -18,7 +18,7 @@ bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
 font_16 = None
 font_24 = None
-stages = ['0', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB']
+stages = ['HEALTHY', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB']
 score = 0
 time_passed = 0
 
@@ -77,8 +77,10 @@ class GameScene(Scene):
         stage_pos = stage_text.get_rect()
         stage_pos.midtop = (screen.get_width() / 2, 8)
         screen.blit(stage_text, stage_pos)
-        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
-        screen.blit(lives_text, (screen.get_width() - 150, 8))
+        lives_text = font_16.render(str(self.lives), True, config.TEXT_COLOR)
+        lives_pos = lives_text.get_rect()
+        lives_pos.topright = (screen.get_width() - 8, 8)
+        screen.blit(lives_text, lives_pos)
         score_text = font_16.render(str(score), True, config.TEXT_COLOR)
         score_pos = score_text.get_rect()
         score_pos.topleft = (8, 8)
@@ -125,7 +127,7 @@ class GameScene(Scene):
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'ingame'))
+                    self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
                 if e.key == pg.K_o:
                     for ball in self.balls:
                         ball.speed_up(0.9)
@@ -181,7 +183,7 @@ class FinishedLevelScene(Scene):
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'ingame'))
+                    self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
                 if e.key == pg.K_SPACE:
                     self.manager.go_to(GameScene(self.next_level))
 
@@ -229,9 +231,10 @@ class LostLifeScene(Scene):
 class TitleScene(Scene):
     def __init__(self):
         super(TitleScene, self).__init__()
-        # change these with titlescreen art later
+        # todo: change these with titlescreen art later
         self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
         self.line2 = font_16.render(config.GAME_SUBTITLE, True, config.TEXT_COLOR)
+        self.cprght = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
 
     def render(self, screen):
         screen.fill(bg_color)
@@ -239,12 +242,11 @@ class TitleScene(Scene):
         pos_line1 = (pos_line1[0], pos_line1[1] - 24)
         pos_line2 = center_to(screen, self.line2)
         pos_line2 = (pos_line2[0], pos_line2[1] + 16)
-        copyright = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
-        pos_copy = copyright.get_rect()
+        pos_copy = self.cprght.get_rect()
         pos_copy.center = (screen.get_rect().centerx, screen.get_rect().height * 0.8)
         screen.blit(self.line1, pos_line1)
         screen.blit(self.line2, pos_line2)
-        screen.blit(copyright, pos_copy)
+        screen.blit(self.cprght, pos_copy)
 
     def update(self):
         pass
@@ -255,7 +257,9 @@ class TitleScene(Scene):
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
                     self.manager.go_to(GameScene(0))
                 if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
+                    self.manager.go_to(OverlayMenuScene(self, 'exit'))
+                if e.key == pg.K_h:
+                    self.manager.go_to(HighscoreScene())
 
 
 class GameOver(Scene):
@@ -359,6 +363,30 @@ class OverlayMenuScene(Scene):
     def go_back(self):
         pg.mixer.music.unpause()
         self.manager.go_to(self.paused_scene)
+
+
+class HighscoreScene(Scene):
+    def __init__(self):
+        super(HighscoreScene, self).__init__()
+        scores.load_highscores()
+        self.lines = []
+        for score in scores.highscores:
+            self.lines.append(font_16.render('{name: <{fill}}    {score}'.format(name=score[0], fill='8', score=score[1]), True, config.TEXT_COLOR))
+        self.title = font_16.render(str_r.get_string('highscores_title'), True, config.TEXT_COLOR)
+
+    def render(self, screen):
+        screen.fill(bg_color)
+        title_pos = self.title.get_rect()
+        title_pos.center = (screen.get_width()/2, screen.get_height()*0.1)
+        screen.blit(self.title, title_pos)
+        for idx, line in enumerate(self.lines):
+            screen.blit(line, (100, 150 + (32 * idx)))
+
+    def update(self):
+        pass
+
+    def handle_events(self, events):
+        pass
 
 
 class SceneManager(object):

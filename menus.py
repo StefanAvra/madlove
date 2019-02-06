@@ -9,16 +9,17 @@ MENU_OFFSET = 24
 
 def get_entries(menu_type):
     entries = {
-        'titlescreen': ['NO', 'YES'],
-        'ingame': ['CONTINUE', 'EXIT']
+        'exit': ['NO', 'YES'],
+        'ingame-exit': ['CONTINUE', 'EXIT'],
+        'titlescreen': ['START', 'HIGHSCORES', 'CREDITS']
     }
     return entries.get(menu_type)
 
 
 def get_title(menu_type):
     titles = {
-        'titlescreen': 'EXIT GAME?',
-        'ingame': 'PAUSE'
+        'exit': 'EXIT GAME?',
+        'ingame-exit': 'PAUSE'
 
     }
     return titles.get(menu_type)
@@ -26,8 +27,9 @@ def get_title(menu_type):
 
 def get_funcs(menu_type):
     funcs = {
-        'titlescreen': ['back', killyourlungs.quit_game],
-        'ingame': ['back', killyourlungs.quit_game]
+        'exit': ['back', killyourlungs.quit_game],
+        'ingame-exit': ['back', killyourlungs.quit_game],
+        'titlescreen': ['start', 'scores', 'credits']
     }
     return funcs.get(menu_type)
 
