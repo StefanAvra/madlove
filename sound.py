@@ -14,7 +14,7 @@ music_lib = {}
 
 print('Loading sounds from {} ...'.format(SFX_DIR))
 for filename in os.listdir(SFX_DIR):
-    if filename.endswith('.ogg'):
+    if filename.endswith('.ogg') or filename.endswith('.wav'):
         print('{} ...'.format(filename))
         name = os.path.splitext(filename)[0]
         sound = pg.mixer.Sound(file=os.path.join(SFX_DIR, filename))

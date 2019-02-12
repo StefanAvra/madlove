@@ -285,10 +285,12 @@ class TitleScene(Scene):
                 if e.key == pg.K_h:
                     self.manager.go_to(HighscoreScene())
                 if e.key == pg.K_DOWN:
+                    sound.sfx_lib.get('menu_nav').play()
                     self.cursor += 1
                     if self.cursor >= len(self.menu):
                         self.cursor = 0
                 if e.key == pg.K_UP:
+                    sound.sfx_lib.get('menu_nav').play()
                     self.cursor -= 1
                     if self.cursor < 0:
                         self.cursor = len(self.menu) - 1
@@ -389,10 +391,12 @@ class OverlayMenuScene(Scene):
                 if e.key == pg.K_ESCAPE:
                     self.go_back()
                 if e.key == pg.K_DOWN:
+                    sound.sfx_lib.get('menu_nav').play()
                     self.cursor += 1
                     if self.cursor >= len(self.menu_entries):
                         self.cursor = 0
                 if e.key == pg.K_UP:
+                    sound.sfx_lib.get('menu_nav').play()
                     self.cursor -= 1
                     if self.cursor < 0:
                         self.cursor = len(self.menu_entries) - 1
