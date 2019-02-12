@@ -307,6 +307,7 @@ class OverlayMenuScene(Scene):
         super(OverlayMenuScene, self).__init__()
         self.menu_entries = menus.get_entries(menu_type)
         self.menu_surf = menus.get_surf(menu_type)
+        self.menu_drop_shadow = pg.Surface((self.menu_surf.get_rect().width, self.menu_surf.get_rect().height))
         self.menu_title = menus.get_title(menu_type)
         self.menu_funcs = menus.get_funcs(menu_type)
         self.paused_scene = paused_scene
@@ -317,8 +318,11 @@ class OverlayMenuScene(Scene):
 
     def render(self, screen):
         self.highlight_clock += time_passed
-        menus.make_outline(self.menu_surf, bg_color)
+        # menus.make_outline(self.menu_surf, bg_color)
+        self.menu_surf.fill(bg_color)
+        self.menu_drop_shadow.fill(config.MENU_SHADOW_COLOR)
         menu_pos = center_to(screen, self.menu_surf)
+        shadow_pos = (menu_pos[0] + 8, menu_pos[1] + 8)
         title = font_16.render(self.menu_title, True, config.TEXT_COLOR)
         title_pos = (x_center_to(self.menu_surf, title), menus.PADDING)
         self.menu_surf.blit(title, title_pos)
@@ -335,6 +339,7 @@ class OverlayMenuScene(Scene):
                          menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_OFFSET)
             self.menu_surf.blit(entry_surf, entry_pos)
 
+        screen.blit(self.menu_drop_shadow, shadow_pos)
         screen.blit(self.menu_surf, menu_pos)
 
     def update(self):

@@ -19,6 +19,7 @@ BACKGROUND_COLOR = "#fabfd0"
 FONT = "assets/font/PressStart2P-Regular.ttf"
 TEXT_COLOR = (0, 0, 0)
 MENU_COLOR_HIGHLIGHT = (255, 255, 255)
+MENU_SHADOW_COLOR = (0, 0, 0)
 BALL_COLOR = (0, 0, 0)
 DEBUG_COLOR = (255, 255, 255)
 ENABLE_BOT = False
