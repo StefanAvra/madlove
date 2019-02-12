@@ -235,8 +235,14 @@ class TitleScene(Scene):
         self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
         self.line2 = font_16.render(config.GAME_SUBTITLE, True, config.TEXT_COLOR)
         self.cprght = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
+        self.menu = menus.get_entries('titlescreen')
+        self.menu_funcs = menus.get_funcs('titlescreen')
+        self.highlight_clock = 0
+        self.highlight_color = config.MENU_COLOR_HIGHLIGHT
+        self.cursor = 0
 
     def render(self, screen):
+        self.highlight_clock += time_passed
         screen.fill(bg_color)
         pos_line1 = center_to(screen, self.line1)
         pos_line1 = (pos_line1[0], pos_line1[1] - 24)
@@ -247,6 +253,17 @@ class TitleScene(Scene):
         screen.blit(self.line1, pos_line1)
         screen.blit(self.line2, pos_line2)
         screen.blit(self.cprght, pos_copy)
+        for idx, entry in enumerate(self.menu):
+            if self.cursor == idx:
+                if self.highlight_clock >= 100:
+                    self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+                    self.highlight_clock = 0
+                color = self.highlight_color
+            else:
+                color = config.TEXT_COLOR
+            entry_surf = font_16.render(entry, True, color)
+            entry_pos = (x_center_to(screen, entry_surf), 400 + idx * menus.MENU_OFFSET)
+            screen.blit(entry_surf, entry_pos)
 
     def update(self):
         pass
@@ -255,11 +272,26 @@ class TitleScene(Scene):
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
-                    self.manager.go_to(GameScene(0))
+                    f = self.menu_funcs[self.cursor]
+                    if f == 'start':
+                        self.manager.go_to(GameScene(0))
+                    elif f == 'scores':
+                        self.manager.go_to(HighscoreScene())
+                    elif f == 'credits':
+                        pass
+
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'exit'))
                 if e.key == pg.K_h:
                     self.manager.go_to(HighscoreScene())
+                if e.key == pg.K_DOWN:
+                    self.cursor += 1
+                    if self.cursor >= len(self.menu):
+                        self.cursor = 0
+                if e.key == pg.K_UP:
+                    self.cursor -= 1
+                    if self.cursor < 0:
+                        self.cursor = len(self.menu) - 1
 
 
 class GameOver(Scene):
@@ -391,7 +423,10 @@ class HighscoreScene(Scene):
         pass
 
     def handle_events(self, events):
-        pass
+        for e in events:
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_ESCAPE:
+                    self.manager.go_to(TitleScene())
 
 
 class SceneManager(object):
