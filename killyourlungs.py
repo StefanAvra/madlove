@@ -52,6 +52,7 @@ class GameScene(Scene):
         self.bombs = pg.sprite.Group()
         self.level_data = levels.Level(level_no)
         self.notif_stack = []
+        self.timer = 0
 
         tile_offset_y = 0
         for line in self.level_data.bricks:
@@ -63,7 +64,6 @@ class GameScene(Scene):
                 tile_offset_x += levels.TILE[0]
             tile_offset_y += levels.TILE[1]
         self.total_bricks = len(self.bricks)
-        print('Level data for Level {}:\n{}'.format(self.level_data.no, self.level_data.bricks))
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
@@ -73,18 +73,8 @@ class GameScene(Scene):
     def render(self, screen):
         global score
         screen.fill(bg_color)
-        stage_text = font_16.render(stages[self.current_stage], True, config.TEXT_COLOR)
-        stage_pos = stage_text.get_rect()
-        stage_pos.midtop = (screen.get_width() / 2, 8)
-        screen.blit(stage_text, stage_pos)
-        lives_text = font_16.render(str(self.lives), True, config.TEXT_COLOR)
-        lives_pos = lives_text.get_rect()
-        lives_pos.topright = (screen.get_width() - 8, 8)
-        screen.blit(lives_text, lives_pos)
-        score_text = font_16.render(str(score), True, config.TEXT_COLOR)
-        score_pos = score_text.get_rect()
-        score_pos.topleft = (8, 8)
-        screen.blit(score_text, score_pos)
+
+        render_hud(screen, str(score), stages[self.current_stage], str(self.lives))
 
         self.all_sprites.draw(screen)
 
@@ -102,6 +92,7 @@ class GameScene(Scene):
             screen.blit(velocity, (40, 0))
 
     def update(self):
+        self.timer += time_passed
         pressed = pg.key.get_pressed()
         up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
         if config.ENABLE_BOT:
@@ -161,16 +152,20 @@ class FinishedLevelScene(Scene):
 
     def render(self, screen):
         screen.fill(bg_color)
-        stage_text = font_16.render(stages[self.current_stage], True, config.TEXT_COLOR)
-        stage_pos = stage_text.get_rect()
-        stage_pos.midtop = (screen.get_width() / 2, 8)
-        screen.blit(stage_text, stage_pos)
-        lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
-        screen.blit(lives_text, (screen.get_width() - 150, 8))
-        score_text = font_16.render(str(score), True, config.TEXT_COLOR)
-        score_pos = score_text.get_rect()
-        score_pos.topleft = (8, 8)
-        screen.blit(score_text, score_pos)
+
+        # stage_text = font_16.render(stages[self.current_stage], True, config.TEXT_COLOR)
+        # stage_pos = stage_text.get_rect()
+        # stage_pos.midtop = (screen.get_width() / 2, 8)
+        # screen.blit(stage_text, stage_pos)
+        # lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
+        # screen.blit(lives_text, (screen.get_width() - 150, 8))
+        # score_text = font_16.render(str(score), True, config.TEXT_COLOR)
+        # score_pos = score_text.get_rect()
+        # score_pos.topleft = (8, 8)
+        # screen.blit(score_text, score_pos)
+
+        render_hud(screen, str(score), stages[self.current_stage], str(self.lives))
+
         finished_text = font_16.render(str_r.get_string('finished'), True, config.TEXT_COLOR)
         finished_pos = finished_text.get_rect()
         finished_pos.center = screen.get_rect().center
@@ -207,7 +202,7 @@ class LostLifeScene(Scene):
             for idx, line in enumerate(lost_text):
                 lost_text_surfs = font_16.render(line, True, config.TEXT_COLOR)
                 lost_rect = lost_text_surfs.get_rect()
-                lost_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx*20)
+                lost_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx * menus.PADDING)
                 screen.blit(lost_text_surfs, lost_rect)
 
     def update(self):
@@ -320,7 +315,7 @@ class GameOver(Scene):
             over_text_surf = font_16.render(line, True, config.TEXT_COLOR)
 
             over_rect = over_text_surf.get_rect()
-            over_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + idx*20)
+            over_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + idx * menus.PADDING)
             screen.blit(over_text_surf, over_rect)
 
     def update(self):
@@ -333,7 +328,7 @@ class GameOver(Scene):
                     sound.sfx_lib.get('game_over').stop()
                     self.manager.go_to(TitleScene())
                 if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'titlescreen'))
+                    self.manager.go_to(OverlayMenuScene(self, 'exit'))
 
 
 class OverlayMenuScene(Scene):
@@ -603,6 +598,21 @@ class Brick(pg.sprite.Sprite):
 
     def update(self):
         self.image.fill(self.color[self.health-1])
+
+
+def render_hud(screen, score, stage, lives):
+    stage_text = font_16.render(stage, True, config.TEXT_COLOR)
+    stage_pos = stage_text.get_rect()
+    stage_pos.midtop = (screen.get_width() / 2, 8)
+    screen.blit(stage_text, stage_pos)
+    lives_text = font_16.render(str(lives), True, config.TEXT_COLOR)
+    lives_pos = lives_text.get_rect()
+    lives_pos.topright = (screen.get_width() - 8, 8)
+    screen.blit(lives_text, lives_pos)
+    score_text = font_16.render(str(score), True, config.TEXT_COLOR)
+    score_pos = score_text.get_rect()
+    score_pos.topleft = (8, 8)
+    screen.blit(score_text, score_pos)
 
 
 def center_to(center_surface, surface):
