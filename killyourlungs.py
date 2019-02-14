@@ -47,7 +47,7 @@ class GameScene(Scene):
         self.lives = 3
         self.player = Player()
         self.balls = pg.sprite.Group()
-        self.balls.add(Ball())
+        # self.balls.add(Ball())
         self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
         self.level_data = levels.Level(level_no)
@@ -68,7 +68,8 @@ class GameScene(Scene):
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
         pg.mixer.music.set_volume(0.5)
-        pg.mixer.music.play(-1)
+        # pg.mixer.music.play(-1)
+        self.reset_round()
 
     def render(self, screen):
         global score
@@ -138,6 +139,9 @@ class GameScene(Scene):
                 if e.key == pg.K_f:
                     config.SHOW_FPS = not config.SHOW_FPS
                     config.SHOW_VELOCITY = not config.SHOW_VELOCITY
+                if e.key == pg.K_SPACE:
+                    for ball in self.balls:
+                        ball.sticky = False
 
 
 class FinishedLevelScene(Scene):
@@ -438,7 +442,7 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, pos_x=240, pos_y=550, velocity=(2, -4), size=7):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(2, -4), size=7, sticky=True):
         super().__init__()
         self.velocity = velocity
         self.x = pos_x
@@ -456,6 +460,7 @@ class Ball(pg.sprite.Sprite):
         self.last_bounces = collections.deque([], 18)
         self.last_bounce_times = collections.deque([], 3)
         self.tail = collections.deque([], 10)
+        self.sticky = sticky
 
     def check_collision(self, rect):
         # intended to be called only after collision detected!
@@ -535,6 +540,12 @@ class Ball(pg.sprite.Sprite):
         sound.sfx_lib.get('hit_brick').play()
 
     def update(self, player, bricks, bombs):
+        if self.sticky:
+            self.rect.x = player.rect.centerx
+            self.rect.bottom = player.rect.top
+            self.x = self.rect.x
+            self.y = self.rect.y
+            return
         self.tail.append((self.rect.centerx, self.rect.centery))
         # x and y are used for storing floats so finer movement is possible
         self.x += self.velocity[0]

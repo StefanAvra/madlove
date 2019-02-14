@@ -16,6 +16,9 @@ def play(player, balls):
     trigger_range_offset = numpy.interp(ball_to_follow.rect.y, [0, 620], [400, 0])
     trigger_range = (player.rect.centerx - trigger_range_offset/2, player.rect.centerx + trigger_range_offset/2)
 
+    for ball in balls:
+        ball.sticky = False
+
     if not trigger_range[0] < ball_to_follow.rect.centerx < trigger_range[1]:
         offset = numpy.interp(noise.pnoise1(_step), [0, 1],
                               [-player.rect.width * inaccuracy, player.rect.width * inaccuracy])
