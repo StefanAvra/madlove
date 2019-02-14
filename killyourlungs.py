@@ -193,6 +193,12 @@ class LostLifeScene(Scene):
         self.game_state = game_state
         self.game_state.lives -= 1
         self.game_over = False
+        self.lost_text = str_r.get_string('lost_life').splitlines()
+        text_surf_x, text_surf_y = menus.PADDING * 2, menus.PADDING * 2
+        text_surf_y += menus.MENU_LINE_OFFSET * len(self.lost_text) - menus.MENU_LINE_OFFSET / 2
+        text_surf_x += 16 * len(max(self.lost_text, key=len))
+        self.text_bg_surf = pg.Surface((text_surf_x, text_surf_y))
+        self.text_bg_shadow = pg.Surface((self.text_bg_surf.get_rect().width, self.text_bg_surf.get_rect().height))
         pg.mixer.music.stop()
 
         if self.game_state.lives <= 0:
@@ -202,12 +208,22 @@ class LostLifeScene(Scene):
 
     def render(self, screen):
         if not self.game_over:
-            lost_text = str_r.get_string('lost_life').splitlines()
-            for idx, line in enumerate(lost_text):
-                lost_text_surfs = font_16.render(line, True, config.TEXT_COLOR)
-                lost_rect = lost_text_surfs.get_rect()
-                lost_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx * menus.PADDING)
-                screen.blit(lost_text_surfs, lost_rect)
+            self.text_bg_surf.fill(bg_color)
+            self.text_bg_shadow.fill(config.MENU_SHADOW_COLOR)
+            for idx, line in enumerate(self.lost_text):
+                lost_line_surf = font_16.render(line, True, config.TEXT_COLOR)
+                lost_line_pos = lost_line_surf.get_rect()
+                lost_line_pos.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx * menus.PADDING)
+                lost_line_pos = (x_center_to(self.text_bg_surf, lost_line_surf),
+                                 menus.PADDING + idx * menus.MENU_LINE_OFFSET)
+                self.text_bg_surf.blit(lost_line_surf, lost_line_pos)
+
+            text_bg_pos = center_to(screen, self.text_bg_surf)
+            text_bg_shadow_pos = (text_bg_pos[0] + config.MENU_SHADOW_OFFSET,
+                                  text_bg_pos[1] + config.MENU_SHADOW_OFFSET)
+
+            screen.blit(self.text_bg_shadow, text_bg_shadow_pos)
+            screen.blit(self.text_bg_surf, text_bg_pos)
 
     def update(self):
         if self.game_over:
@@ -261,7 +277,7 @@ class TitleScene(Scene):
             else:
                 color = config.TEXT_COLOR
             entry_surf = font_16.render(entry, True, color)
-            entry_pos = (x_center_to(screen, entry_surf), 400 + idx * menus.MENU_OFFSET)
+            entry_pos = (x_center_to(screen, entry_surf), 400 + idx * menus.MENU_LINE_OFFSET)
             screen.blit(entry_surf, entry_pos)
 
     def update(self):
@@ -355,7 +371,7 @@ class OverlayMenuScene(Scene):
         self.menu_surf.fill(bg_color)
         self.menu_drop_shadow.fill(config.MENU_SHADOW_COLOR)
         menu_pos = center_to(screen, self.menu_surf)
-        shadow_pos = (menu_pos[0] + 8, menu_pos[1] + 8)
+        shadow_pos = (menu_pos[0] + config.MENU_SHADOW_OFFSET, menu_pos[1] + config.MENU_SHADOW_OFFSET)
         title = font_16.render(self.menu_title, True, config.TEXT_COLOR)
         title_pos = (x_center_to(self.menu_surf, title), menus.PADDING)
         self.menu_surf.blit(title, title_pos)
@@ -369,7 +385,7 @@ class OverlayMenuScene(Scene):
                 color = config.TEXT_COLOR
             entry_surf = font_16.render(entry, True, color)
             entry_pos = (x_center_to(self.menu_surf, entry_surf),
-                         menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_OFFSET)
+                         menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_LINE_OFFSET)
             self.menu_surf.blit(entry_surf, entry_pos)
 
         screen.blit(self.menu_drop_shadow, shadow_pos)

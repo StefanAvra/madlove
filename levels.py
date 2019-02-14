@@ -29,7 +29,7 @@ _levels = {
                     '          b    ',
                     ' bb  bb b   bb '],
     },
-    1: {
+    0: {
         'bricks': ['               ',
                    '               ',
                    '     bbbbbb    ',
@@ -56,7 +56,7 @@ _levels = {
                    ' bbbb     bb   ',
                    '      b        '],
     },
-    0: {
+    1: {
         'bricks': ['               ',
                    '               ',
                    '               ',

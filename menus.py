@@ -4,7 +4,7 @@ import killyourlungs
 
 PADDING = 24
 HEADER_SIZE = 40
-MENU_OFFSET = 24
+MENU_LINE_OFFSET = 24
 
 
 def get_entries(menu_type):
@@ -37,7 +37,7 @@ def get_funcs(menu_type):
 def get_surf(menu_type):
     x, y = PADDING * 2, PADDING * 2
     y += HEADER_SIZE
-    y += MENU_OFFSET * len(get_entries(menu_type)) - MENU_OFFSET / 2
+    y += MENU_LINE_OFFSET * len(get_entries(menu_type)) - MENU_LINE_OFFSET / 2
     lines = get_entries(menu_type)
     lines.append(get_title(menu_type))
     x += 16 * len(max(lines, key=len))
