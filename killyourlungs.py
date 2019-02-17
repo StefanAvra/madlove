@@ -429,6 +429,9 @@ class HighscoreScene(Scene):
         for score in scores.highscores:
             self.lines.append(font_16.render('{name: <{fill}}    {score}'.format(name=score[0], fill='8', score=score[1]), True, config.TEXT_COLOR))
         self.title = font_16.render(str_r.get_string('highscores_title'), True, config.TEXT_COLOR)
+        self.fadein_step = 255
+        self.fadeout_step = 0
+        self.leave = False
 
     def render(self, screen):
         screen.fill(bg_color)
@@ -437,15 +440,21 @@ class HighscoreScene(Scene):
         screen.blit(self.title, title_pos)
         for idx, line in enumerate(self.lines):
             screen.blit(line, (100, 150 + (32 * idx)))
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
-        pass
+        if self.leave and self.fadeout_step <= 0:
+            self.manager.go_to(TitleScene())
 
     def handle_events(self, events):
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(TitleScene())
+                    self.fadeout_step = 255
+                    self.leave = True
 
 
 class SceneManager(object):
@@ -627,7 +636,25 @@ class Brick(pg.sprite.Sprite):
         self.image.fill(self.color[self.health-1])
 
 
-def render_hud(screen, score, stage, lives):
+def render_fading(screen, fade_step, invert_fading=0):
+    # fade screen
+    if invert_fading:
+        alpha = abs(fade_step - 254)
+    else:
+        alpha = fade_step
+    fading_surf = pg.Surface(screen.get_size(), pg.SRCALPHA)
+    fade_color = bg_color
+    print(alpha)
+    fade_color.a = alpha
+    fading_surf.fill(fade_color)
+    screen.blit(fading_surf, (0, 0))
+    # decrease fade_step until 0
+    fade_step -= 10
+
+    return fade_step
+
+
+def render_hud(screen, hud_score, stage, lives):
     stage_text = font_16.render(stage, True, config.TEXT_COLOR)
     stage_pos = stage_text.get_rect()
     stage_pos.midtop = (screen.get_width() / 2, 8)
@@ -636,7 +663,7 @@ def render_hud(screen, score, stage, lives):
     lives_pos = lives_text.get_rect()
     lives_pos.topright = (screen.get_width() - 8, 8)
     screen.blit(lives_text, lives_pos)
-    score_text = font_16.render(str(score), True, config.TEXT_COLOR)
+    score_text = font_16.render(str(hud_score), True, config.TEXT_COLOR)
     score_pos = score_text.get_rect()
     score_pos.topleft = (8, 8)
     screen.blit(score_text, score_pos)
