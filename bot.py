@@ -1,5 +1,6 @@
 import noise
 import numpy
+import random
 
 inaccuracy = 0.4
 _step = 0.0
@@ -17,7 +18,8 @@ def play(player, balls):
     trigger_range = (player.rect.centerx - trigger_range_offset/2, player.rect.centerx + trigger_range_offset/2)
 
     for ball in balls:
-        ball.sticky = False
+        if ball.sticky and random.randint(0, 50) == 11:
+            ball.sticky = False
 
     if not trigger_range[0] < ball_to_follow.rect.centerx < trigger_range[1]:
         offset = numpy.interp(noise.pnoise1(_step), [0, 1],
