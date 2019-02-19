@@ -13,6 +13,7 @@ import string_resource as str_r
 import levels
 import bot
 import scores
+import controls as ctrls
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
@@ -94,8 +95,11 @@ class GameScene(Scene):
 
     def update(self):
         self.timer += time_passed
-        pressed = pg.key.get_pressed()
-        up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
+        # pressed = pg.key.get_pressed()
+        # up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
+
+        up, left, right, down = [ctrls.get_buttons()[key] for key in (ctrls.UP, ctrls.LEFT, ctrls.RIGHT, ctrls.DOWN)]
+
         if config.ENABLE_BOT:
             left, right = bot.play(self.player, self.balls)
         for ball in self.balls:

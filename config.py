@@ -15,6 +15,8 @@ FLAGS = 0
 # pg.RESIZABLE    display window should be sizeable
 # pg.NOFRAME      display window will have no border or controls
 
+USE_JOYSTICK = True
+
 BACKGROUND_COLOR = "#fabfd0"
 FONT = "assets/font/PressStart2P-Regular.ttf"
 TEXT_COLOR = (0, 0, 0)
