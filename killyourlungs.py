@@ -55,15 +55,15 @@ class GameScene(Scene):
         self.notif_stack = []
         self.timer = 0
 
-        tile_offset_y = 0
+        tile_offset_y = 10
         for line in self.level_data.bricks:
-            tile_offset_x = 0
+            tile_offset_x = 2
             for tile in line:
                 if tile == 'b':
                     brick = Brick(tile_offset_x, tile_offset_y)
                     self.bricks.add(brick)
-                tile_offset_x += levels.TILE[0]
-            tile_offset_y += levels.TILE[1]
+                tile_offset_x += levels.TILE[0] + levels.TILE_PADDING
+            tile_offset_y += levels.TILE[1] + levels.TILE_PADDING
         self.total_bricks = len(self.bricks)
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
@@ -114,7 +114,7 @@ class GameScene(Scene):
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages), 0]))
 
     def reset_round(self):
-        self.balls.add(Ball())
+        self.balls.add(Ball(velocity=(random.randint(-3, 3), -4)))
         self.all_sprites.add(self.balls)
         self.player.rect.centerx = pg.display.get_surface().get_rect().centerx
         pg.mixer.music.play(-1)
@@ -471,7 +471,7 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, pos_x=240, pos_y=550, velocity=(2, -4), size=7, sticky=True):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(random.randint(-3, 3), -4), size=7, sticky=True):
         super().__init__()
         self.velocity = velocity
         self.x = pos_x
