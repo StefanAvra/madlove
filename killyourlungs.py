@@ -293,7 +293,7 @@ class TitleScene(Scene):
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
                     f = self.menu_funcs[self.cursor]
                     if f == 'start':
-                        self.manager.go_to(GameScene(0))
+                        self.manager.go_to(GameScene(3))
                     elif f == 'scores':
                         self.manager.go_to(HighscoreScene())
                     elif f == 'credits':
