@@ -390,7 +390,7 @@ _levels = {
                    '                 ',
                    '                 '],
         'name': 'The Heart'
-    },
+    }
 }
 
 

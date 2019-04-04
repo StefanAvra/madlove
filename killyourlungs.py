@@ -52,7 +52,8 @@ class GameScene(Scene):
         self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
         self.level_data = levels.Level(level_no)
-        self.notif_stack = []
+        self.notif_stack = [Message('metastasis unlocked'), Message('bla bla')]
+        self.notification = None
         self.timer = 0
 
         tile_offset_y = 10
@@ -78,13 +79,13 @@ class GameScene(Scene):
 
         render_hud(screen, str(score), stages[self.current_stage], str(self.lives))
 
-        self.all_sprites.draw(screen)
+        if self.notification is not None:
+            text = font_16.render(self.notification.msg, True, self.notification.color)
+            pos = text.get_rect()
+            pos.center = (screen.get_width() / 2, 550)
+            screen.blit(text, pos)
 
-        # for ball in self.balls:
-        #     if len(ball.tail) > 2:
-        #         for idx, element in enumerate(ball.tail):
-        #             pg.draw.circle(ball.tail_surfs[idx], (0, 0, 0, 100), element, int(ball.rect.width/2))
-        #             screen.blit(ball.tail_surfs[idx], element)
+        self.all_sprites.draw(screen)
 
         if config.SHOW_VELOCITY:
             # first ball only
@@ -112,6 +113,15 @@ class GameScene(Scene):
             self.manager.go_to(FinishedLevelScene(self))
 
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages), 0]))
+
+        if len(self.notif_stack) > 0 and self.notification is None:
+            self.notification = self.notif_stack.pop(0)
+
+        if self.notification is not None:
+            if self.notification.timer <= 0:
+                self.notification = None
+            else:
+                self.notification.update()
 
     def reset_round(self):
         self.balls.add(Ball(velocity=(random.randint(-3, 3), -4)))
@@ -146,6 +156,8 @@ class GameScene(Scene):
                 if e.key == pg.K_SPACE:
                     for ball in self.balls:
                         ball.sticky = False
+                if e.key == pg.K_n:
+                    self.bricks.empty()
 
 
 class FinishedLevelScene(Scene):
@@ -293,7 +305,7 @@ class TitleScene(Scene):
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
                     f = self.menu_funcs[self.cursor]
                     if f == 'start':
-                        self.manager.go_to(GameScene(3))
+                        self.manager.go_to(GameScene(0))
                     elif f == 'scores':
                         self.manager.go_to(HighscoreScene())
                     elif f == 'credits':
@@ -628,8 +640,8 @@ class Player(pg.sprite.Sprite):
 class Brick(pg.sprite.Sprite):
     def __init__(self, x=0, y=0, color=(255, 0, 0), health=2):
         super().__init__()
-        self.image = pg.Surface(levels.TILE)
-        self.image.fill(color)
+        self.image = pg.image.load(os.path.join('assets/graphics', 'brick_red.png')).convert()
+        self.max_health = health
         self.health = health
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -637,7 +649,25 @@ class Brick(pg.sprite.Sprite):
         self.color = [(0, 0, 0), color]
 
     def update(self):
-        self.image.fill(self.color[self.health-1])
+        darken_factor = numpy.interp(self.health, [1, self.max_health], [1, 0])
+        darker = pg.Surface(self.image.get_size()).convert_alpha()
+        darker.fill((0, 0, 0, darken_factor * 255))
+        self.image.blit(darker, (0, 0))
+
+
+class Message:
+    def __init__(self, msg):
+        self.timer = 2000
+        self.color = config.TEXT_COLOR
+        self.msg = msg.upper()
+        self.highlight_clock = 0
+
+    def update(self):
+        self.timer -= time_passed
+        self.highlight_clock += time_passed
+        if self.highlight_clock >= 50:
+            self.color = tuple(numpy.subtract((255, 255, 255), self.color))
+            self.highlight_clock = 0
 
 
 def render_fading(screen, fade_step, invert_fading=0):
