@@ -200,7 +200,9 @@ class FinishedLevelScene(Scene):
         # score_pos.topleft = (8, 8)
         # screen.blit(score_text, score_pos)
 
-        render_hud(screen, str(score), stages[self.current_stage], str(self.lives), 4000, 0)
+        # render_hud(screen, str(score), stages[self.current_stage], str(self.lives), 4000, 0)
+
+        # todo: show time bonus, reached cancer stage, score
 
         finished_text = font_16.render(str_r.get_string('finished'), True, config.TEXT_COLOR)
         finished_pos = finished_text.get_rect()
@@ -466,6 +468,9 @@ class HighscoreScene(Scene):
         self.leave = False
 
     def render(self, screen):
+
+        # todo: place on the left, names left aligned, score right aligned, labels for name and score
+
         screen.fill(bg_color)
         title_pos = self.title.get_rect()
         title_pos.center = (screen.get_width()/2, screen.get_height()*0.1)
@@ -629,14 +634,14 @@ class Ball(pg.sprite.Sprite):
 
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, x=200, length=45, speed=7):
+    def __init__(self, x=200, p_type='m', speed=7):
         super().__init__()
-        self.length = length
+        self.type = p_type
         self.speed = speed
-        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle.png')).convert()
+        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle_{}.png'.format(self.type))).convert()
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = 630
+        self.rect.y = config.PLAYER_Y
         self.max_x = pg.display.get_surface().get_width()
 
     def update(self, left, right, up):
@@ -650,6 +655,14 @@ class Player(pg.sprite.Sprite):
             self.rect.x += self.speed
             if self.rect.x + self.rect.width > self.max_x:
                 self.rect.x = self.max_x - self.rect.width
+
+    def update_length(self, p_type):
+        self.type = p_type
+        temp_rect = self.rect
+        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle_{}.png'.format(self.type))).convert()
+        self.rect = self.image.get_rect()
+        self.rect.centerx = temp_rect.centerx
+        self.rect.y = 630
 
 
 class Brick(pg.sprite.Sprite):

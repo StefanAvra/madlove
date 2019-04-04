@@ -29,3 +29,4 @@ ENABLE_BOT = False
 SHOW_FPS = True
 SHOW_VELOCITY = True
 HIGHSCORE_FILE = './scores'
+PLAYER_Y = 625
