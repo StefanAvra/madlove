@@ -5,7 +5,8 @@ import pickle
 highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333), ('Granger', 500), ('Grawp', 44), ('Umbridge', 77), ('Rosmerta', 555),
               ('Krum', 2111), ('Elphias', 8)]
 
-multiplier = 1
+__multiplier = 0
+__decrease_timer = 0
 
 
 def load_highscores():
@@ -42,5 +43,31 @@ def increase_score(reason='hit_brick'):
         add = 15
     elif reason == 'powerup':
         add = 85
-    return add * multiplier
+    print('{} * {}'.format(add, __multiplier))
+    return add * max(__multiplier, 1)
 
+
+def increase_multiplier():
+    global __multiplier
+    global __decrease_timer
+    __multiplier += 1
+    __decrease_timer = 0
+
+
+def decrease_multiplier(time_passed):
+    # call this in game loop
+    global __decrease_timer
+    global __multiplier
+    if __multiplier > 0:
+        __decrease_timer += time_passed
+        if __decrease_timer > 1000:
+            __decrease_timer = 0
+            __multiplier = 0
+
+
+def is_combo():
+    return __multiplier >= 2
+
+
+def get_combo():
+    return max(__multiplier, 1)

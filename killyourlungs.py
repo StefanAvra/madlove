@@ -52,8 +52,11 @@ class GameScene(Scene):
         self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
         self.level_data = levels.Level(level_no)
-        self.notif_stack = [Message('metastasis unlocked'), Message('bla bla')]
+        self.notif_stack = []
         self.notification = None
+        self.timer = 0
+        self.hud_highlight_clock = 0
+        self.hud_highlight_combo = 0
         self.timer = 0
 
         tile_offset_y = 10
@@ -77,7 +80,8 @@ class GameScene(Scene):
         global score
         screen.fill(bg_color)
 
-        render_hud(screen, str(score), stages[self.current_stage], str(self.lives))
+        render_hud(screen, str(score), stages[self.current_stage], str(self.lives), self.timer,
+                   self.hud_highlight_combo)
 
         if self.notification is not None:
             text = font_16.render(self.notification.msg, True, self.notification.color)
@@ -122,6 +126,18 @@ class GameScene(Scene):
                 self.notification = None
             else:
                 self.notification.update()
+
+        scores.decrease_multiplier(time_passed)
+
+        if scores.is_combo():
+            self.hud_highlight_clock += time_passed
+            if self.hud_highlight_clock >= 50:
+                self.hud_highlight_clock = 0
+                self.hud_highlight_combo += 1  # 1 for black, 2 for white combo text
+                if self.hud_highlight_combo > 2:
+                    self.hud_highlight_combo = 1
+        else:
+            self.hud_highlight_combo = 0
 
     def reset_round(self):
         self.balls.add(Ball(velocity=(random.randint(-3, 3), -4)))
@@ -184,7 +200,7 @@ class FinishedLevelScene(Scene):
         # score_pos.topleft = (8, 8)
         # screen.blit(score_text, score_pos)
 
-        render_hud(screen, str(score), stages[self.current_stage], str(self.lives))
+        render_hud(screen, str(score), stages[self.current_stage], str(self.lives), 4000, 0)
 
         finished_text = font_16.render(str_r.get_string('finished'), True, config.TEXT_COLOR)
         finished_pos = finished_text.get_rect()
@@ -563,8 +579,6 @@ class Ball(pg.sprite.Sprite):
             print('giving that ball a spin...')
             self.velocity = (random.randint(-4, 4), self.velocity[1])
 
-        # check for combo here
-
     def hit_brick(self, brick):
         global score
         self.check_collision(brick.rect)
@@ -575,6 +589,7 @@ class Ball(pg.sprite.Sprite):
         brick.health -= 1
         brick.update()
         score += scores.increase_score()
+        scores.increase_multiplier()
         if brick.health <= 0:
             brick.kill()
             score += scores.increase_score('killed_brick')
@@ -688,16 +703,31 @@ def render_fading(screen, fade_step, invert_fading=0):
     return fade_step
 
 
-def render_hud(screen, hud_score, stage, lives):
+def render_hud(screen, hud_score, stage, lives, timer, highlight_combo=0):
+    if timer <= 2000:
+        # blink labels at beginning of game
+        pass
+
+    if highlight_combo:
+        # 1 for black, 2 for white
+        if highlight_combo > 1:
+            color = (0, 0, 0)
+        else:
+            color = (255, 255, 255)
+        score_text = font_16.render(str_r.get_string('combo').format(scores.get_combo()), True, color)
+    else:
+        score_text = font_16.render(str(hud_score), True, config.TEXT_COLOR)
+
     stage_text = font_16.render(stage, True, config.TEXT_COLOR)
     stage_pos = stage_text.get_rect()
     stage_pos.midtop = (screen.get_width() / 2, 8)
     screen.blit(stage_text, stage_pos)
+
     lives_text = font_16.render(str(lives), True, config.TEXT_COLOR)
     lives_pos = lives_text.get_rect()
     lives_pos.topright = (screen.get_width() - 8, 8)
     screen.blit(lives_text, lives_pos)
-    score_text = font_16.render(str(hud_score), True, config.TEXT_COLOR)
+
     score_pos = score_text.get_rect()
     score_pos.topleft = (8, 8)
     screen.blit(score_text, score_pos)

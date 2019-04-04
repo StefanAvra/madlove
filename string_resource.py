@@ -9,7 +9,7 @@ __strings = {
     'metastasis': 'METASTASIS UNLOCKED',
     'finished': 'YOU KILLED THESE LUNGS!',
     'copyright': '© 2019 GURKIMAN, AVRA',
-    'combo': 'COMBO BONUS X{}',
+    'combo': 'COMBO X{}',
     'highscores_title': 'HIGHSCORES'
 }
 

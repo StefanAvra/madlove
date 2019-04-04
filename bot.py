@@ -24,7 +24,7 @@ def play(player, balls):
     if not trigger_range[0] < ball_to_follow.rect.centerx < trigger_range[1]:
         offset = numpy.interp(noise.pnoise1(_step), [0, 1],
                               [-player.rect.width * inaccuracy, player.rect.width * inaccuracy])
-        print(offset)
+        # print(offset)
         if player.rect.centerx > ball_to_follow.rect.centerx + offset:
             left = True
         else:
