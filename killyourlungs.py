@@ -688,7 +688,28 @@ class Brick(pg.sprite.Sprite):
         self.image.blit(self.dark, (0, 0))
 
 
+# class Ashtray(pg.sprite.Sprite):
+#     # 208 x 162
+#     def __init__(self):
+#         super().__init__()
+#         self.images = []
+#         for
+#         self.images.append()
 
+class SpriteSheet:
+    def __init__(self, filename, size, image_count, alpha=False):
+        if alpha:
+            self.sheet = pg.image.load(os.path.join('assets', 'graphics', '{}.png'.format(filename))).convert_alpha()
+        else:
+            self.sheet = pg.image.load(os.path.join('assets', 'graphics', '{}.png'.format(filename))).convert()
+        self.sprites = []
+        for x in range(image_count):
+            self.sprites.append(self.load_image(size))
+
+    def load_image(self, size):
+        image = pg.Surface(size).convert()
+        image.blit(self.sheet, (0, 0), image.get_rect())
+        return image
 
 
 class Message:
