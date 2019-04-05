@@ -63,8 +63,8 @@ class GameScene(Scene):
         for line in self.level_data.bricks:
             tile_offset_x = 2
             for tile in line:
-                if tile == 'b':
-                    brick = Brick(tile_offset_x, tile_offset_y)
+                if tile in 'bwr':
+                    brick = Brick(tile_offset_x, tile_offset_y, brick_type=tile)
                     self.bricks.add(brick)
                 tile_offset_x += levels.TILE[0] + levels.TILE_PADDING
             tile_offset_y += levels.TILE[1] + levels.TILE_PADDING
@@ -634,7 +634,7 @@ class Ball(pg.sprite.Sprite):
 
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, x=200, p_type='m', speed=7):
+    def __init__(self, x=200, p_type='s', speed=7):
         super().__init__()
         self.type = p_type
         self.speed = speed
@@ -666,21 +666,29 @@ class Player(pg.sprite.Sprite):
 
 
 class Brick(pg.sprite.Sprite):
-    def __init__(self, x=0, y=0, color=(255, 0, 0), health=2):
+    def __init__(self, x=0, y=0, color=(255, 0, 0), health=2, brick_type='b'):
+        types = {'r': 'red', 'w': 'white', 'b': 'black'}
         super().__init__()
-        self.image = pg.image.load(os.path.join('assets/graphics', 'brick_red.png')).convert()
+        self.image = pg.image.load(os.path.join('assets/graphics', 'brick_{}.png'.format(types[brick_type]))).convert()
+        self.dark = pg.image.load(os.path.join('assets/graphics', 'brick_{}.png'.format(types['b']))).convert()
         self.max_health = health
         self.health = health
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.color = [(0, 0, 0), color]
+        # self.color = [(0, 0, 0), color]
 
     def update(self):
-        darken_factor = numpy.interp(self.health, [1, self.max_health], [1, 0])
-        darker = pg.Surface(self.image.get_size()).convert_alpha()
-        darker.fill((0, 0, 0, darken_factor * 255))
-        self.image.blit(darker, (0, 0))
+        # darken_factor = numpy.interp(self.health, [1, self.max_health], [255, 100])
+        # darker = pg.Surface(self.image.get_size()).convert_alpha()
+        # darker.fill((0, 0, 0, darken_factor * 255))
+        darken_factor = 255
+        self.dark.set_alpha(darken_factor)
+
+        self.image.blit(self.dark, (0, 0))
+
+
+
 
 
 class Message:

@@ -17,7 +17,7 @@ FLAGS = 0
 
 USE_JOYSTICK = True
 
-BACKGROUND_COLOR = "#fabfd0"
+BACKGROUND_COLOR = "#ffb3ce"
 FONT = "assets/font/PressStart2P-Regular.ttf"
 TEXT_COLOR = (0, 0, 0)
 MENU_COLOR_HIGHLIGHT = (255, 255, 255)

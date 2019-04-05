@@ -16,7 +16,7 @@ def play(player, balls):
     left = False
     right = False
     ball_to_follow = balls.sprites()[0]
-    trigger_range_offset = numpy.interp(ball_to_follow.rect.y, [0, config.PLAYER_Y - 5], [400, 0])
+    trigger_range_offset = numpy.interp(ball_to_follow.rect.y, [0, config.PLAYER_Y - 10], [400, 0])
     trigger_range = (player.rect.centerx - trigger_range_offset/2, player.rect.centerx + trigger_range_offset/2)
 
     for ball in balls:
