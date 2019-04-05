@@ -638,7 +638,7 @@ class Player(pg.sprite.Sprite):
         super().__init__()
         self.type = p_type
         self.speed = speed
-        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle_{}.png'.format(self.type))).convert()
+        self.image = pg.image.load(os.path.join('assets', 'graphics', 'paddle_{}.png'.format(self.type))).convert()
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = config.PLAYER_Y
@@ -659,7 +659,7 @@ class Player(pg.sprite.Sprite):
     def update_length(self, p_type):
         self.type = p_type
         temp_rect = self.rect
-        self.image = pg.image.load(os.path.join('assets/graphics', 'paddle_{}.png'.format(self.type))).convert()
+        self.image = pg.image.load(os.path.join('assets', 'graphics', 'paddle_{}.png'.format(self.type))).convert()
         self.rect = self.image.get_rect()
         self.rect.centerx = temp_rect.centerx
         self.rect.y = 630
@@ -669,8 +669,8 @@ class Brick(pg.sprite.Sprite):
     def __init__(self, x=0, y=0, color=(255, 0, 0), health=2, brick_type='b'):
         types = {'r': 'red', 'w': 'white', 'b': 'black'}
         super().__init__()
-        self.image = pg.image.load(os.path.join('assets/graphics', 'brick_{}.png'.format(types[brick_type]))).convert()
-        self.dark = pg.image.load(os.path.join('assets/graphics', 'brick_{}.png'.format(types['b']))).convert()
+        self.image = pg.image.load(os.path.join('assets', 'graphics', 'brick_{}.png'.format(types[brick_type]))).convert()
+        self.dark = pg.image.load(os.path.join('assets', 'graphics', 'brick_{}.png'.format(types['b']))).convert()
         self.max_health = health
         self.health = health
         self.rect = self.image.get_rect()

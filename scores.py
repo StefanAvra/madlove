@@ -34,7 +34,11 @@ def save_highscores():
         pickle.dump(highscores, f)
 
 
-def increase_score(reason='hit_brick'):
+def increase_score(reason='hit_brick', no_combo=False):
+    if no_combo:
+        multi = 1
+    else:
+        multi = max(__multiplier, 1)
     if reason == 'hit_brick':
         add = 10
     elif reason == 'killed_brick':
@@ -43,8 +47,8 @@ def increase_score(reason='hit_brick'):
         add = 15
     elif reason == 'powerup':
         add = 85
-    print('{} * {}'.format(add, __multiplier))
-    return add * max(__multiplier, 1)
+    print('{} * {}'.format(add, multi))
+    return add * multi
 
 
 def increase_multiplier():
