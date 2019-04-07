@@ -766,9 +766,12 @@ def render_hud(screen, hud_score, stage, lives, timer, highlight_combo=0):
     screen.blit(stage_text, stage_pos)
 
     lives_text = font_16.render(str(lives), True, config.TEXT_COLOR)
-    lives_pos = lives_text.get_rect()
-    lives_pos.topright = (screen.get_width() - 8, 8)
-    screen.blit(lives_text, lives_pos)
+    lives__text_pos = lives_text.get_rect()
+    lives__text_pos.topright = (screen.get_width() - 28, 8)
+    screen.blit(lives_text, lives__text_pos)
+
+    pack = pg.image.load(os.path.join('assets', 'graphics', 'pack.png')).convert()
+    screen.blit(pack, (screen.get_width() - 24, 8))
 
     score_pos = score_text.get_rect()
     score_pos.topleft = (8, 8)
