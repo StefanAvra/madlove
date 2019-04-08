@@ -289,6 +289,9 @@ class TitleScene(Scene):
         self.highlight_clock = 0
         self.highlight_color = config.MENU_COLOR_HIGHLIGHT
         self.cursor = 0
+        self.fadein_step = 255
+        self.fadeout_step = 0
+        self.fade_leave_to = False
 
     def render(self, screen):
         self.highlight_clock += time_passed
@@ -314,18 +317,31 @@ class TitleScene(Scene):
             entry_pos = (x_center_to(screen, entry_surf), 400 + idx * menus.MENU_LINE_OFFSET)
             screen.blit(entry_surf, entry_pos)
 
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
+
     def update(self):
-        pass
+        if self.fade_leave_to and self.fadeout_step <= 0:
+            if self.fade_leave_to == 1:
+                self.manager.go_to(GameScene(0))
+            if self.fade_leave_to == 2:
+                self.manager.go_to(HighscoreScene())
+            if self.fade_leave_to == 3:
+                pass
 
     def handle_events(self, events):
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                    self.fadeout_step = 255
                     f = self.menu_funcs[self.cursor]
                     if f == 'start':
-                        self.manager.go_to(GameScene(0))
+                        self.fade_leave_to = 1
                     elif f == 'scores':
-                        self.manager.go_to(HighscoreScene())
+                        self.fade_leave_to = 2
                     elif f == 'credits':
                         pass
 
@@ -471,7 +487,7 @@ class HighscoreScene(Scene):
         self.title = font_16.render(str_r.get_string('highscores_title'), True, config.TEXT_COLOR)
         self.fadein_step = 255
         self.fadeout_step = 0
-        self.leave = False
+        self.fade_leave = False
 
     def render(self, screen):
 
@@ -483,13 +499,15 @@ class HighscoreScene(Scene):
         screen.blit(self.title, title_pos)
         for idx, line in enumerate(self.lines):
             screen.blit(line, (50, 150 + (40 * idx)))
+
+        # fade screen
         if self.fadein_step > 0:
             self.fadein_step = render_fading(screen, self.fadein_step, 0)
         if self.fadeout_step > 0:
             self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
-        if self.leave and self.fadeout_step <= 0:
+        if self.fade_leave and self.fadeout_step <= 0:
             self.manager.go_to(TitleScene())
 
     def handle_events(self, events):
@@ -497,7 +515,7 @@ class HighscoreScene(Scene):
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
                     self.fadeout_step = 255
-                    self.leave = True
+                    self.fade_leave = True
 
 
 class SceneManager(object):
