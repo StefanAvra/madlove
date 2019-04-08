@@ -460,8 +460,14 @@ class HighscoreScene(Scene):
         super(HighscoreScene, self).__init__()
         scores.load_highscores()
         self.lines = []
+        place = 0
         for score in scores.highscores:
-            self.lines.append(font_16.render('{name: <{fill}}    {score}'.format(name=score[0], fill='8', score=score[1]), True, config.TEXT_COLOR))
+            place += 1
+            # new_line = '{name: <{fill}}    {score}'.format(name=score[0], fill='8', score=score[1])
+            new_line = '{:<2}   {:<8} {:>10}'.format(place, score[0], score[1])
+            self.lines.append(
+                font_16.render(new_line,
+                               True, config.TEXT_COLOR))
         self.title = font_16.render(str_r.get_string('highscores_title'), True, config.TEXT_COLOR)
         self.fadein_step = 255
         self.fadeout_step = 0
@@ -473,10 +479,10 @@ class HighscoreScene(Scene):
 
         screen.fill(bg_color)
         title_pos = self.title.get_rect()
-        title_pos.center = (screen.get_width()/2, screen.get_height()*0.1)
+        title_pos.center = (screen.get_width() / 2, screen.get_height() * 0.1)
         screen.blit(self.title, title_pos)
         for idx, line in enumerate(self.lines):
-            screen.blit(line, (100, 150 + (32 * idx)))
+            screen.blit(line, (50, 150 + (40 * idx)))
         if self.fadein_step > 0:
             self.fadein_step = render_fading(screen, self.fadein_step, 0)
         if self.fadeout_step > 0:
