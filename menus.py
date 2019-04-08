@@ -10,7 +10,7 @@ MENU_LINE_OFFSET = 24
 def get_entries(menu_type):
     entries = {
         'exit': ['NO', 'YES'],
-        'ingame-exit': ['CONTINUE', 'EXIT'],
+        'ingame-exit': ['CONTINUE', 'GIVE UP'],
         'titlescreen': ['START', 'HIGHSCORES', 'CREDITS']
     }
     return entries.get(menu_type)
