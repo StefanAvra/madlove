@@ -58,6 +58,9 @@ class GameScene(Scene):
         self.hud_highlight_clock = 0
         self.hud_highlight_combo = 0
         self.timer = 0
+        self.fadein_step = 255
+        self.fadeout_step = 0
+        self.fade_leave_to = False
 
         tile_offset_y = 10
         for line in self.level_data.bricks:
@@ -97,6 +100,12 @@ class GameScene(Scene):
             velocity = font_8.render(str((round(velocity[0], 2),
                                           round(velocity[1], 2))), True, config.DEBUG_COLOR)
             screen.blit(velocity, (40, 0))
+
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
         self.timer += time_passed
@@ -138,6 +147,15 @@ class GameScene(Scene):
                     self.hud_highlight_combo = 1
         else:
             self.hud_highlight_combo = 0
+
+        # fade screen
+        # if self.fade_leave_to and self.fadeout_step <= 0:
+        #     if self.fade_leave_to == 1:
+        #         self.manager.go_to(GameScene(0))
+        #     if self.fade_leave_to == 2:
+        #         self.manager.go_to(HighscoreScene())
+        #     if self.fade_leave_to == 3:
+        #         pass
 
     def reset_round(self):
         self.balls.add(Ball(velocity=(random.randint(-3, 3), -4)))
@@ -520,6 +538,7 @@ class HighscoreScene(Scene):
 
 class SceneManager(object):
     def __init__(self):
+        self.scene = None
         self.go_to(TitleScene())
 
     def go_to(self, scene):

@@ -2,7 +2,8 @@ import config
 import operator
 import pickle
 
-highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333), ('Granger', 500), ('Grawp', 44), ('Umbridge', 77), ('Rosmerta', 555),
+highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333), ('Granger', 500), ('Grawp', 44),
+              ('Umbridge', 77), ('Rosmerta', 555),
               ('Krum', 2111), ('Elphias', 8)]
 
 __multiplier = 0
