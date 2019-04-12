@@ -15,7 +15,6 @@ import bot
 import scores
 import controls as ctrls
 
-pg.mouse.set_visible(False)
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
@@ -882,6 +881,7 @@ def main():
     global time_passed
     pg.init()
     screen = pg.display.set_mode(config.DISPLAY, config.FLAGS, config.DEPTH)
+    pg.mouse.set_visible(False)
     pg.display.set_caption(config.CAPTION)
     clock = pg.time.Clock()
     running = True
