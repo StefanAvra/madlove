@@ -1,3 +1,5 @@
+import pygame as pg
+
 WIDTH = 480
 HEIGHT = 640
 DISPLAY = (WIDTH, HEIGHT)
@@ -6,7 +8,7 @@ GAME_TITLE = "KILL YOUR LUNGS"
 GAME_SUBTITLE = 'THE GAME'
 CAPTION = GAME_TITLE
 FRAMERATE = 60
-FLAGS = 0
+FLAGS = pg.FULLSCREEN
 
 # pg.FULLSCREEN   create a fullscreen display
 # pg.DOUBLEBUF    recommended for HWSURFACE or OPENGL
