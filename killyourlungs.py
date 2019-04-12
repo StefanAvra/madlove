@@ -536,6 +536,35 @@ class HighscoreScene(Scene):
                     self.fade_leave = True
 
 
+class CreditsScene(Scene):
+    def __init__(self):
+        super(CreditsScene, self).__init__()
+
+    def render(self, screen):
+        pass
+
+    def update(self):
+        pass
+
+    def handle_events(self, events):
+        pass
+
+
+class IntroScene(Scene):
+    # should be called inside GameScene() for each new level
+    def __init__(self):
+        super(IntroScene, self).__init__()
+
+    def render(self, screen):
+        pass
+
+    def update(self):
+        pass
+
+    def handle_events(self, events):
+        pass
+
+
 class SceneManager(object):
     def __init__(self):
         self.scene = None
