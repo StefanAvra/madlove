@@ -15,6 +15,8 @@ import bot
 import scores
 import controls as ctrls
 
+pg.mouse.set_visible(False)
+
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
 font_16 = None
