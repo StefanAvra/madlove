@@ -166,6 +166,12 @@ class GameScene(Scene):
 
     def handle_events(self, events):
         for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button == 0:
+                    self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
+                if e.button == 1:
+                    for ball in self.balls:
+                        ball.sticky = False
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
@@ -353,6 +359,30 @@ class TitleScene(Scene):
 
     def handle_events(self, events):
         for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button == 0:
+                    self.fadeout_step = 255
+                    f = self.menu_funcs[self.cursor]
+                    if f == 'start':
+                        self.fade_leave_to = 1
+                    elif f == 'scores':
+                        self.fade_leave_to = 2
+                    elif f == 'credits':
+                        pass
+
+            if e.type == pg.JOYAXISMOTION:
+                if e.axis == 1:
+                    if e.value < 0:
+                        sound.sfx_lib.get('menu_nav').play()
+                        self.cursor -= 1
+                        if self.cursor < 0:
+                            self.cursor = len(self.menu) - 1
+                    if e.value > 0:
+                        sound.sfx_lib.get('menu_nav').play()
+                        self.cursor += 1
+                        if self.cursor >= len(self.menu):
+                            self.cursor = 0
+
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
                     self.fadeout_step = 255
@@ -465,6 +495,27 @@ class OverlayMenuScene(Scene):
 
     def handle_events(self, events):
         for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button in [0, 1]:
+                    f = self.menu_funcs[self.cursor]
+                    if f == 'back':
+                        self.go_back()
+                    else:
+                        f()
+
+            if e.type == pg.JOYAXISMOTION:
+                if e.axis == 1:
+                    if e.value < 0:
+                        sound.sfx_lib.get('menu_nav').play()
+                        self.cursor -= 1
+                        if self.cursor < 0:
+                            self.cursor = len(self.menu_entries) - 1
+                    if e.value > 0:
+                        sound.sfx_lib.get('menu_nav').play()
+                        self.cursor += 1
+                        if self.cursor >= len(self.menu_entries):
+                            self.cursor = 0
+
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
                     f = self.menu_funcs[self.cursor]

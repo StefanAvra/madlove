@@ -9,8 +9,9 @@ DOWN = 1
 LEFT = 2
 RIGHT = 3
 START = 4
+ACTION = 5
 
-pressed = [False, False, False, False, False]
+pressed = [False] * 6
 
 if config.USE_JOYSTICK:
     pg.joystick.init()
@@ -28,13 +29,14 @@ MUTE_MUSIC = pg.K_m
 
 def get_buttons():
     global pressed
-    for key in (UP, DOWN, LEFT, RIGHT, START):
+    for key in (UP, DOWN, LEFT, RIGHT, START, ACTION):
         pressed[key] = False
 
     if joystick is not None:
         updown = joystick.get_axis(1)
         leftright = joystick.get_axis(0)
-        start = joystick.get_button(9)
+        start = joystick.get_button(0)
+        action = joystick.get_button(1)
 
         if updown > 0:
             pressed[UP] = True
@@ -46,6 +48,8 @@ def get_buttons():
             pressed[LEFT] = True
         if start:
             pressed[START] = True
+        if action:
+            pressed[ACTION] = True
 
     else:
         pressed_keyboard = pg.key.get_pressed()
@@ -54,4 +58,5 @@ def get_buttons():
     # print(pressed)
 
     return pressed
+
 
