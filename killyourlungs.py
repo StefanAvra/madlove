@@ -159,7 +159,7 @@ class GameScene(Scene):
         #         pass
 
     def reset_round(self):
-        self.balls.add(Ball(velocity=(random.randint(-3, 3), -4)))
+        self.balls.add(Ball(velocity=(random.randint(-2, 2), -3)))
         self.all_sprites.add(self.balls)
         self.player.rect.centerx = pg.display.get_surface().get_rect().centerx
         pg.mixer.music.play(-1)
@@ -628,7 +628,7 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, pos_x=240, pos_y=550, velocity=(random.randint(-3, 3), -4), size=7, sticky=True):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(random.randint(-3, 3), -2), size=7, sticky=True):
         super().__init__()
         self.velocity = velocity
         self.x = pos_x
@@ -758,7 +758,7 @@ class Ball(pg.sprite.Sprite):
 
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, x=200, p_type='s', speed=7):
+    def __init__(self, x=200, p_type='m', speed=7):
         super().__init__()
         self.type = p_type
         self.speed = speed
