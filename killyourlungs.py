@@ -290,6 +290,10 @@ class LostLifeScene(Scene):
 
     def handle_events(self, events):
         for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button in [0, 1]:
+                    self.game_state.reset_round()
+                    self.go_back()
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_SPACE:
                     self.game_state.reset_round()
