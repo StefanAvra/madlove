@@ -446,6 +446,11 @@ class GameOver(Scene):
 
     def handle_events(self, events):
         for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button == 0:
+                    sound.sfx_lib.get('game_over').stop()
+                    self.manager.go_to(TitleScene())
+
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
                     sound.sfx_lib.get('game_over').stop()
