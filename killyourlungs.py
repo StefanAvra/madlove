@@ -239,6 +239,9 @@ class FinishedLevelScene(Scene):
 
     def handle_events(self, events):
         for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button in [0, 1]:
+                    self.manager.go_to(GameScene(self.next_level))
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
