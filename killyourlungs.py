@@ -611,10 +611,11 @@ class HighscoreScene(Scene):
 
     def handle_events(self, events):
         for e in events:
-            if e.type == pg.KEYDOWN:
-                if e.key == pg.K_ESCAPE:
-                    self.fadeout_step = 255
-                    self.fade_leave = True
+            if not self.fade_leave:
+                if e.type == pg.KEYDOWN:
+                    if e.key == pg.K_ESCAPE:
+                        self.fadeout_step = 255
+                        self.fade_leave = True
 
 
 class CreditsScene(Scene):
