@@ -20,7 +20,8 @@ bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
 font_16 = None
 font_24 = None
-stages = ['HEALTHY', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB']
+stages = ['HEALTHY', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB',
+          'IVB', 'IVB', 'IVB']
 score = 0
 time_passed = 0
 
