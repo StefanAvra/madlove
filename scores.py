@@ -8,7 +8,7 @@ highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333)
 
 __multiplier = 0
 __decrease_timer = 0
-
+__last_multi = 0
 
 def load_highscores():
     global highscores
@@ -76,3 +76,15 @@ def is_combo():
 
 def get_combo():
     return max(__multiplier, 1)
+
+
+def get_new_combo():
+    # this returns a new combo multiplier only once
+    global __last_multi
+    if __last_multi != __multiplier:
+        return_multi = __last_multi
+    else:
+        return_multi = None
+    __last_multi = __multiplier
+    return return_multi
+

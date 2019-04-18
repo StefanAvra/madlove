@@ -26,6 +26,12 @@ __facts = {
        ' happens to sue another country over anti-smoking laws.'
 }
 
+__combos = {
+    25: 'super combo!',
+    50: 'ultra combo!',
+    100: 'holy moly!'
+}
+
 fact_order = [i for i in range(len(__facts) - 1)]
 random.shuffle(fact_order)
 current_fact = 0
@@ -46,3 +52,5 @@ def get_fact(number=None):
     return __facts.get(fact_order[number]).upper()
 
 
+def get_combo_msg(multi):
+    return __combos.get(multi)

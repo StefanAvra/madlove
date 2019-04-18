@@ -127,7 +127,11 @@ class GameScene(Scene):
         if not self.bricks.has(self.bricks):
             self.manager.go_to(FinishedLevelScene(self))
 
+        past_stage = self.current_stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages), 0]))
+        if stages[past_stage] == stages[0] and stages[past_stage] != stages[self.current_stage]:
+            print('cancer')
+            self.notif_stack.append(Message("got cancer!"))
 
         if len(self.notif_stack) > 0 and self.notification is None:
             self.notification = self.notif_stack.pop(0)
@@ -141,6 +145,9 @@ class GameScene(Scene):
         scores.decrease_multiplier(time_passed)
 
         if scores.is_combo():
+            new_combo = scores.get_new_combo()
+            if new_combo in [25, 50, 100]:
+                self.notif_stack.append(Message(str_r.get_combo_msg(new_combo)))
             self.hud_highlight_clock += time_passed
             if self.hud_highlight_clock >= 50:
                 self.hud_highlight_clock = 0
@@ -149,15 +156,6 @@ class GameScene(Scene):
                     self.hud_highlight_combo = 1
         else:
             self.hud_highlight_combo = 0
-
-        # fade screen
-        # if self.fade_leave_to and self.fadeout_step <= 0:
-        #     if self.fade_leave_to == 1:
-        #         self.manager.go_to(GameScene(0))
-        #     if self.fade_leave_to == 2:
-        #         self.manager.go_to(HighscoreScene())
-        #     if self.fade_leave_to == 3:
-        #         pass
 
     def reset_round(self):
         self.balls.add(Ball(velocity=(random.randint(-2, 2), -3)))
@@ -658,7 +656,7 @@ class SceneManager(object):
 
 
 class Ball(pg.sprite.Sprite):
-    def __init__(self, pos_x=240, pos_y=550, velocity=(random.randint(-3, 3), -2), size=7, sticky=True):
+    def __init__(self, pos_x=240, pos_y=550, velocity=(random.randint(-3, 3), -3), size=7, sticky=True):
         super().__init__()
         self.velocity = velocity
         self.x = pos_x
