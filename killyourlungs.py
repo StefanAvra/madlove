@@ -175,7 +175,7 @@ class GameScene(Scene):
                         ball.sticky = False
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
+                    self.manager.go_to(OverlayMenuScene(self, 'pause'))
                 if e.key == pg.K_o:
                     for ball in self.balls:
                         ball.speed_up(0.9)
@@ -366,56 +366,57 @@ class TitleScene(Scene):
                 pass
 
     def handle_events(self, events):
-        for e in events:
-            if e.type == pg.JOYBUTTONDOWN:
-                if e.button == 0:
-                    self.fadeout_step = 255
-                    f = self.menu_funcs[self.cursor]
-                    if f == 'start':
-                        self.fade_leave_to = 1
-                    elif f == 'scores':
-                        self.fade_leave_to = 2
-                    elif f == 'credits':
-                        pass
+        if not self.fade_leave_to:
+            for e in events:
+                if e.type == pg.JOYBUTTONDOWN:
+                    if e.button == 0:
+                        self.fadeout_step = 255
+                        f = self.menu_funcs[self.cursor]
+                        if f == 'start':
+                            self.fade_leave_to = 1
+                        elif f == 'scores':
+                            self.fade_leave_to = 2
+                        elif f == 'credits':
+                            pass
 
-            if e.type == pg.JOYAXISMOTION:
-                if e.axis == 1:
-                    if e.value < 0:
-                        sound.sfx_lib.get('menu_nav').play()
-                        self.cursor -= 1
-                        if self.cursor < 0:
-                            self.cursor = len(self.menu) - 1
-                    if e.value > 0:
+                if e.type == pg.JOYAXISMOTION:
+                    if e.axis == 1:
+                        if e.value < 0:
+                            sound.sfx_lib.get('menu_nav').play()
+                            self.cursor -= 1
+                            if self.cursor < 0:
+                                self.cursor = len(self.menu) - 1
+                        if e.value > 0:
+                            sound.sfx_lib.get('menu_nav').play()
+                            self.cursor += 1
+                            if self.cursor >= len(self.menu):
+                                self.cursor = 0
+
+                if e.type == pg.KEYDOWN:
+                    if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                        self.fadeout_step = 255
+                        f = self.menu_funcs[self.cursor]
+                        if f == 'start':
+                            self.fade_leave_to = 1
+                        elif f == 'scores':
+                            self.fade_leave_to = 2
+                        elif f == 'credits':
+                            pass
+
+                    if e.key == pg.K_ESCAPE:
+                        self.manager.go_to(OverlayMenuScene(self, 'exit'))
+                    if e.key == pg.K_h:
+                        self.manager.go_to(HighscoreScene())
+                    if e.key == pg.K_DOWN:
                         sound.sfx_lib.get('menu_nav').play()
                         self.cursor += 1
                         if self.cursor >= len(self.menu):
                             self.cursor = 0
-
-            if e.type == pg.KEYDOWN:
-                if e.key in [pg.K_SPACE, pg.K_RETURN]:
-                    self.fadeout_step = 255
-                    f = self.menu_funcs[self.cursor]
-                    if f == 'start':
-                        self.fade_leave_to = 1
-                    elif f == 'scores':
-                        self.fade_leave_to = 2
-                    elif f == 'credits':
-                        pass
-
-                if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'exit'))
-                if e.key == pg.K_h:
-                    self.manager.go_to(HighscoreScene())
-                if e.key == pg.K_DOWN:
-                    sound.sfx_lib.get('menu_nav').play()
-                    self.cursor += 1
-                    if self.cursor >= len(self.menu):
-                        self.cursor = 0
-                if e.key == pg.K_UP:
-                    sound.sfx_lib.get('menu_nav').play()
-                    self.cursor -= 1
-                    if self.cursor < 0:
-                        self.cursor = len(self.menu) - 1
+                    if e.key == pg.K_UP:
+                        sound.sfx_lib.get('menu_nav').play()
+                        self.cursor -= 1
+                        if self.cursor < 0:
+                            self.cursor = len(self.menu) - 1
 
 
 class GameOver(Scene):
@@ -466,6 +467,7 @@ class GameOver(Scene):
 class OverlayMenuScene(Scene):
     def __init__(self, paused_scene, menu_type):
         super(OverlayMenuScene, self).__init__()
+        self.menu_type = menu_type
         self.menu_entries = menus.get_entries(menu_type)
         self.menu_surf = menus.get_surf(menu_type)
         self.menu_drop_shadow = pg.Surface((self.menu_surf.get_rect().width, self.menu_surf.get_rect().height))
@@ -475,9 +477,13 @@ class OverlayMenuScene(Scene):
         self.cursor = 0
         self.highlight_clock = 0
         self.highlight_color = config.MENU_COLOR_HIGHLIGHT
+        self.animation_clock = 0
         pg.mixer.music.pause()
+        if self.menu_type == 'pause':
+            self.animation = Ashtray()
 
     def render(self, screen):
+
         self.highlight_clock += time_passed
         # menus.make_outline(self.menu_surf, bg_color)
         self.menu_surf.fill(bg_color)
@@ -487,24 +493,33 @@ class OverlayMenuScene(Scene):
         title = font_16.render(self.menu_title, True, config.TEXT_COLOR)
         title_pos = (x_center_to(self.menu_surf, title), menus.PADDING)
         self.menu_surf.blit(title, title_pos)
-        for idx, entry in enumerate(self.menu_entries):
-            if self.cursor == idx:
-                if self.highlight_clock >= 100:
-                    self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
-                    self.highlight_clock = 0
-                color = self.highlight_color
-            else:
-                color = config.TEXT_COLOR
-            entry_surf = font_16.render(entry, True, color)
-            entry_pos = (x_center_to(self.menu_surf, entry_surf),
-                         menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_LINE_OFFSET)
-            self.menu_surf.blit(entry_surf, entry_pos)
+
+        if self.menu_type != 'pause':
+            for idx, entry in enumerate(self.menu_entries):
+                if self.cursor == idx:
+                    if self.highlight_clock >= 100:
+                        self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+                        self.highlight_clock = 0
+                    color = self.highlight_color
+                else:
+                    color = config.TEXT_COLOR
+                entry_surf = font_16.render(entry, True, color)
+                entry_pos = (x_center_to(self.menu_surf, entry_surf),
+                             menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_LINE_OFFSET)
+                self.menu_surf.blit(entry_surf, entry_pos)
+        else:
+            animation_pos = (x_center_to(self.menu_surf, self.animation.image), menus.PADDING + menus.HEADER_SIZE)
+            self.menu_surf.blit(self.animation.image, animation_pos)
 
         screen.blit(self.menu_drop_shadow, shadow_pos)
         screen.blit(self.menu_surf, menu_pos)
 
     def update(self):
-        pass
+        if self.menu_type == 'pause':
+            self.animation_clock += time_passed
+            if self.animation_clock >= 100:
+                self.animation.update()
+                self.animation_clock = 0
 
     def handle_events(self, events):
         for e in events:
@@ -515,19 +530,19 @@ class OverlayMenuScene(Scene):
                         self.go_back()
                     else:
                         f()
-
-            if e.type == pg.JOYAXISMOTION:
-                if e.axis == 1:
-                    if e.value < 0:
-                        sound.sfx_lib.get('menu_nav').play()
-                        self.cursor -= 1
-                        if self.cursor < 0:
-                            self.cursor = len(self.menu_entries) - 1
-                    if e.value > 0:
-                        sound.sfx_lib.get('menu_nav').play()
-                        self.cursor += 1
-                        if self.cursor >= len(self.menu_entries):
-                            self.cursor = 0
+            if self.menu_type != 'pause':
+                if e.type == pg.JOYAXISMOTION:
+                    if e.axis == 1:
+                        if e.value < 0:
+                            sound.sfx_lib.get('menu_nav').play()
+                            self.cursor -= 1
+                            if self.cursor < 0:
+                                self.cursor = len(self.menu_entries) - 1
+                        if e.value > 0:
+                            sound.sfx_lib.get('menu_nav').play()
+                            self.cursor += 1
+                            if self.cursor >= len(self.menu_entries):
+                                self.cursor = 0
 
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE, pg.K_RETURN]:
@@ -538,16 +553,17 @@ class OverlayMenuScene(Scene):
                         f()
                 if e.key == pg.K_ESCAPE:
                     self.go_back()
-                if e.key == pg.K_DOWN:
-                    sound.sfx_lib.get('menu_nav').play()
-                    self.cursor += 1
-                    if self.cursor >= len(self.menu_entries):
-                        self.cursor = 0
-                if e.key == pg.K_UP:
-                    sound.sfx_lib.get('menu_nav').play()
-                    self.cursor -= 1
-                    if self.cursor < 0:
-                        self.cursor = len(self.menu_entries) - 1
+                if self.menu_type != 'pause':
+                    if e.key == pg.K_DOWN:
+                        sound.sfx_lib.get('menu_nav').play()
+                        self.cursor += 1
+                        if self.cursor >= len(self.menu_entries):
+                            self.cursor = 0
+                    if e.key == pg.K_UP:
+                        sound.sfx_lib.get('menu_nav').play()
+                        self.cursor -= 1
+                        if self.cursor < 0:
+                            self.cursor = len(self.menu_entries) - 1
 
     def go_back(self):
         pg.mixer.music.unpause()
@@ -825,13 +841,24 @@ class Brick(pg.sprite.Sprite):
         self.image.blit(self.dark, (0, 0))
 
 
-# class Ashtray(pg.sprite.Sprite):
-#     # 208 x 162
-#     def __init__(self):
-#         super().__init__()
-#         self.images = []
-#         for
-#         self.images.append()
+class Ashtray(pg.sprite.Sprite):
+    # 208 x 162
+    def __init__(self):
+        super().__init__()
+        self.images = []
+        self.sheet = SpriteSheet('ashtray', (208, 162), 14, True)
+        for sprite in self.sheet.sprites:
+            self.images.append(sprite)
+        self.img_idx = 0
+        self.image = self.images[self.img_idx]
+
+    def update(self):
+        if self.img_idx < len(self.images) - 1:
+            self.img_idx += 1
+        else:
+            self.img_idx = 0
+        self.image = self.images[self.img_idx]
+
 
 class SpriteSheet:
     def __init__(self, filename, size, image_count, alpha=False):
@@ -841,11 +868,15 @@ class SpriteSheet:
             self.sheet = pg.image.load(os.path.join('assets', 'graphics', '{}.png'.format(filename))).convert()
         self.sprites = []
         for x in range(image_count):
-            self.sprites.append(self.load_image(size))
+            self.sprites.append(self.load_image(size, (size[0] * x, 0)))
 
-    def load_image(self, size):
-        image = pg.Surface(size).convert()
-        image.blit(self.sheet, (0, 0), image.get_rect())
+    def load_image(self, size, pos):
+        image = pg.Surface(size).convert_alpha()
+        image.fill(bg_color)
+        rect = image.get_rect()
+        rect.x = pos[0]
+        rect.y = pos[1]
+        image.blit(self.sheet, (0, 0), rect)
         return image
 
 
