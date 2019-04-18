@@ -872,6 +872,7 @@ def render_fading(screen, fade_step, invert_fading=0):
         alpha = fade_step
     fading_surf = pg.Surface(screen.get_size(), pg.SRCALPHA)
     fade_color = bg_color
+    alpha = 80 * round(alpha / 80)  # fades a bit rougher
     print(alpha)
     fade_color.a = alpha
     fading_surf.fill(fade_color)
