@@ -128,7 +128,7 @@ class GameScene(Scene):
             self.manager.go_to(FinishedLevelScene(self))
 
         past_stage = self.current_stage
-        self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages), 0]))
+        self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
         if stages[past_stage] == stages[0] and stages[past_stage] != stages[self.current_stage]:
             print('cancer')
             self.notif_stack.append(Message("got cancer!"))
@@ -148,6 +148,7 @@ class GameScene(Scene):
             new_combo = scores.get_new_combo()
             if new_combo in [25, 50, 100]:
                 self.notif_stack.append(Message(str_r.get_combo_msg(new_combo)))
+
             self.hud_highlight_clock += time_passed
             if self.hud_highlight_clock >= 50:
                 self.hud_highlight_clock = 0
