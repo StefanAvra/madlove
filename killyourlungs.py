@@ -130,11 +130,13 @@ class GameScene(Scene):
         past_stage = self.current_stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
         if stages[past_stage] == stages[0] and stages[past_stage] != stages[self.current_stage]:
-            print('cancer')
-            self.notif_stack.append(Message("got cancer!"))
+            sound.sfx_lib.get('cancer').play()
+            self.notif_stack.append(Message("got cancer!", False))
 
         if len(self.notif_stack) > 0 and self.notification is None:
             self.notification = self.notif_stack.pop(0)
+            if self.notification.play_sfx:
+                sound.sfx_lib.get('message').play()
 
         if self.notification is not None:
             if self.notification.timer <= 0:
@@ -881,11 +883,12 @@ class SpriteSheet:
 
 
 class Message:
-    def __init__(self, msg):
+    def __init__(self, msg, sfx=True):
         self.timer = 2000
         self.color = config.TEXT_COLOR
         self.msg = msg.upper()
         self.highlight_clock = 0
+        self.play_sfx = sfx
 
     def update(self):
         self.timer -= time_passed
