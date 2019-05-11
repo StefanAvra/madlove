@@ -59,7 +59,6 @@ class GameScene(Scene):
         self.timer = 0
         self.hud_highlight_clock = 0
         self.hud_highlight_combo = 0
-        self.timer = 0
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave_to = False
@@ -78,7 +77,6 @@ class GameScene(Scene):
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
         pg.mixer.music.set_volume(0.5)
-        # pg.mixer.music.play(-1)
         self.reset_round()
 
     def render(self, screen):
@@ -164,7 +162,6 @@ class GameScene(Scene):
         self.balls.add(Ball(velocity=(random.randint(-2, 2), -3)))
         self.all_sprites.add(self.balls)
         self.player.rect.centerx = pg.display.get_surface().get_rect().centerx
-        pg.mixer.music.play(-1)
 
     def handle_events(self, events):
         for e in events:
@@ -481,6 +478,7 @@ class OverlayMenuScene(Scene):
         self.animation_clock = 0
         pg.mixer.music.pause()
         if self.menu_type == 'pause':
+            sound.sfx_lib.get('pause_in').play()
             self.animation = Ashtray()
 
     def render(self, screen):
@@ -567,6 +565,7 @@ class OverlayMenuScene(Scene):
                             self.cursor = len(self.menu_entries) - 1
 
     def go_back(self):
+        sound.sfx_lib.get('pause_out').play()
         pg.mixer.music.unpause()
         self.manager.go_to(self.paused_scene)
 
