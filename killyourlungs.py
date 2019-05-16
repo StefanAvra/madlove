@@ -76,7 +76,7 @@ class GameScene(Scene):
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
-        pg.mixer.music.set_volume(0.5)
+        pg.mixer.music.set_volume(1)
         self.reset_round()
 
     def render(self, screen):
@@ -108,6 +108,11 @@ class GameScene(Scene):
             self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
+        # if self.first_round:
+        #     pg.time.wait(1000)
+        #     pg.mixer.music.play(-1)
+        #     self.first_round = False
+
         self.timer += time_passed
         # pressed = pg.key.get_pressed()
         # up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
@@ -128,13 +133,14 @@ class GameScene(Scene):
         past_stage = self.current_stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
         if stages[past_stage] == stages[0] and stages[past_stage] != stages[self.current_stage]:
-            sound.sfx_lib.get('cancer').play()
             self.notif_stack.append(Message("got cancer!", False))
 
         if len(self.notif_stack) > 0 and self.notification is None:
             self.notification = self.notif_stack.pop(0)
-            if self.notification.play_sfx:
+            if self.notification.std_sfx:
                 sound.sfx_lib.get('message').play()
+            else:
+                sound.sfx_lib.get('cancer').play()
 
         if self.notification is not None:
             if self.notification.timer <= 0:
@@ -159,6 +165,7 @@ class GameScene(Scene):
             self.hud_highlight_combo = 0
 
     def reset_round(self):
+        pg.mixer.music.play(-1)
         self.balls.add(Ball(velocity=(random.randint(-2, 2), -3)))
         self.all_sprites.add(self.balls)
         self.player.rect.centerx = pg.display.get_surface().get_rect().centerx
@@ -323,6 +330,8 @@ class TitleScene(Scene):
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave_to = False
+        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'titlescreen.ogg'))
+        pg.mixer.music.play(-1)
 
     def render(self, screen):
         self.highlight_clock += time_passed
@@ -368,6 +377,7 @@ class TitleScene(Scene):
             for e in events:
                 if e.type == pg.JOYBUTTONDOWN:
                     if e.button == 0:
+                        sound.sfx_lib.get('select').play()
                         self.fadeout_step = 255
                         f = self.menu_funcs[self.cursor]
                         if f == 'start':
@@ -392,6 +402,7 @@ class TitleScene(Scene):
 
                 if e.type == pg.KEYDOWN:
                     if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                        sound.sfx_lib.get('select').play()
                         self.fadeout_step = 255
                         f = self.menu_funcs[self.cursor]
                         if f == 'start':
@@ -476,10 +487,13 @@ class OverlayMenuScene(Scene):
         self.highlight_clock = 0
         self.highlight_color = config.MENU_COLOR_HIGHLIGHT
         self.animation_clock = 0
+        self.music_timer = 0
         pg.mixer.music.pause()
         if self.menu_type == 'pause':
             sound.sfx_lib.get('pause_in').play()
             self.animation = Ashtray()
+            self.music_pos = pg.mixer.music.get_pos() * 1000
+            pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
 
     def render(self, screen):
 
@@ -514,6 +528,9 @@ class OverlayMenuScene(Scene):
         screen.blit(self.menu_surf, menu_pos)
 
     def update(self):
+        self.music_timer += time_passed
+        if not pg.mixer.music.get_busy() and self.music_timer >= 1000:
+            pg.mixer.music.play(-1)
         if self.menu_type == 'pause':
             self.animation_clock += time_passed
             if self.animation_clock >= 100:
@@ -565,8 +582,10 @@ class OverlayMenuScene(Scene):
                             self.cursor = len(self.menu_entries) - 1
 
     def go_back(self):
+        pg.mixer.music.stop()
         sound.sfx_lib.get('pause_out').play()
-        pg.mixer.music.unpause()
+        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
+        pg.mixer.music.play(-1, self.music_pos)
         self.manager.go_to(self.paused_scene)
 
 
@@ -887,7 +906,7 @@ class Message:
         self.color = config.TEXT_COLOR
         self.msg = msg.upper()
         self.highlight_clock = 0
-        self.play_sfx = sfx
+        self.std_sfx = sfx
 
     def update(self):
         self.timer -= time_passed
