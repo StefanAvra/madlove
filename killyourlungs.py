@@ -319,43 +319,63 @@ class TitleScene(Scene):
     def __init__(self):
         super(TitleScene, self).__init__()
         # todo: change these with titlescreen art later
-        self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
+        # self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
         self.line2 = font_16.render(config.GAME_SUBTITLE, True, config.TEXT_COLOR)
         self.cprght = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
-        self.menu = menus.get_entries('titlescreen')
-        self.menu_funcs = menus.get_funcs('titlescreen')
+        # self.menu = menus.get_entries('titlescreen')
+        # self.menu_funcs = menus.get_funcs('titlescreen')
         self.highlight_clock = 0
         self.highlight_color = config.MENU_COLOR_HIGHLIGHT
         self.cursor = 0
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave_to = False
+        self.title = Title()
+        self.arrow = Arrow()
+        self.blit_elements = [False, False, False, False]
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'titlescreen.ogg'))
-        pg.mixer.music.play(-1)
+        # pg.mixer.music.play(-1)
+        sound.sfx_lib.get('intro1').play()
 
     def render(self, screen):
         self.highlight_clock += time_passed
         screen.fill(bg_color)
-        pos_line1 = center_to(screen, self.line1)
-        pos_line1 = (pos_line1[0], pos_line1[1] - 24)
+        # pos_line1 = center_to(screen, self.line1)
+        # pos_line1 = (pos_line1[0], pos_line1[1] - 24)
         pos_line2 = center_to(screen, self.line2)
         pos_line2 = (pos_line2[0], pos_line2[1] + 16)
         pos_copy = self.cprght.get_rect()
-        pos_copy.center = (screen.get_rect().centerx, screen.get_rect().height * 0.8)
-        screen.blit(self.line1, pos_line1)
-        screen.blit(self.line2, pos_line2)
-        screen.blit(self.cprght, pos_copy)
-        for idx, entry in enumerate(self.menu):
-            if self.cursor == idx:
-                if self.highlight_clock >= 100:
-                    self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
-                    self.highlight_clock = 0
-                color = self.highlight_color
-            else:
-                color = config.TEXT_COLOR
-            entry_surf = font_16.render(entry, True, color)
-            entry_pos = (x_center_to(screen, entry_surf), 400 + idx * menus.MENU_LINE_OFFSET)
-            screen.blit(entry_surf, entry_pos)
+        pos_copy.center = (screen.get_rect().centerx, screen.get_rect().height * 0.9)
+        # screen.blit(self.line1, pos_line1)
+        if self.blit_elements[1]:
+            screen.blit(self.line2, pos_line2)
+        if self.blit_elements[3]:
+            screen.blit(self.cprght, pos_copy)
+        # for idx, entry in enumerate(self.menu):
+        #     if self.cursor == idx:
+        #         if self.highlight_clock >= 100:
+        #             self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+        #             self.highlight_clock = 0
+        #         color = self.highlight_color
+        #     else:
+        #         color = config.TEXT_COLOR
+        #     entry_surf = font_16.render(entry, True, color)
+        #     entry_pos = (x_center_to(screen, entry_surf), 400 + idx * menus.MENU_LINE_OFFSET)
+        #     screen.blit(entry_surf, entry_pos)
+
+        if self.highlight_clock >= 100:
+            self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+            self.highlight_clock = 0
+
+        insert_coin = font_16.render('INSERT COIN', True, self.highlight_color)
+        pos_insert = insert_coin.get_rect()
+        pos_insert.center = (screen.get_rect().centerx, screen.get_rect().height * 0.7)
+        if self.blit_elements[2]:
+            screen.blit(insert_coin, pos_insert)
+        if self.blit_elements[0]:
+            screen.blit(self.title.image, self.title.rect)
+
+        screen.blit(self.arrow.image, self.arrow.rect)
 
         # fade screen
         if self.fadein_step > 0:
@@ -371,6 +391,16 @@ class TitleScene(Scene):
                 self.manager.go_to(HighscoreScene())
             if self.fade_leave_to == 3:
                 pass
+        self.title.update()
+        self.arrow.update()
+        if self.arrow.rect.centery >= 213:
+            self.blit_elements[0] = True
+            if self.arrow.rect.centery >= 240:
+                self.blit_elements[1] = True
+                if self.arrow.rect.centery >= 400:
+                    self.blit_elements[2] = True
+                    if self.arrow.rect.centery >= 550:
+                        self.blit_elements[3] = True
 
     def handle_events(self, events):
         if not self.fade_leave_to:
@@ -379,53 +409,56 @@ class TitleScene(Scene):
                     if e.button == 0:
                         sound.sfx_lib.get('select').play()
                         self.fadeout_step = 255
-                        f = self.menu_funcs[self.cursor]
-                        if f == 'start':
-                            self.fade_leave_to = 1
-                        elif f == 'scores':
-                            self.fade_leave_to = 2
-                        elif f == 'credits':
-                            pass
+                        self.fade_leave_to = 1
+                        # f = self.menu_funcs[self.cursor]
+                        # if f == 'start':
+                        #     self.fade_leave_to = 1
+                        # elif f == 'scores':
+                        #     self.fade_leave_to = 2
+                        # elif f == 'credits':
+                        #     pass
 
                 if e.type == pg.JOYAXISMOTION:
-                    if e.axis == 1:
-                        if e.value < 0:
-                            sound.sfx_lib.get('menu_nav').play()
-                            self.cursor -= 1
-                            if self.cursor < 0:
-                                self.cursor = len(self.menu) - 1
-                        if e.value > 0:
-                            sound.sfx_lib.get('menu_nav').play()
-                            self.cursor += 1
-                            if self.cursor >= len(self.menu):
-                                self.cursor = 0
+                    # if e.axis == 1:
+                    #     if e.value < 0:
+                    #         sound.sfx_lib.get('menu_nav').play()
+                    #         self.cursor -= 1
+                    #         if self.cursor < 0:
+                    #             self.cursor = len(self.menu) - 1
+                    #     if e.value > 0:
+                    #         sound.sfx_lib.get('menu_nav').play()
+                    #         self.cursor += 1
+                    #         if self.cursor >= len(self.menu):
+                    #             self.cursor = 0
+                    pass
 
                 if e.type == pg.KEYDOWN:
                     if e.key in [pg.K_SPACE, pg.K_RETURN]:
                         sound.sfx_lib.get('select').play()
                         self.fadeout_step = 255
-                        f = self.menu_funcs[self.cursor]
-                        if f == 'start':
-                            self.fade_leave_to = 1
-                        elif f == 'scores':
-                            self.fade_leave_to = 2
-                        elif f == 'credits':
-                            pass
+                        self.fade_leave_to = 1
+                        # f = self.menu_funcs[self.cursor]
+                        # if f == 'start':
+                        #     self.fade_leave_to = 1
+                        # elif f == 'scores':
+                        #     self.fade_leave_to = 2
+                        # elif f == 'credits':
+                        #     pass
 
                     if e.key == pg.K_ESCAPE:
                         self.manager.go_to(OverlayMenuScene(self, 'exit'))
                     if e.key == pg.K_h:
                         self.manager.go_to(HighscoreScene())
-                    if e.key == pg.K_DOWN:
-                        sound.sfx_lib.get('menu_nav').play()
-                        self.cursor += 1
-                        if self.cursor >= len(self.menu):
-                            self.cursor = 0
-                    if e.key == pg.K_UP:
-                        sound.sfx_lib.get('menu_nav').play()
-                        self.cursor -= 1
-                        if self.cursor < 0:
-                            self.cursor = len(self.menu) - 1
+                    # if e.key == pg.K_DOWN:
+                    #     sound.sfx_lib.get('menu_nav').play()
+                    #     self.cursor += 1
+                    #     if self.cursor >= len(self.menu):
+                    #         self.cursor = 0
+                    # if e.key == pg.K_UP:
+                    #     sound.sfx_lib.get('menu_nav').play()
+                    #     self.cursor -= 1
+                    #     if self.cursor < 0:
+                    #         self.cursor = len(self.menu) - 1
 
 
 class GameOver(Scene):
@@ -585,7 +618,7 @@ class OverlayMenuScene(Scene):
         pg.mixer.music.stop()
         sound.sfx_lib.get('pause_out').play()
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
-        pg.mixer.music.play(-1, self.music_pos)
+        pg.mixer.music.play(-1)
         self.manager.go_to(self.paused_scene)
 
 
@@ -859,6 +892,32 @@ class Brick(pg.sprite.Sprite):
         self.dark.set_alpha(darken_factor)
 
         self.image.blit(self.dark, (0, 0))
+
+
+class Arrow(pg.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pg.image.load(os.path.join('assets', 'graphics', 'arrow.png')).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.centery = 0 - self.rect.height
+
+    def update(self, *args):
+        if self.rect.top < 640:
+            self.rect.centery += 18
+
+
+class Title(pg.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pg.image.load(os.path.join('assets', 'graphics', 'title.png')).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.center = (240, 220)
+        self.animate = False
+
+    def update(self):
+        if self.animate:
+            pass
+        pass
 
 
 class Ashtray(pg.sprite.Sprite):
