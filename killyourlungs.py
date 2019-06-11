@@ -76,7 +76,7 @@ class GameScene(Scene):
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
-        pg.mixer.music.set_volume(1)
+        pg.mixer.music.set_volume(0.8)
         self.reset_round()
 
     def render(self, screen):
