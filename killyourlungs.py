@@ -393,14 +393,19 @@ class TitleScene(Scene):
                 pass
         self.title.update()
         self.arrow.update()
-        if self.arrow.rect.centery >= 213:
-            self.blit_elements[0] = True
-            if self.arrow.rect.centery >= 240:
-                self.blit_elements[1] = True
-                if self.arrow.rect.centery >= 400:
-                    self.blit_elements[2] = True
-                    if self.arrow.rect.centery >= 550:
-                        self.blit_elements[3] = True
+        if not self.arrow.done:
+            if self.arrow.rect.centery >= 213:
+                self.blit_elements[0] = True
+                if self.arrow.rect.centery >= 240:
+                    self.blit_elements[1] = True
+                    if self.arrow.rect.centery >= 400:
+                        self.blit_elements[2] = True
+                        if self.arrow.rect.centery >= 550:
+                            self.blit_elements[3] = True
+                            if self.arrow.rect.centery >= 640:
+                                self.title.animate = True
+                                self.arrow.done = True
+                                sound.sfx_lib.get('intro2').play()
 
     def handle_events(self, events):
         if not self.fade_leave_to:
@@ -641,8 +646,6 @@ class HighscoreScene(Scene):
         self.fade_leave = False
 
     def render(self, screen):
-
-        # todo: place on the left, names left aligned, score right aligned, labels for name and score
 
         screen.fill(bg_color)
         title_pos = self.title.get_rect()
@@ -900,6 +903,7 @@ class Arrow(pg.sprite.Sprite):
         self.image = pg.image.load(os.path.join('assets', 'graphics', 'arrow.png')).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.centery = 0 - self.rect.height
+        self.done = False
 
     def update(self, *args):
         if self.rect.top < 640:
@@ -910,14 +914,21 @@ class Title(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pg.image.load(os.path.join('assets', 'graphics', 'title.png')).convert_alpha()
+        self.image_clean = pg.image.load(os.path.join('assets', 'graphics', 'title.png')).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = (240, 220)
         self.animate = False
+        self.shine = pg.Surface((20, self.rect.height))
+        self.shine.fill((255, 255, 255))
+        self.shine_pos = 0
 
     def update(self):
         if self.animate:
-            pass
-        pass
+            if self.shine_pos > self.rect.width:
+                self.animate = False
+            self.image.blit(self.image_clean, (0, 0))
+            self.image.blit(self.shine, (self.shine_pos, 0), special_flags=pg.BLEND_ADD)
+            self.shine_pos += 20
 
 
 class Ashtray(pg.sprite.Sprite):
