@@ -318,7 +318,6 @@ class LostLifeScene(Scene):
 class TitleScene(Scene):
     def __init__(self):
         super(TitleScene, self).__init__()
-        # todo: change these with titlescreen art later
         # self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
         self.line2 = font_16.render(config.GAME_SUBTITLE, True, config.TEXT_COLOR)
         self.cprght = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
@@ -336,6 +335,8 @@ class TitleScene(Scene):
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'titlescreen.ogg'))
         # pg.mixer.music.play(-1)
         sound.sfx_lib.get('intro1').play()
+        self.timer = 0
+        self.wait_for_music = True
 
     def render(self, screen):
         self.highlight_clock += time_passed
@@ -384,13 +385,17 @@ class TitleScene(Scene):
             self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
+        self.timer += time_passed
+        if self.timer > 30000 and not self.fade_leave_to:
+            self.fadeout_step = 255
+            self.fade_leave_to = 2
         if self.fade_leave_to and self.fadeout_step <= 0:
             if self.fade_leave_to == 1:
                 self.manager.go_to(GameScene(0))
             if self.fade_leave_to == 2:
-                self.manager.go_to(HighscoreScene())
+                self.manager.go_to(HighscoreScene(previous_scene=self))
             if self.fade_leave_to == 3:
-                pass
+                self.manager.go_to(TitleScene())
         self.title.update()
         self.arrow.update()
         if not self.arrow.done:
@@ -405,7 +410,13 @@ class TitleScene(Scene):
                             if self.arrow.rect.centery >= 640:
                                 self.title.animate = True
                                 self.arrow.done = True
-                                sound.sfx_lib.get('intro2').play()
+                                if not pg.mixer.music.get_busy():
+                                    pg.mixer.music.play(1)
+                                    self.wait_for_music = False
+
+        if not pg.mixer.music.get_busy() and not self.wait_for_music and not self.fade_leave_to:
+            self.fadeout_step = 255
+            self.fade_leave_to = 3
 
     def handle_events(self, events):
         if not self.fade_leave_to:
@@ -530,7 +541,6 @@ class OverlayMenuScene(Scene):
         if self.menu_type == 'pause':
             sound.sfx_lib.get('pause_in').play()
             self.animation = Ashtray()
-            self.music_pos = pg.mixer.music.get_pos() * 1000
             pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
 
     def render(self, screen):
@@ -628,10 +638,11 @@ class OverlayMenuScene(Scene):
 
 
 class HighscoreScene(Scene):
-    def __init__(self):
+    def __init__(self, mode='show', previous_scene=None):
         super(HighscoreScene, self).__init__()
         scores.load_highscores()
         self.lines = []
+        self.previous_scene = previous_scene
         place = 0
         for score in scores.highscores:
             place += 1
@@ -644,6 +655,11 @@ class HighscoreScene(Scene):
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave = False
+        self.print_step = 0
+        self.clock = 0
+        self.mode = mode
+        self.leave_timer = 5000
+        self.leaving = False
 
     def render(self, screen):
 
@@ -651,7 +667,7 @@ class HighscoreScene(Scene):
         title_pos = self.title.get_rect()
         title_pos.center = (screen.get_width() / 2, screen.get_height() * 0.1)
         screen.blit(self.title, title_pos)
-        for idx, line in enumerate(self.lines):
+        for idx, line in enumerate(self.lines[:self.print_step]):
             screen.blit(line, (50, 150 + (40 * idx)))
 
         # fade screen
@@ -661,8 +677,27 @@ class HighscoreScene(Scene):
             self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
+        if self.print_step < 10:
+            self.clock += time_passed
+            if self.clock >= 100:
+                self.clock = 0
+                self.print_step += 1
+        elif self.mode == 'show':
+            self.leave_timer -= time_passed
+            if self.leave_timer < 0 and not self.leaving:
+                self.fadeout_step = 255
+                self.fade_leave = True
+                self.leaving = True
+
         if self.fade_leave and self.fadeout_step <= 0:
-            self.manager.go_to(TitleScene())
+            if self.previous_scene:
+                self.previous_scene.fade_leave_to = False
+                self.previous_scene.timer = 0
+                self.previous_scene.fadein_step = 255
+                self.previous_scene.title.restart_animation()
+                self.manager.go_to(self.previous_scene)
+            else:
+                self.manager.go_to(TitleScene())
 
     def handle_events(self, events):
         for e in events:
@@ -920,15 +955,21 @@ class Title(pg.sprite.Sprite):
         self.animate = False
         self.shine = pg.Surface((20, self.rect.height))
         self.shine.fill((255, 255, 255))
-        self.shine_pos = 0
+        self.shine_pos = -20
 
     def update(self):
         if self.animate:
+            if self.shine_pos == 0:
+                sound.sfx_lib.get('intro2').play()
             if self.shine_pos > self.rect.width:
                 self.animate = False
             self.image.blit(self.image_clean, (0, 0))
             self.image.blit(self.shine, (self.shine_pos, 0), special_flags=pg.BLEND_ADD)
             self.shine_pos += 20
+
+    def restart_animation(self):
+        self.animate = True
+        self.shine_pos = -20
 
 
 class Ashtray(pg.sprite.Sprite):
