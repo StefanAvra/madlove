@@ -25,6 +25,10 @@ stages = ['HEALTHY', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'I
 score = 0
 time_passed = 0
 
+intro_order = [i for i in range(7 - 1)]
+random.shuffle(intro_order)
+current_intro = 1
+
 
 class Scene(object):
     def __init__(self):
@@ -391,7 +395,8 @@ class TitleScene(Scene):
             self.fade_leave_to = 2
         if self.fade_leave_to and self.fadeout_step <= 0:
             if self.fade_leave_to == 1:
-                self.manager.go_to(GameScene(0))
+                # self.manager.go_to(GameScene(0))
+                self.manager.go_to(IntroScene(0))
             if self.fade_leave_to == 2:
                 self.manager.go_to(HighscoreScene(previous_scene=self))
             if self.fade_leave_to == 3:
@@ -723,18 +728,63 @@ class CreditsScene(Scene):
 
 
 class IntroScene(Scene):
-    # should be called inside GameScene() for each new level
-    def __init__(self):
+    # should be called before the next level/GameScene()
+    def __init__(self, next_lvl):
         super(IntroScene, self).__init__()
+        self.next_lvl = next_lvl
+        self.text = str_r.get_fact()
+        self.text_cursor = 0
+        self.intro = pg.image.load(os.path.join('assets', 'graphics', 'level_intro_{}.png'.format(self.get_intro())))
+        self.timer = 0
+        self.fadein_step = 255
+        self.fadeout_step = 0
+        self.fade_leave = False
+        self.delay_done = False
+        pg.mixer.music.stop()
 
     def render(self, screen):
-        pass
+        # screen.fill(bg_color)
+        screen.blit(self.intro, (0, 0))
+        fact_offset = 0
+        for text in self.text[:self.text_cursor].split('\n'):
+            # todo: align in center
+            fact = font_16.render(text, True, config.MENU_COLOR_HIGHLIGHT)
+            screen.blit(fact, (8, 8 + fact_offset))
+            fact_offset += 20
+
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
-        pass
+        self.timer += time_passed
+        if self.timer > 700:
+            self.delay_done = True
+        if self.delay_done:
+            if self.text_cursor < len(self.text):
+                if self.timer >= 30:
+                    self.timer = 0
+                    self.text_cursor += 1
+                    sound.sfx_lib.get('text').play()
+            elif not self.fade_leave and self.timer > 3000:
+                self.fade_leave = True
+                self.fadeout_step = 255
+            if self.fade_leave and self.fadeout_step <= 0:
+                self.manager.go_to(GameScene(self.next_lvl))
 
     def handle_events(self, events):
         pass
+
+    @staticmethod
+    def get_intro():
+        global current_intro
+        number = current_intro
+        current_intro += 1
+        if current_intro > len(intro_order):
+            current_intro = 1
+        return number
 
 
 class SceneManager(object):
