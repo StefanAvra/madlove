@@ -19,7 +19,10 @@ def load_highscores():
             highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
             highscores = highscores[:10]
     except IOError:
+        highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
+        highscores = highscores[:10]
         save_highscores()
+
 
 
 def highest_score():
