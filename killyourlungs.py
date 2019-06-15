@@ -6,6 +6,7 @@ import sys
 import numpy
 import os
 
+import coins
 import sound
 import config
 import menus
@@ -325,10 +326,13 @@ class TitleScene(Scene):
         # self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
         self.line2 = font_16.render(config.GAME_SUBTITLE, True, config.TEXT_COLOR)
         self.cprght = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
+        self.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
+        self.draw_coin_text = True
+        self.ready_to_play = False
         # self.menu = menus.get_entries('titlescreen')
         # self.menu_funcs = menus.get_funcs('titlescreen')
         self.highlight_clock = 0
-        self.highlight_color = config.MENU_COLOR_HIGHLIGHT
+        self.highlight_color = config.TEXT_COLOR
         self.cursor = 0
         self.fadein_step = 255
         self.fadeout_step = 0
@@ -341,10 +345,25 @@ class TitleScene(Scene):
         sound.sfx_lib.get('intro1').play()
         self.timer = 0
         self.wait_for_music = True
+        self.cigs = pg.sprite.Group()
+        self.draw_cigs = False
+        self.cig_fade = 0
+        self.cig_fade_invert = 1
+        cig_grid = (5, 4)
+        cig_offset = (int(480 / cig_grid[0]), int(640 / cig_grid[1]) + 18)
+        for y in range(cig_grid[1]):
+            for x in range(cig_grid[0]):
+                cig = pg.sprite.Sprite()
+                cig.image = pg.image.load(os.path.join('assets', 'graphics', 'paddle_m.png')).convert()
+                cig.image = pg.transform.rotate(cig.image, -90)
+                cig.rect = cig.image.get_rect()
+                cig.rect.midtop = (cig_offset[0] * x + 48, cig_offset[1] * y)
+                self.cigs.add(cig)
 
     def render(self, screen):
-        self.highlight_clock += time_passed
         screen.fill(bg_color)
+        if self.draw_cigs:
+            self.cigs.draw(screen)
         # pos_line1 = center_to(screen, self.line1)
         # pos_line1 = (pos_line1[0], pos_line1[1] - 24)
         pos_line2 = center_to(screen, self.line2)
@@ -368,15 +387,8 @@ class TitleScene(Scene):
         #     entry_pos = (x_center_to(screen, entry_surf), 400 + idx * menus.MENU_LINE_OFFSET)
         #     screen.blit(entry_surf, entry_pos)
 
-        if self.highlight_clock >= 100:
-            self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
-            self.highlight_clock = 0
-
-        insert_coin = font_16.render('INSERT COIN', True, self.highlight_color)
-        pos_insert = insert_coin.get_rect()
-        pos_insert.center = (screen.get_rect().centerx, screen.get_rect().height * 0.7)
         if self.blit_elements[2]:
-            screen.blit(insert_coin, pos_insert)
+            render_coin_text(self, screen)
         if self.blit_elements[0]:
             screen.blit(self.title.image, self.title.rect)
 
@@ -401,6 +413,9 @@ class TitleScene(Scene):
                 self.manager.go_to(HighscoreScene(previous_scene=self))
             if self.fade_leave_to == 3:
                 self.manager.go_to(TitleScene())
+
+        update_highlight_text(self)
+
         self.title.update()
         self.arrow.update()
         if not self.arrow.done:
@@ -423,14 +438,29 @@ class TitleScene(Scene):
             self.fadeout_step = 255
             self.fade_leave_to = 3
 
+        if not self.draw_cigs and self.timer > 5350:
+            self.draw_cigs = True
+
+        if self.draw_cigs:
+            for cig in self.cigs:
+                cig.rect.y += 1
+                cig.image.set_alpha(40 * round(self.cig_fade / 40))
+                if cig.rect.y > 640:
+                    cig.rect.y = 0 - cig.rect.height
+
+            if self.cig_fade not in range(0, 255):
+                self.cig_fade_invert = self.cig_fade_invert * -1
+            self.cig_fade += 1 * self.cig_fade_invert
+
     def handle_events(self, events):
         if not self.fade_leave_to:
             for e in events:
                 if e.type == pg.JOYBUTTONDOWN:
                     if e.button == 0:
-                        sound.sfx_lib.get('select').play()
-                        self.fadeout_step = 255
-                        self.fade_leave_to = 1
+                        if self.ready_to_play:
+                            sound.sfx_lib.get('select').play()
+                            self.fadeout_step = 255
+                            self.fade_leave_to = 1
                         # f = self.menu_funcs[self.cursor]
                         # if f == 'start':
                         #     self.fade_leave_to = 1
@@ -455,17 +485,19 @@ class TitleScene(Scene):
 
                 if e.type == pg.KEYDOWN:
                     if e.key in [pg.K_SPACE, pg.K_RETURN]:
-                        sound.sfx_lib.get('select').play()
-                        self.fadeout_step = 255
-                        self.fade_leave_to = 1
-                        # f = self.menu_funcs[self.cursor]
-                        # if f == 'start':
-                        #     self.fade_leave_to = 1
-                        # elif f == 'scores':
-                        #     self.fade_leave_to = 2
-                        # elif f == 'credits':
-                        #     pass
-
+                        if self.ready_to_play:
+                            sound.sfx_lib.get('select').play()
+                            self.fadeout_step = 255
+                            self.fade_leave_to = 1
+                            # f = self.menu_funcs[self.cursor]
+                            # if f == 'start':
+                            #     self.fade_leave_to = 1
+                            # elif f == 'scores':
+                            #     self.fade_leave_to = 2
+                            # elif f == 'credits':
+                            #     pass
+                    if e.key == pg.K_1:
+                        coins.add_coin()
                     if e.key == pg.K_ESCAPE:
                         self.manager.go_to(OverlayMenuScene(self, 'exit'))
                     if e.key == pg.K_h:
@@ -649,22 +681,27 @@ class HighscoreScene(Scene):
         self.lines = []
         self.previous_scene = previous_scene
         place = 0
-        for score in scores.highscores:
+        for highscore in scores.highscores:
             place += 1
-            # new_line = '{name: <{fill}}    {score}'.format(name=score[0], fill='8', score=score[1])
-            new_line = '{:<2}   {:<8} {:>10}'.format(place, score[0], score[1])
+            # new_line = '{name: <{fill}}    {highscore}'.format(name=highscore[0], fill='8', highscore=highscore[1])
+            new_line = '{:<2}   {:<8} {:>10}'.format(place, highscore[0], highscore[1])
             self.lines.append(
                 font_16.render(new_line,
                                True, config.TEXT_COLOR))
         self.title = font_16.render(str_r.get_string('highscores_title'), True, config.TEXT_COLOR)
         self.fadein_step = 255
         self.fadeout_step = 0
-        self.fade_leave = False
+        self.fade_leave_to = False
         self.print_step = 0
         self.clock = 0
         self.mode = mode
         self.leave_timer = 5000
         self.leaving = False
+        self.draw_coin_text = True
+        self.ready_to_play = False
+        self.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
+        self.highlight_clock = 0
+        self.highlight_color = config.TEXT_COLOR
 
     def render(self, screen):
 
@@ -674,6 +711,9 @@ class HighscoreScene(Scene):
         screen.blit(self.title, title_pos)
         for idx, line in enumerate(self.lines[:self.print_step]):
             screen.blit(line, (50, 150 + (40 * idx)))
+
+        if self.mode == 'show':
+            render_coin_text(self, screen, y_pos=0.9)
 
         # fade screen
         if self.fadein_step > 0:
@@ -691,11 +731,13 @@ class HighscoreScene(Scene):
             self.leave_timer -= time_passed
             if self.leave_timer < 0 and not self.leaving:
                 self.fadeout_step = 255
-                self.fade_leave = True
+                self.fade_leave_to = True
                 self.leaving = True
 
-        if self.fade_leave and self.fadeout_step <= 0:
-            if self.previous_scene:
+        if self.fade_leave_to and self.fadeout_step <= 0:
+            if self.fade_leave_to == 'game':
+                self.manager.go_to(IntroScene(0))
+            elif self.previous_scene:
                 self.previous_scene.fade_leave_to = False
                 self.previous_scene.timer = 0
                 self.previous_scene.fadein_step = 255
@@ -704,13 +746,23 @@ class HighscoreScene(Scene):
             else:
                 self.manager.go_to(TitleScene())
 
+        if self.mode == 'show':
+            update_highlight_text(self)
+
     def handle_events(self, events):
         for e in events:
-            if not self.fade_leave:
+            if not self.fade_leave_to:
                 if e.type == pg.KEYDOWN:
+                    if self.ready_to_play:
+                        if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                            sound.sfx_lib.get('select').play()
+                            self.fadeout_step = 255
+                            self.fade_leave_to = 'game'
+                    if e.key == pg.K_1:
+                        coins.add_coin()
                     if e.key == pg.K_ESCAPE:
                         self.fadeout_step = 255
-                        self.fade_leave = True
+                        self.fade_leave_to = True
 
 
 class CreditsScene(Scene):
@@ -1127,6 +1179,50 @@ def render_hud(screen, hud_score, stage, lives, timer, highlight_combo=0):
     score_pos = score_text.get_rect()
     score_pos.topleft = (8, 8)
     screen.blit(score_text, score_pos)
+
+
+def render_falling_cigs(screen, offset):
+    grid = (6, 5)
+    x_off_step = int(screen.get_width() / grid[0])
+    x_off = x_off_step
+    y_off_step = int(screen.get_height() / grid[1])
+    y_off = y_off_step
+    for y in range(grid[1]):
+        for x in range(grid[0]):
+            cig = pg.image.load(os.path.join('assets', 'graphics', 'paddle_m.png')).convert()
+            cig = pg.transform.rotate(cig, -90)
+            screen.blit(cig, (x_off, y_off))
+            x_off += x_off_step
+        x_off = x_off_step
+        y_off += y_off_step
+
+    return offset
+
+
+def update_highlight_text(scene):
+    if scene.ready_to_play:
+        scene.highlight_clock += time_passed
+        if scene.highlight_clock >= 100:
+            scene.highlight_color = tuple(numpy.subtract((255, 255, 255), scene.highlight_color))
+            scene.highlight_clock = 0
+    else:
+        scene.highlight_clock += time_passed
+        if scene.highlight_clock >= 500:
+            scene.highlight_clock = 0
+            scene.draw_coin_text = not scene.draw_coin_text
+
+    if coins.get_credit() > 0:
+        scene.ready_to_play = True
+        scene.draw_coin_text = True
+        scene.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
+
+
+def render_coin_text(scene, screen, y_pos=0.7):
+    if scene.draw_coin_text:
+        insert_coin = font_16.render(scene.coin_text, True, scene.highlight_color)
+        pos_insert = insert_coin.get_rect()
+        pos_insert.center = (screen.get_rect().centerx, screen.get_rect().height * y_pos)
+        screen.blit(insert_coin, pos_insert)
 
 
 def center_to(center_surface, surface):

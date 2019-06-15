@@ -1,4 +1,5 @@
 import random
+import coins
 
 
 __strings = {
@@ -7,10 +8,12 @@ __strings = {
     'lives_text': 'SMOKES: {}',
     'game_over': 'GAME OVER\nCANCER FAILED\n YOUR BODY IS A TEMPLE',
     'metastasis': 'METASTASIS UNLOCKED',
-    'finished': 'YOU KILLED THESE LUNGS!',
+    'finished': 'yeah!',
     'copyright': '© 2019 GURKIMAN, AVRA',
     'combo': 'COMBO X{}',
-    'highscores_title': 'HIGHSCORES'
+    'highscores_title': 'HIGHSCORES',
+    'start': 'press start',
+    'coin': 'insert coin'
 }
 
 __facts = {
@@ -66,7 +69,7 @@ current_fact = 0
 
 
 def get_string(name):
-    return __strings.get(name)
+    return __strings.get(name).upper()
 
 
 def get_fact(number=None):
