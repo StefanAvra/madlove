@@ -273,11 +273,11 @@ class LostLifeScene(Scene):
         self.text_bg_surf = pg.Surface((text_surf_x, text_surf_y))
         self.text_bg_shadow = pg.Surface((self.text_bg_surf.get_rect().width, self.text_bg_surf.get_rect().height))
         pg.mixer.music.stop()
-
         if self.game_state.lives <= 0:
             self.game_over = True
         else:
             print('lost a life')
+            sound.sfx_lib.get('lost_life').play()
 
     def render(self, screen):
         if not self.game_over:
@@ -800,6 +800,7 @@ class IntroScene(Scene):
         self.text_cursor = 0
         self.intro = pg.image.load(os.path.join('assets', 'graphics', 'level_intro_{}.png'.format(self.get_intro())))
         self.timer = 0
+        self.text_cursor_speed = 30
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave = False
@@ -828,7 +829,7 @@ class IntroScene(Scene):
             self.delay_done = True
         if self.delay_done:
             if self.text_cursor < len(self.text):
-                if self.timer >= 30:
+                if self.timer >= self.text_cursor_speed:
                     self.timer = 0
                     self.text_cursor += 1
                     sound.sfx_lib.get('text').play()
@@ -839,7 +840,13 @@ class IntroScene(Scene):
                 self.manager.go_to(GameScene(self.next_lvl))
 
     def handle_events(self, events):
-        pass
+        for e in events:
+            if e.type == pg.KEYDOWN:
+                if e.key in [pg.K_SPACE]:
+                    self.text_cursor_speed = 10
+            if e.type == pg.KEYUP:
+                if e.key in [pg.K_SPACE]:
+                    self.text_cursor_speed = 30
 
     @staticmethod
     def get_intro():
