@@ -328,6 +328,8 @@ class TitleScene(Scene):
         self.cprght = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
         self.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
         self.draw_coin_text = True
+        self.credit_text = str_r.get_string('credit')
+        self.draw_credit = False
         self.ready_to_play = False
         # self.menu = menus.get_entries('titlescreen')
         # self.menu_funcs = menus.get_funcs('titlescreen')
@@ -345,6 +347,7 @@ class TitleScene(Scene):
         sound.sfx_lib.get('intro1').play()
         self.timer = 0
         self.wait_for_music = True
+
         self.cigs = pg.sprite.Group()
         self.draw_cigs = False
         self.cig_fade = 0
@@ -392,6 +395,8 @@ class TitleScene(Scene):
         if self.blit_elements[0]:
             screen.blit(self.title.image, self.title.rect)
 
+        render_credit(self, screen)
+
         screen.blit(self.arrow.image, self.arrow.rect)
 
         # fade screen
@@ -430,6 +435,7 @@ class TitleScene(Scene):
                             if self.arrow.rect.centery >= 640:
                                 self.title.animate = True
                                 self.arrow.done = True
+                                self.draw_credit = True
                                 if not pg.mixer.music.get_busy():
                                     pg.mixer.music.play(1)
                                     self.wait_for_music = False
@@ -497,7 +503,8 @@ class TitleScene(Scene):
                             # elif f == 'credits':
                             #     pass
                     if e.key == pg.K_1:
-                        coins.add_coin()
+                        # coins.add_coin()
+                        pass
                     if e.key == pg.K_ESCAPE:
                         self.manager.go_to(OverlayMenuScene(self, 'exit'))
                     if e.key == pg.K_h:
@@ -702,6 +709,8 @@ class HighscoreScene(Scene):
         self.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
         self.highlight_clock = 0
         self.highlight_color = config.TEXT_COLOR
+        self.draw_credit = True if mode == 'show' else False
+        self.credit_text = str_r.get_string('credit')
 
     def render(self, screen):
 
@@ -714,6 +723,8 @@ class HighscoreScene(Scene):
 
         if self.mode == 'show':
             render_coin_text(self, screen, y_pos=0.9)
+
+        render_credit(self, screen)
 
         # fade screen
         if self.fadein_step > 0:
@@ -759,7 +770,8 @@ class HighscoreScene(Scene):
                             self.fadeout_step = 255
                             self.fade_leave_to = 'game'
                     if e.key == pg.K_1:
-                        coins.add_coin()
+                        # coins.add_coin()
+                        pass
                     if e.key == pg.K_ESCAPE:
                         self.fadeout_step = 255
                         self.fade_leave_to = True
@@ -802,7 +814,7 @@ class IntroScene(Scene):
             # todo: align in center
             fact = font_16.render(text, True, config.MENU_COLOR_HIGHLIGHT)
             screen.blit(fact, (8, 8 + fact_offset))
-            fact_offset += 20
+            fact_offset += 24
 
         # fade screen
         if self.fadein_step > 0:
@@ -1225,6 +1237,14 @@ def render_coin_text(scene, screen, y_pos=0.7):
         screen.blit(insert_coin, pos_insert)
 
 
+def render_credit(scene, screen):
+    if scene.draw_credit and coins.get_credit():
+        credit = font_16.render(scene.credit_text.format(coins.get_credit()), True, config.TEXT_COLOR)
+        pos_credit = credit.get_rect()
+        pos_credit.topleft = (8, screen.get_rect().height * 0.96)
+        screen.blit(credit, pos_credit)
+
+
 def center_to(center_surface, surface):
     """will return the position needed to set surface to the center of center_surface"""
     pos = surface.get_rect()
@@ -1276,7 +1296,13 @@ def main():
             running = False
             return
 
-        manager.scene.handle_events(pg.event.get())
+        events = pg.event.get()
+        for e in events:
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_1:
+                    coins.add_coin()
+
+        manager.scene.handle_events(events)
         manager.scene.update()
         manager.scene.render(screen)
         if config.SHOW_FPS:

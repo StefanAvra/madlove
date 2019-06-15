@@ -13,7 +13,8 @@ __strings = {
     'combo': 'COMBO X{}',
     'highscores_title': 'HIGHSCORES',
     'start': 'press start',
-    'coin': 'insert coin'
+    'coin': 'insert coin',
+    'credit': 'credit(s): {}'
 }
 
 __facts = {
@@ -21,7 +22,7 @@ __facts = {
     1: 'Smoking can cause a slow\nand painful death.',
     2: 'Smoking kills.',
     3: 'Smoking causes lung, oral\nand laryngeal cancer.',
-    4: 'Smoking causes heart disease.',
+    4: 'Smoking causes\nheart disease.',
     5: 'At least four of the actors\nwho played the iconic MadLove\nMan have died of\nsmoking-related diseases.',
     6: '67% of Indonesia\'s\nmale population smokes.',
     7: 'The MadLove Man is still used\nin Japan, where smoking is\nwidespread in the male\npopulation.',
