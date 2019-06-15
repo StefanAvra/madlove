@@ -10,12 +10,16 @@ __multiplier = 0
 __decrease_timer = 0
 __last_multi = 0
 
+
 def load_highscores():
     global highscores
-    with open(config.HIGHSCORE_FILE, 'rb') as f:
-        highscores = pickle.load(f)
-        highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
-        highscores = highscores[:10]
+    try:
+        with open(config.HIGHSCORE_FILE, 'rb') as f:
+            highscores = pickle.load(f)
+            highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
+            highscores = highscores[:10]
+    except IOError:
+        save_highscores()
 
 
 def highest_score():
