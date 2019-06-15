@@ -4,11 +4,13 @@ __credit = 0
 __life_to_credit_ratio = 3
 
 
-def coins_to_lives():
+def consume_coin():
     """resets credit and returns amount of lives to add in-game"""
     global __credit
-    add_lives = __credit * __life_to_credit_ratio
-    __credit = 0
+    add_lives = 0
+    if __credit > 0:
+        add_lives = __life_to_credit_ratio
+        __credit -= 1
     return add_lives
 
 

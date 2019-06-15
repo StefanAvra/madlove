@@ -52,7 +52,7 @@ class GameScene(Scene):
         self.bg.convert()
         self.bg.fill(bg_color)
         self.current_stage = 0
-        self.lives = 3
+        self.lives = coins.consume_coin()
         self.player = Player()
         self.balls = pg.sprite.Group()
         # self.balls.add(Ball())
