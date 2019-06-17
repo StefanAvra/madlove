@@ -20,7 +20,7 @@ if config.USE_JOYSTICK:
         joystick.init()
 
 
-INSERT_COIN = pg.K_1
+INSERT_COIN = 4
 DEBUG_HUD = pg.K_f
 ADD_BALL = pg.K_b
 ACTIVATE_BOT = pg.K_COMMA

@@ -68,8 +68,13 @@ _levels = {
                    '                 '],
         'name': 'The Lungs',
         'powerups': {
-            ''
-        }
+            'life': 1,
+            'shoot': 1,
+            'metastasis': 3,
+            'bigger': 2,
+            'smaller': 1
+        },
+        'bonus_time': 120
     },
     1: {
         'bricks': ['                ',

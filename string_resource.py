@@ -14,7 +14,9 @@ __strings = {
     'highscores_title': 'HIGHSCORES',
     'start': 'press start',
     'coin': 'insert coin',
-    'credit': 'credit(s): {}'
+    'credit': 'credit(s): {}',
+    'no_cigs': 'you are out of cigarettes!\ncontinue?',
+    'consume_coins': 'score: {}\n{}\ncredits: {}\n cigs: {}'
 }
 
 __facts = {

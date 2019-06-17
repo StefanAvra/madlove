@@ -24,7 +24,6 @@ def load_highscores():
         save_highscores()
 
 
-
 def highest_score():
     return max(highscores.items(), key=operator.itemgetter(1))
 

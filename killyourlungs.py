@@ -67,6 +67,10 @@ class GameScene(Scene):
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave_to = False
+        self.draw_credit = False
+        self.credit_text = str_r.get_string('credit')
+        self.credit = coins.get_credit()
+        self.credit_text_timer = 0
 
         tile_offset_y = 10
         for line in self.level_data.bricks:
@@ -106,6 +110,9 @@ class GameScene(Scene):
                                           round(velocity[1], 2))), True, config.DEBUG_COLOR)
             screen.blit(velocity, (40, 0))
 
+        if self.draw_credit:
+            render_credit(self, screen)
+
         # fade screen
         if self.fadein_step > 0:
             self.fadein_step = render_fading(screen, self.fadein_step, 0)
@@ -138,14 +145,15 @@ class GameScene(Scene):
         past_stage = self.current_stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
         if stages[past_stage] == stages[0] and stages[past_stage] != stages[self.current_stage]:
-            self.notif_stack.append(Message("got cancer!", False))
+            self.notif_stack.append(Message("got cancer!", 'cancer'))
 
         if len(self.notif_stack) > 0 and self.notification is None:
             self.notification = self.notif_stack.pop(0)
-            if self.notification.std_sfx:
+            if self.notification.std_sfx == 'normal':
                 sound.sfx_lib.get('message').play()
-            else:
+            elif self.notification.std_sfx == 'cancer':
                 sound.sfx_lib.get('cancer').play()
+
 
         if self.notification is not None:
             if self.notification.timer <= 0:
@@ -169,6 +177,16 @@ class GameScene(Scene):
         else:
             self.hud_highlight_combo = 0
 
+        if self.credit < coins.get_credit():
+            self.credit = coins.get_credit()
+            self.notif_stack.append(Message(self.credit_text.format(coins.get_credit()), sfx=False))
+
+        if self.draw_credit:
+            self.credit_text_timer += time_passed
+            if self.credit_text_timer >= 2000:
+                self.draw_credit = False
+                self.credit_text_timer = 0
+
     def reset_round(self):
         pg.mixer.music.play(-1)
         self.balls.add(Ball(velocity=(random.randint(-2, 2), -3)))
@@ -179,10 +197,11 @@ class GameScene(Scene):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button == 0:
-                    self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
+                    self.manager.go_to(OverlayMenuScene(self, 'pause'))
                 if e.button == 1:
                     for ball in self.balls:
                         ball.sticky = False
+
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'pause'))
@@ -529,27 +548,67 @@ class GameOver(Scene):
         self.reached_lvl = game_state.level_data.no
         self.reached_stage = game_state.current_stage
         self.lives_left = game_state.lives
+        self.game_over_text = str_r.get_string('game_over').splitlines()
+        self.game_over = False
+        self.game_over_sound_played = False
+        self.consume_coins_text = str_r.get_string('consume_coins').splitlines()
+        self.consume_coins = False
+        self.consume_coins_values = [score, 0, coins.get_credit(), 0]
+        self.countdown_timer = 10000
+        self.countdown = int(self.countdown_timer / 1000)
+        self.countdown_active = False
+        self.countdown_text = str_r.get_string('no_cigs').splitlines()
 
-        score = 0
-        print('ded.')
         if pg.mixer.music.get_busy():
             pg.mixer.music.stop()
-        sound.sfx_lib.get('game_over').play()
-
-        # todo: calc score, load highscores, input name if highscore
 
     def render(self, screen):
         screen.fill(bg_color)
-        game_over_txt = str_r.get_string('game_over').splitlines()
-        for idx, line in enumerate(game_over_txt):
-            over_text_surf = font_16.render(line, True, config.TEXT_COLOR)
 
-            over_rect = over_text_surf.get_rect()
-            over_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + idx * menus.PADDING)
-            screen.blit(over_text_surf, over_rect)
+        if self.game_over:
+            for idx, line in enumerate(self.game_over_txt):
+                over_text_surf = font_16.render(line, True, config.TEXT_COLOR)
+                over_rect = over_text_surf.get_rect()
+                over_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + idx * menus.PADDING)
+                screen.blit(over_text_surf, over_rect)
+        elif self.countdown_active:
+            for idx, line in enumerate(self.countdown_text):
+                text_surf = font_16.render(line, True, config.TEXT_COLOR)
+                text_rect = text_surf.get_rect()
+                text_rect.center = (screen.get_rect().centerx, 200 + idx * menus.PADDING)
+                screen.blit(text_surf, text_rect)
+            counter = font_24.render(str(self.countdown), True, config.TEXT_COLOR)
+            counter_pos = counter.get_rect()
+            counter_pos.center = screen.get_rect().center
+            screen.blit(counter, counter_pos)
+        elif self.consume_coins:
+            for idx, line in enumerate(self.consume_coins_text):
+                text_surf = font_16.render(line, True, config.TEXT_COLOR)
+                text_rect = text_surf.get_rect()
+                text_rect.topleft = (200, 200 + idx * menus.PADDING)
+                screen.blit(text_surf, text_rect)
 
     def update(self):
-        pass
+        if self.game_over:
+            if not self.game_over_sound_played:
+                sound.sfx_lib.get('game_over').play()
+                self.game_over_sound_played = True
+        else:
+            if coins.get_credit() > 0:
+                self.countdown_active = False
+                # consume coins
+                pass
+            else:
+                self.countdown_active = True
+        if self.countdown_active:
+            if self.countdown_timer > 0:
+                self.countdown_timer -= time_passed
+            else:
+                # countdown over
+                pass
+            if not self.countdown == int(self.countdown_timer / 1000):
+                self.countdown = int(self.countdown_timer / 1000)
+                sound.sfx_lib.get('countdown').play()
 
     def handle_events(self, events):
         for e in events:
@@ -800,7 +859,7 @@ class IntroScene(Scene):
         self.text_cursor = 0
         self.intro = pg.image.load(os.path.join('assets', 'graphics', 'level_intro_{}.png'.format(self.get_intro())))
         self.timer = 0
-        self.text_cursor_speed = 30
+        self.text_cursor_speed = 40
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave = False
@@ -846,7 +905,14 @@ class IntroScene(Scene):
                     self.text_cursor_speed = 10
             if e.type == pg.KEYUP:
                 if e.key in [pg.K_SPACE]:
-                    self.text_cursor_speed = 30
+                    self.text_cursor_speed = 40
+
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button in [0, 1]:
+                    self.text_cursor_speed = 10
+            if e.type == pg.JOYBUTTONUP:
+                if e.button in [0, 1]:
+                    self.text_cursor_speed = 40
 
     @staticmethod
     def get_intro():
@@ -1133,7 +1199,7 @@ class SpriteSheet:
 
 
 class Message:
-    def __init__(self, msg, sfx=True):
+    def __init__(self, msg, sfx='normal'):
         self.timer = 2000
         self.color = config.TEXT_COLOR
         self.msg = msg.upper()
@@ -1307,6 +1373,9 @@ def main():
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_1:
+                    coins.add_coin()
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button == ctrls.INSERT_COIN:
                     coins.add_coin()
 
         manager.scene.handle_events(events)
