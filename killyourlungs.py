@@ -360,6 +360,7 @@ class TitleScene(Scene):
         self.fade_leave_to = False
         self.title = Title()
         self.arrow = Arrow()
+        self.bg_arrow = Arrow(True)
         self.blit_elements = [False, False, False, False]
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'titlescreen.ogg'))
         # pg.mixer.music.play(-1)
@@ -386,6 +387,8 @@ class TitleScene(Scene):
         screen.fill(bg_color)
         if self.draw_cigs:
             self.cigs.draw(screen)
+        if self.bg_arrow.active:
+            screen.blit(self.bg_arrow.image, self.bg_arrow.rect)
         # pos_line1 = center_to(screen, self.line1)
         # pos_line1 = (pos_line1[0], pos_line1[1] - 24)
         pos_line2 = center_to(screen, self.line2)
@@ -452,13 +455,15 @@ class TitleScene(Scene):
                         if self.arrow.rect.centery >= 550:
                             self.blit_elements[3] = True
                             if self.arrow.rect.centery >= 640:
-                                self.title.animate = True
-                                self.arrow.done = True
+                                self.bg_arrow.active = True
                                 self.draw_credit = True
                                 if not pg.mixer.music.get_busy():
                                     pg.mixer.music.play(1)
                                     self.wait_for_music = False
-
+        if self.bg_arrow.active:
+            self.bg_arrow.update()
+            if self.bg_arrow.done:
+                self.title.animate = True
         if not pg.mixer.music.get_busy() and not self.wait_for_music and not self.fade_leave_to:
             self.fadeout_step = 255
             self.fade_leave_to = 3
@@ -811,7 +816,7 @@ class HighscoreScene(Scene):
                 self.previous_scene.fade_leave_to = False
                 self.previous_scene.timer = 0
                 self.previous_scene.fadein_step = 255
-                self.previous_scene.title.restart_animation()
+                self.previous_scene.title.restart_animation(timer=2000)
                 self.manager.go_to(self.previous_scene)
             else:
                 self.manager.go_to(TitleScene())
@@ -1120,16 +1125,20 @@ class Brick(pg.sprite.Sprite):
 
 
 class Arrow(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, second=False):
         super().__init__()
         self.image = pg.image.load(os.path.join('assets', 'graphics', 'arrow.png')).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.centery = 0 - self.rect.height
         self.done = False
+        self.second_run = second
+        self.active = False
 
     def update(self, *args):
-        if self.rect.top < 640:
+        if self.rect.top < (80 if self.second_run else 640):
             self.rect.centery += 18
+        else:
+            self.done = True
 
 
 class Title(pg.sprite.Sprite):
@@ -1143,18 +1152,25 @@ class Title(pg.sprite.Sprite):
         self.shine = pg.Surface((20, self.rect.height))
         self.shine.fill((255, 255, 255))
         self.shine_pos = -20
+        self.shine_timer = 0
 
     def update(self):
-        if self.animate:
-            if self.shine_pos == 0:
-                sound.sfx_lib.get('intro2').play()
-            if self.shine_pos > self.rect.width:
-                self.animate = False
-            self.image.blit(self.image_clean, (0, 0))
-            self.image.blit(self.shine, (self.shine_pos, 0), special_flags=pg.BLEND_ADD)
-            self.shine_pos += 20
+        if not self.shine_timer == 0:
+            self.shine_timer -= time_passed
+            if self.shine_timer < 0:
+                self.shine_timer = 0
+        else:
+            if self.animate:
+                if self.shine_pos == 0:
+                    sound.sfx_lib.get('intro2').play()
+                if self.shine_pos > self.rect.width:
+                    self.animate = False
+                self.image.blit(self.image_clean, (0, 0))
+                self.image.blit(self.shine, (self.shine_pos, 0), special_flags=pg.BLEND_ADD)
+                self.shine_pos += 20
 
-    def restart_animation(self):
+    def restart_animation(self, timer=0):
+        self.shine_timer = timer
         self.animate = True
         self.shine_pos = -20
 
