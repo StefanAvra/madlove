@@ -68,7 +68,7 @@ class GameScene(Scene):
         self.fadeout_step = 0
         self.fade_leave_to = False
         self.draw_credit = False
-        self.credit_text = str_r.get_string('credit')
+        self.credit_text = str_r.get_str('credit')
         self.credit = coins.get_credit()
         self.credit_text_timer = 0
 
@@ -110,8 +110,8 @@ class GameScene(Scene):
                                           round(velocity[1], 2))), True, config.DEBUG_COLOR)
             screen.blit(velocity, (40, 0))
 
-        if self.draw_credit:
-            render_credit(self, screen)
+        # if self.draw_credit:
+        #     render_credit(self, screen)
 
         # fade screen
         if self.fadein_step > 0:
@@ -153,7 +153,6 @@ class GameScene(Scene):
                 sound.sfx_lib.get('message').play()
             elif self.notification.std_sfx == 'cancer':
                 sound.sfx_lib.get('cancer').play()
-
 
         if self.notification is not None:
             if self.notification.timer <= 0:
@@ -259,7 +258,7 @@ class FinishedLevelScene(Scene):
 
         # todo: show time bonus, reached cancer stage, score
 
-        finished_text = font_16.render(str_r.get_string('finished'), True, config.TEXT_COLOR)
+        finished_text = font_16.render(str_r.get_str('finished'), True, config.TEXT_COLOR)
         finished_pos = finished_text.get_rect()
         finished_pos.center = screen.get_rect().center
         screen.blit(finished_text, finished_pos)
@@ -285,54 +284,69 @@ class LostLifeScene(Scene):
         self.game_state = game_state
         self.game_state.lives -= 1
         self.game_over = False
-        self.lost_text = str_r.get_string('lost_life').splitlines()
+        pg.mixer.music.stop()
+
+        if self.game_state.lives <= 0:
+            sound.sfx_lib.get('game_over').play()
+            self.lost_text = str_r.get_str('zero_lives').splitlines()
+            self.game_over = True
+            self.fadeout_step = 255
+            self.game_over_timer = 4000
+            print('out of cigs')
+        else:
+            sound.sfx_lib.get('lost_life').play()
+            self.lost_text = str_r.get_str('lost_life').splitlines()
+            print('lost a life')
+            self.fadeout_step = 0
         text_surf_x, text_surf_y = menus.PADDING * 2, menus.PADDING * 2
         text_surf_y += menus.MENU_LINE_OFFSET * len(self.lost_text) - menus.MENU_LINE_OFFSET / 2
         text_surf_x += 16 * len(max(self.lost_text, key=len))
         self.text_bg_surf = pg.Surface((text_surf_x, text_surf_y))
         self.text_bg_shadow = pg.Surface((self.text_bg_surf.get_rect().width, self.text_bg_surf.get_rect().height))
-        pg.mixer.music.stop()
-        if self.game_state.lives <= 0:
-            self.game_over = True
-        else:
-            print('lost a life')
-            sound.sfx_lib.get('lost_life').play()
 
     def render(self, screen):
-        if not self.game_over:
-            self.text_bg_surf.fill(bg_color)
-            self.text_bg_shadow.fill(config.MENU_SHADOW_COLOR)
-            for idx, line in enumerate(self.lost_text):
-                lost_line_surf = font_16.render(line, True, config.TEXT_COLOR)
-                lost_line_pos = lost_line_surf.get_rect()
-                lost_line_pos.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx * menus.PADDING)
-                lost_line_pos = (x_center_to(self.text_bg_surf, lost_line_surf),
-                                 menus.PADDING + idx * menus.MENU_LINE_OFFSET)
-                self.text_bg_surf.blit(lost_line_surf, lost_line_pos)
+        # if not self.game_over:
+        self.text_bg_surf.fill(bg_color)
+        self.text_bg_shadow.fill(config.MENU_SHADOW_COLOR)
+        for idx, line in enumerate(self.lost_text):
+            lost_line_surf = font_16.render(line, True, config.TEXT_COLOR)
+            lost_line_pos = lost_line_surf.get_rect()
+            lost_line_pos.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx * menus.PADDING)
+            lost_line_pos = (x_center_to(self.text_bg_surf, lost_line_surf),
+                             menus.PADDING + idx * menus.MENU_LINE_OFFSET)
+            self.text_bg_surf.blit(lost_line_surf, lost_line_pos)
 
-            text_bg_pos = center_to(screen, self.text_bg_surf)
-            text_bg_shadow_pos = (text_bg_pos[0] + config.MENU_SHADOW_OFFSET,
-                                  text_bg_pos[1] + config.MENU_SHADOW_OFFSET)
+        text_bg_pos = center_to(screen, self.text_bg_surf)
+        text_bg_shadow_pos = (text_bg_pos[0] + config.MENU_SHADOW_OFFSET,
+                              text_bg_pos[1] + config.MENU_SHADOW_OFFSET)
 
-            screen.blit(self.text_bg_shadow, text_bg_shadow_pos)
-            screen.blit(self.text_bg_surf, text_bg_pos)
+        screen.blit(self.text_bg_shadow, text_bg_shadow_pos)
+        screen.blit(self.text_bg_surf, text_bg_pos)
+
+        if self.fadeout_step > 0 >= self.game_over_timer:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
         if self.game_over:
-            self.manager.go_to(GameOver(self.game_state))
+            if self.game_over_timer > 0:
+                self.game_over_timer -= time_passed
+            else:
+                if self.fadeout_step <= 0:
+                    self.manager.go_to(ContinueScene(self.game_state))
 
     def handle_events(self, events):
-        for e in events:
-            if e.type == pg.JOYBUTTONDOWN:
-                if e.button in [0, 1]:
-                    self.game_state.reset_round()
-                    self.go_back()
-            if e.type == pg.KEYDOWN:
-                if e.key == pg.K_SPACE:
-                    self.game_state.reset_round()
-                    self.go_back()
-                if e.key == pg.K_ESCAPE:
-                    pass
+        if not self.game_over:
+            for e in events:
+                if e.type == pg.JOYBUTTONDOWN:
+                    if e.button in [0, 1]:
+                        self.game_state.reset_round()
+                        self.go_back()
+                if e.type == pg.KEYDOWN:
+                    if e.key == pg.K_SPACE:
+                        self.game_state.reset_round()
+                        self.go_back()
+                    if e.key == pg.K_ESCAPE:
+                        pass
 
     def go_back(self):
         pg.mixer.music.unpause()
@@ -344,10 +358,10 @@ class TitleScene(Scene):
         super(TitleScene, self).__init__()
         # self.line1 = font_24.render(config.GAME_TITLE, True, config.TEXT_COLOR)
         self.line2 = font_16.render(config.GAME_SUBTITLE, True, config.TEXT_COLOR)
-        self.cprght = font_8.render(str_r.get_string('copyright'), True, config.TEXT_COLOR)
-        self.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
+        self.cprght = font_8.render(str_r.get_str('copyright'), True, config.TEXT_COLOR)
+        self.coin_text = str_r.get_str('start') if coins.get_credit() > 0 else str_r.get_str('coin')
         self.draw_coin_text = True
-        self.credit_text = str_r.get_string('credit')
+        self.credit_text = str_r.get_str('credit')
         self.draw_credit = False
         self.ready_to_play = False
         # self.menu = menus.get_entries('titlescreen')
@@ -550,70 +564,39 @@ class GameOver(Scene):
         super(GameOver, self).__init__()
         global score
         self.score = score
-        self.reached_lvl = game_state.level_data.no
+        self.reached_lvl = game_state.level_data.no + 1
         self.reached_stage = game_state.current_stage
-        self.lives_left = game_state.lives
-        self.game_over_text = str_r.get_string('game_over').splitlines()
-        self.game_over = False
-        self.game_over_sound_played = False
-        self.consume_coins_text = str_r.get_string('consume_coins').splitlines()
-        self.consume_coins = False
-        self.consume_coins_values = [score, 0, coins.get_credit(), 0]
-        self.countdown_timer = 10000
-        self.countdown = int(self.countdown_timer / 1000)
-        self.countdown_active = False
-        self.countdown_text = str_r.get_string('no_cigs').splitlines()
+        self.game_over_text = 'GAME OVER'
+        self.is_highscore = score > scores.lowest_score()
+        self.blit_elements = [False, False]
+        self.timer = 0
 
-        if pg.mixer.music.get_busy():
-            pg.mixer.music.stop()
+        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
+        pg.mixer.music.play(-1)
 
     def render(self, screen):
         screen.fill(bg_color)
-
-        if self.game_over:
-            for idx, line in enumerate(self.game_over_txt):
-                over_text_surf = font_16.render(line, True, config.TEXT_COLOR)
-                over_rect = over_text_surf.get_rect()
-                over_rect.center = (screen.get_rect().centerx, screen.get_rect().centery + idx * menus.PADDING)
-                screen.blit(over_text_surf, over_rect)
-        elif self.countdown_active:
-            for idx, line in enumerate(self.countdown_text):
-                text_surf = font_16.render(line, True, config.TEXT_COLOR)
-                text_rect = text_surf.get_rect()
-                text_rect.center = (screen.get_rect().centerx, 200 + idx * menus.PADDING)
-                screen.blit(text_surf, text_rect)
-            counter = font_24.render(str(self.countdown), True, config.TEXT_COLOR)
-            counter_pos = counter.get_rect()
-            counter_pos.center = screen.get_rect().center
-            screen.blit(counter, counter_pos)
-        elif self.consume_coins:
-            for idx, line in enumerate(self.consume_coins_text):
-                text_surf = font_16.render(line, True, config.TEXT_COLOR)
-                text_rect = text_surf.get_rect()
-                text_rect.topleft = (200, 200 + idx * menus.PADDING)
-                screen.blit(text_surf, text_rect)
+        # todo: make game over text wave
+        game_over_surf = font_24.render(self.game_over_text, True, config.TEXT_COLOR)
+        game_over_rect = game_over_surf.get_rect()
+        game_over_rect.center = (screen.get_width() / 2, screen.get_height() * 0.1)
+        screen.blit(game_over_surf, game_over_rect)
+        if self.blit_elements[0]:
+            level = font_16.render()
+        if self.blit_elements[1]:
+            stage = font_16.render()
+        if self.blit_elements[2]:
+            score_surf = font_16.render()
+        if self.blit_elements[3]:
+            pass
 
     def update(self):
-        if self.game_over:
-            if not self.game_over_sound_played:
-                sound.sfx_lib.get('game_over').play()
-                self.game_over_sound_played = True
-        else:
-            if coins.get_credit() > 0:
-                self.countdown_active = False
-                # consume coins
-                pass
-            else:
-                self.countdown_active = True
-        if self.countdown_active:
-            if self.countdown_timer > 0:
-                self.countdown_timer -= time_passed
-            else:
-                # countdown over
-                pass
-            if not self.countdown == int(self.countdown_timer / 1000):
-                self.countdown = int(self.countdown_timer / 1000)
-                sound.sfx_lib.get('countdown').play()
+        if False in self.blit_elements:
+            self.timer += time_passed
+            if self.timer >= 200:
+                self.timer = 0
+                self.blit_elements.insert(0, True)
+                self.blit_elements.remove(False)
 
     def handle_events(self, events):
         for e in events:
@@ -628,6 +611,114 @@ class GameOver(Scene):
                     self.manager.go_to(TitleScene())
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'exit'))
+
+
+class ContinueScene(Scene):
+    def __init__(self, game_state):
+        super(ContinueScene, self).__init__()
+        self.game_state = game_state
+        self.lives_left = game_state.lives
+        self.game_over = False
+        self.countdown_timer = 10000
+        self.countdown = int(self.countdown_timer / 1000)
+        self.countdown_active = False if coins.get_credit() > 0 else True
+        self.countdown_text = str_r.get_str('no_cigs').splitlines()
+        self.countdown_color = config.TEXT_COLOR
+        self.highlight_clock = 0
+        self.fadein_step = 255
+        self.fadeout_step = 0
+        self.fade_leave_to = None
+
+        if pg.mixer.music.get_busy():
+            pg.mixer.music.stop()
+
+    def render(self, screen):
+        screen.fill(bg_color)
+
+        if self.countdown_active:
+            for idx, line in enumerate(self.countdown_text):
+                text_surf = font_16.render(line, True, config.TEXT_COLOR)
+                text_rect = text_surf.get_rect()
+                text_rect.center = (screen.get_rect().centerx, 200 + idx * menus.PADDING)
+                screen.blit(text_surf, text_rect)
+            counter = font_24.render(str(self.countdown), True, self.countdown_color)
+            counter_pos = counter.get_rect()
+            counter_pos.center = screen.get_rect().center
+            screen.blit(counter, counter_pos)
+
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
+
+    def update(self):
+        if self.fade_leave_to is None:
+            if self.game_over:
+                self.fadeout_step = 255
+                self.fade_leave_to = 'gameover'
+            else:
+                if coins.get_credit() > 0:
+                    self.fadeout_step = 255
+                    self.countdown_active = False
+                    self.fade_leave_to = 'consume_coin'
+                else:
+                    self.countdown_active = True
+            if self.countdown_active and self.fadein_step <= 0:
+                if self.countdown_timer < 4000:
+                    self.highlight_clock += time_passed
+                    if self.highlight_clock >= 100:
+                        self.highlight_clock = 0
+                        self.countdown_color = tuple(numpy.subtract((255, 255, 255), self.countdown_color))
+                if self.countdown_timer > 0:
+                    self.countdown_timer -= time_passed
+                else:
+                    self.game_over = True
+                if not self.countdown == int(self.countdown_timer / 1000):
+                    self.countdown = int(self.countdown_timer / 1000)
+                    sound.sfx_lib.get('countdown').play()
+        elif self.fadeout_step <= 0:
+            if self.fade_leave_to == 'gameover':
+                self.manager.go_to(GameOver(self.game_state))
+            if self.fade_leave_to == 'consume_coin':
+                self.manager.go_to(ConsumeCoinScene(self.game_state))
+
+    def handle_events(self, events):
+        for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button == 0:
+                    sound.sfx_lib.get('game_over').stop()
+                    self.manager.go_to(TitleScene())
+
+            if e.type == pg.KEYDOWN:
+                if e.key in [pg.K_SPACE, pg.K_RETURN]:
+                    sound.sfx_lib.get('game_over').stop()
+                    self.manager.go_to(TitleScene())
+                if e.key == pg.K_ESCAPE:
+                    self.manager.go_to(OverlayMenuScene(self, 'exit'))
+
+
+class ConsumeCoinScene(Scene):
+    def __init__(self, game_state):
+        super(ConsumeCoinScene, self).__init__()
+        self.game_state = game_state
+        self.consume_coins_text = str_r.get_str('consume_coins').splitlines()
+        self.consume_coins = False
+        self.consume_coins_values = [score, 0, coins.get_credit(), 0]
+
+    def render(self, screen):
+        screen.fill(bg_color)
+        for idx, line in enumerate(self.consume_coins_text):
+            text_surf = font_16.render(line.format(self.consume_coins_values[idx]), True, config.TEXT_COLOR)
+            text_rect = text_surf.get_rect()
+            text_rect.topleft = (200, 200 + idx * menus.PADDING)
+            screen.blit(text_surf, text_rect)
+
+    def update(self):
+        pass
+
+    def handle_events(self, events):
+        pass
 
 
 class OverlayMenuScene(Scene):
@@ -759,7 +850,7 @@ class HighscoreScene(Scene):
             self.lines.append(
                 font_16.render(new_line,
                                True, config.TEXT_COLOR))
-        self.title = font_16.render(str_r.get_string('highscores_title'), True, config.TEXT_COLOR)
+        self.title = font_16.render(str_r.get_str('highscores_title'), True, config.TEXT_COLOR)
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave_to = False
@@ -770,11 +861,11 @@ class HighscoreScene(Scene):
         self.leaving = False
         self.draw_coin_text = True
         self.ready_to_play = False
-        self.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
+        self.coin_text = str_r.get_str('start') if coins.get_credit() > 0 else str_r.get_str('coin')
         self.highlight_clock = 0
         self.highlight_color = config.TEXT_COLOR
         self.draw_credit = True if mode == 'show' else False
-        self.credit_text = str_r.get_string('credit')
+        self.credit_text = str_r.get_str('credit')
 
     def render(self, screen):
 
@@ -935,6 +1026,7 @@ class SceneManager(object):
         self.go_to(TitleScene())
 
     def go_to(self, scene):
+        print('Switching to {}'.format(scene.__class__.__name__))
         self.scene = scene
         self.scene.manager = self
 
@@ -1239,7 +1331,7 @@ def render_fading(screen, fade_step, invert_fading=0):
     fading_surf = pg.Surface(screen.get_size(), pg.SRCALPHA)
     fade_color = bg_color
     alpha = 80 * round(alpha / 80)  # fades a bit rougher
-    print(alpha)
+    print('fading {} {}'.format(('out' if invert_fading else 'in'), alpha))
     fade_color.a = alpha
     fading_surf.fill(fade_color)
     screen.blit(fading_surf, (0, 0))
@@ -1260,7 +1352,7 @@ def render_hud(screen, hud_score, stage, lives, timer, highlight_combo=0):
             color = (0, 0, 0)
         else:
             color = (255, 255, 255)
-        score_text = font_16.render(str_r.get_string('combo').format(scores.get_combo()), True, color)
+        score_text = font_16.render(str_r.get_str('combo').format(scores.get_combo()), True, color)
     else:
         score_text = font_16.render(str(hud_score), True, config.TEXT_COLOR)
 
@@ -1315,7 +1407,7 @@ def update_highlight_text(scene):
     if coins.get_credit() > 0:
         scene.ready_to_play = True
         scene.draw_coin_text = True
-        scene.coin_text = str_r.get_string('start') if coins.get_credit() > 0 else str_r.get_string('coin')
+        scene.coin_text = str_r.get_str('start') if coins.get_credit() > 0 else str_r.get_str('coin')
 
 
 def render_coin_text(scene, screen, y_pos=0.7):
@@ -1330,7 +1422,7 @@ def render_credit(scene, screen):
     if scene.draw_credit and coins.get_credit():
         credit = font_16.render(scene.credit_text.format(coins.get_credit()), True, config.TEXT_COLOR)
         pos_credit = credit.get_rect()
-        pos_credit.topleft = (8, screen.get_rect().height * 0.96)
+        pos_credit.midtop = (screen.get_width()/2, screen.get_height() * 0.96)
         screen.blit(credit, pos_credit)
 
 
