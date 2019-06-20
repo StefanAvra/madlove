@@ -25,7 +25,13 @@ def load_highscores():
 
 
 def highest_score():
-    return max(highscores.items(), key=operator.itemgetter(1))
+    load_highscores()
+    return sorted(highscores, key=operator.itemgetter(1), reverse=True)[0][1]
+
+
+def lowest_score():
+    load_highscores()
+    return sorted(highscores, key=operator.itemgetter(1), reverse=False)[0][1]
 
 
 def update_highscores(new_score=None):

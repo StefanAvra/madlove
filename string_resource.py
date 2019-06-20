@@ -15,8 +15,9 @@ __strings = {
     'start': 'press start',
     'coin': 'insert coin',
     'credit': 'credit(s): {}',
-    'no_cigs': 'you are out of cigarettes!\ncontinue?',
-    'consume_coins': 'score: {}\n{}\ncredits: {}\n cigs: {}'
+    'zero_lives': 'you are out of cigarettes!\n go get some cigs!',
+    'no_cigs': 'buy more cigs\nand keep playing\n\ncontinue?',
+    'consume_coins': 'score: {}\n{}\ncredits: {}\ncigs: {}'
 }
 
 __facts = {
@@ -71,7 +72,7 @@ random.shuffle(fact_order)
 current_fact = 0
 
 
-def get_string(name):
+def get_str(name):
     return __strings.get(name).upper()
 
 
@@ -91,5 +92,5 @@ def get_combo_msg(multi):
 
 def get_credits(view_no):
     # todo: formatting
-    return __credit_views.get(view_no)
+    return __credit_views.get(view_no).upper()
 
