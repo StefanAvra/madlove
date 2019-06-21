@@ -89,7 +89,6 @@ class GameScene(Scene):
         self.reset_round()
 
     def render(self, screen):
-        global score
         screen.fill(bg_color)
 
         render_hud(screen, str(score), stages[self.current_stage], str(self.lives), self.timer,
@@ -564,12 +563,23 @@ class GameOver(Scene):
         super(GameOver, self).__init__()
         global score
         self.score = score
+        score = 0
         self.reached_lvl = game_state.level_data.no + 1
         self.reached_stage = game_state.current_stage
         self.game_over_text = 'GAME OVER'
-        self.is_highscore = score > scores.lowest_score()
-        self.blit_elements = [False, False]
+        self.is_highscore = self.score > scores.lowest_score()
+        self.place = scores.get_place(self.score)
+        self.blit_elements = [False] * 6
         self.timer = 0
+        self.alphabet = [chr(char) for char in range(65, 91)]
+        self.alphabet.append(' ')
+        self.cursor = 0
+        self.alphabet_pointer = 0
+        self.cursor_clock = 0
+        self.cursor_color = config.MENU_COLOR_HIGHLIGHT
+        self.blit_cursor = False
+        self.name = '        '
+        self.name_input_active = True if self.is_highscore else False
 
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
         pg.mixer.music.play(-1)
@@ -581,14 +591,51 @@ class GameOver(Scene):
         game_over_rect = game_over_surf.get_rect()
         game_over_rect.center = (screen.get_width() / 2, screen.get_height() * 0.1)
         screen.blit(game_over_surf, game_over_rect)
+        y_offset = game_over_rect.center[1] + 130
         if self.blit_elements[0]:
-            level = font_16.render()
+            level = font_16.render(f'YOU REACHED LEVEL {self.reached_lvl}', True, config.TEXT_COLOR)
+            level_pos = level.get_rect()
+            level_pos.center = (screen.get_width() / 2, y_offset)
+            screen.blit(level, level_pos)
+            y_offset += level_pos.height * 2
         if self.blit_elements[1]:
-            stage = font_16.render()
+            stage = font_16.render(f'CANCER STAGE {stages[self.reached_stage]}' if self.reached_stage > 0
+                                   else stages[self.reached_stage], True, config.TEXT_COLOR)
+            stage_pos = stage.get_rect()
+            stage_pos.center = (screen.get_width() / 2, y_offset)
+            screen.blit(stage, stage_pos)
+            y_offset += stage_pos.height * 3
         if self.blit_elements[2]:
-            score_surf = font_16.render()
+            your_score = font_16.render('YOUR SCORE IS', True, config.TEXT_COLOR)
+            your_score_pos = your_score.get_rect()
+            your_score_pos.center = (screen.get_width() / 2, y_offset)
+            screen.blit(your_score, your_score_pos)
+            y_offset += your_score_pos.height * 2
         if self.blit_elements[3]:
-            pass
+            score_surf = font_16.render(str(self.score), True, config.TEXT_COLOR)
+            score_pos = score_surf.get_rect()
+            score_pos.center = (screen.get_width() / 2, y_offset)
+            screen.blit(score_surf, score_pos)
+            y_offset += score_pos.height * 2
+        if self.is_highscore:
+            if self.blit_elements[4]:
+                place = font_16.render(f'YOU ARE {self.place} PLACE!', True, config.TEXT_COLOR)
+                place_pos = place.get_rect()
+                place_pos.center = (screen.get_width() / 2, y_offset)
+                screen.blit(place, place_pos)
+                y_offset += place_pos.height * 2
+            if self.blit_elements[5]:
+                name = font_16.render(f'ENTER NAME: {self.name}', True, config.TEXT_COLOR)
+                name_pos = name.get_rect()
+                name_pos.center = (screen.get_width() / 2, y_offset)
+                screen.blit(name, name_pos)
+                if self.blit_cursor:
+                    cursor_surf = pg.Surface((16, 17)).convert_alpha()
+                    cursor_surf.fill(self.cursor_color)
+                    cursor_surf.set_alpha(128)
+                    cursor_pos = cursor_surf.get_rect()
+                    cursor_pos.topleft = (name_pos.x + 16 * 13 + self.cursor * 16, name_pos.y)
+                    screen.blit(cursor_surf, cursor_pos)
 
     def update(self):
         if False in self.blit_elements:
@@ -597,20 +644,28 @@ class GameOver(Scene):
                 self.timer = 0
                 self.blit_elements.insert(0, True)
                 self.blit_elements.remove(False)
+        else:
+            if self.name_input_active:
+                self.cursor_clock += time_passed
+                if self.cursor_clock >= 200:
+                    self.cursor_clock = 0
+                    self.blit_cursor = not self.blit_cursor
+                if self.cursor >= 8:
+                    self.name_input_active = False
+                    # save score and leave
 
     def handle_events(self, events):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
-                if e.button == 0:
-                    sound.sfx_lib.get('game_over').stop()
-                    self.manager.go_to(TitleScene())
+                if e.button == 1:
+                    # accept input
+                    self.cursor += 1
 
             if e.type == pg.KEYDOWN:
-                if e.key in [pg.K_SPACE, pg.K_RETURN]:
-                    sound.sfx_lib.get('game_over').stop()
-                    self.manager.go_to(TitleScene())
-                if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'exit'))
+                if e.key == pg.K_SPACE:
+                    # accept input
+                    self.cursor += 1
+
 
 
 class ContinueScene(Scene):

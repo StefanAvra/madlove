@@ -42,6 +42,23 @@ def update_highscores(new_score=None):
     highscores = highscores[:10]
 
 
+def get_place(new):
+    score_list = highscores.copy()
+    score_list.append(('$new', new))
+    score_list.sort(key=operator.itemgetter(1), reverse=True)
+    score_list = [score[0] for score in score_list]
+    place = score_list.index('$new') + 1
+    if place in [4, 5, 6, 7, 8, 9, 10]:
+        place_string = f'{place}th'
+    elif place is 1:
+        place_string = '1st'
+    elif place is 2:
+        place_string = '2nd'
+    elif place is 3:
+        place_string = '3rd'
+    return place_string.upper()
+
+
 def save_highscores():
     with open(config.HIGHSCORE_FILE, 'wb') as f:
         pickle.dump(highscores, f)
