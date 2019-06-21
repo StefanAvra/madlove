@@ -36,7 +36,7 @@ def lowest_score():
 
 def update_highscores(new_score=None):
     global highscores
-    if new_score:
+    if new_score is not None:
         highscores.append(new_score)
     highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
     highscores = highscores[:10]
@@ -48,6 +48,7 @@ def get_place(new):
     score_list.sort(key=operator.itemgetter(1), reverse=True)
     score_list = [score[0] for score in score_list]
     place = score_list.index('$new') + 1
+    place_string = ''
     if place in [4, 5, 6, 7, 8, 9, 10]:
         place_string = f'{place}th'
     elif place is 1:
@@ -56,7 +57,7 @@ def get_place(new):
         place_string = '2nd'
     elif place is 3:
         place_string = '3rd'
-    return place_string.upper()
+    return place_string.upper(), place
 
 
 def save_highscores():

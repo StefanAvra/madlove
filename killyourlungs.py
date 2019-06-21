@@ -568,18 +568,22 @@ class GameOver(Scene):
         self.reached_stage = game_state.current_stage
         self.game_over_text = 'GAME OVER'
         self.is_highscore = self.score > scores.lowest_score()
-        self.place = scores.get_place(self.score)
+        self.place, self.place_no = scores.get_place(self.score)
         self.blit_elements = [False] * 6
         self.timer = 0
         self.alphabet = [chr(char) for char in range(65, 91)]
-        self.alphabet.append(' ')
+        for char in ['-', ' ']:
+            self.alphabet.append(char)
         self.cursor = 0
-        self.alphabet_pointer = 0
+        self.alphabet_pointer = self.alphabet.index(' ')
         self.cursor_clock = 0
         self.cursor_color = config.MENU_COLOR_HIGHLIGHT
         self.blit_cursor = False
-        self.name = '        '
+        self.name = list('        ')
         self.name_input_active = True if self.is_highscore else False
+        self.fadein_step = 255
+        self.fadeout_step = 0
+        self.fade_leave = False
 
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
         pg.mixer.music.play(-1)
@@ -625,7 +629,7 @@ class GameOver(Scene):
                 screen.blit(place, place_pos)
                 y_offset += place_pos.height * 2
             if self.blit_elements[5]:
-                name = font_16.render(f'ENTER NAME: {self.name}', True, config.TEXT_COLOR)
+                name = font_16.render(f'ENTER NAME: {"".join(self.name)}', True, config.TEXT_COLOR)
                 name_pos = name.get_rect()
                 name_pos.center = (screen.get_width() / 2, y_offset)
                 screen.blit(name, name_pos)
@@ -634,8 +638,14 @@ class GameOver(Scene):
                     cursor_surf.fill(self.cursor_color)
                     cursor_surf.set_alpha(128)
                     cursor_pos = cursor_surf.get_rect()
-                    cursor_pos.topleft = (name_pos.x + 16 * 13 + self.cursor * 16, name_pos.y)
+                    cursor_pos.topleft = (name_pos.x + 16 * 12 + self.cursor * 16, name_pos.y)
                     screen.blit(cursor_surf, cursor_pos)
+
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
         if False in self.blit_elements:
@@ -650,11 +660,11 @@ class GameOver(Scene):
                 if self.cursor_clock >= 200:
                     self.cursor_clock = 0
                     self.blit_cursor = not self.blit_cursor
-                if self.cursor >= 8:
-                    self.name_input_active = False
-                    # save score and leave
+            elif self.fade_leave and self.fadeout_step <= 0:
+                self.manager.go_to(HighscoreScene(highlight_place=self.place_no, mode='gameover'))
 
     def handle_events(self, events):
+        # todo: change chars by holding down
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button == 1:
@@ -663,9 +673,59 @@ class GameOver(Scene):
 
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_SPACE:
-                    # accept input
-                    self.cursor += 1
+                    if self.cursor == len(self.name) - 1:
+                        self.accept_name()
+                    else:
+                        self.next_char()
+                if e.key == pg.K_RETURN:
+                    self.accept_name()
+                if e.key == pg.K_UP:
+                    self.decr_char()
+                if e.key == pg.K_DOWN:
+                    self.incr_char()
+                if e.key == pg.K_LEFT:
+                    self.prev_char()
+                if e.key == pg.K_RIGHT:
+                    self.next_char()
 
+    def decr_char(self):
+        if self.name_input_active:
+            self.alphabet_pointer -= 1
+            if self.alphabet_pointer < 0:
+                self.alphabet_pointer = len(self.alphabet) - 1
+            self.name[self.cursor] = self.alphabet[self.alphabet_pointer]
+            sound.sfx_lib.get('text').play()
+
+    def incr_char(self):
+        if self.name_input_active:
+            self.alphabet_pointer += 1
+            self.alphabet_pointer = self.alphabet_pointer % (len(self.alphabet))
+            self.name[self.cursor] = self.alphabet[self.alphabet_pointer]
+            sound.sfx_lib.get('text').play()
+
+    def prev_char(self):
+        if self.name_input_active:
+            if self.cursor > 0:
+                self.cursor -= 1
+                self.alphabet_pointer = self.alphabet.index(self.name[self.cursor])
+                sound.sfx_lib.get('menu_nav').play()
+
+    def next_char(self):
+        if self.name_input_active:
+            if self.cursor < len(self.name) - 1:
+                self.cursor += 1
+                self.alphabet_pointer = self.alphabet.index(self.name[self.cursor])
+                sound.sfx_lib.get('menu_nav').play()
+
+    def accept_name(self):
+        if self.name_input_active:
+            self.name_input_active = False
+            self.blit_cursor = False
+            sound.sfx_lib.get('select').play()
+            scores.update_highscores((''.join(self.name), self.score))
+            scores.save_highscores()
+            self.fadeout_step = 255
+            self.fade_leave = True
 
 
 class ContinueScene(Scene):
@@ -746,9 +806,8 @@ class ContinueScene(Scene):
                     self.manager.go_to(TitleScene())
 
             if e.type == pg.KEYDOWN:
-                if e.key in [pg.K_SPACE, pg.K_RETURN]:
-                    sound.sfx_lib.get('game_over').stop()
-                    self.manager.go_to(TitleScene())
+                if e.key in [pg.K_SPACE]:
+                    self.countdown_timer -= 1000
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'exit'))
 
@@ -892,19 +951,13 @@ class OverlayMenuScene(Scene):
 
 
 class HighscoreScene(Scene):
-    def __init__(self, mode='show', previous_scene=None):
+    def __init__(self, mode='show', previous_scene=None, highlight_place=None):
         super(HighscoreScene, self).__init__()
         scores.load_highscores()
         self.lines = []
         self.previous_scene = previous_scene
-        place = 0
-        for highscore in scores.highscores:
-            place += 1
-            # new_line = '{name: <{fill}}    {highscore}'.format(name=highscore[0], fill='8', highscore=highscore[1])
-            new_line = '{:<2}   {:<8} {:>10}'.format(place, highscore[0], highscore[1])
-            self.lines.append(
-                font_16.render(new_line,
-                               True, config.TEXT_COLOR))
+        self.highlight_place = highlight_place
+        self.highlight_place_clock = 0
         self.title = font_16.render(str_r.get_str('highscores_title'), True, config.TEXT_COLOR)
         self.fadein_step = 255
         self.fadeout_step = 0
@@ -928,6 +981,16 @@ class HighscoreScene(Scene):
         title_pos = self.title.get_rect()
         title_pos.center = (screen.get_width() / 2, screen.get_height() * 0.1)
         screen.blit(self.title, title_pos)
+        self.lines = []
+        place = 0
+        for highscore in scores.highscores:
+            place += 1
+            # new_line = '{name: <{fill}}    {highscore}'.format(name=highscore[0], fill='8', highscore=highscore[1])
+            new_line = '{:<2}   {:<8} {:>10}'.format(place, highscore[0], highscore[1])
+            if self.mode == 'gameover' and place == self.highlight_place:
+                self.lines.append(font_16.render(new_line, True, self.highlight_color))
+            else:
+                self.lines.append(font_16.render(new_line, True, config.TEXT_COLOR))
         for idx, line in enumerate(self.lines[:self.print_step]):
             screen.blit(line, (50, 150 + (40 * idx)))
 
@@ -948,7 +1011,7 @@ class HighscoreScene(Scene):
             if self.clock >= 100:
                 self.clock = 0
                 self.print_step += 1
-        elif self.mode == 'show':
+        elif self.mode in ['show', 'gameover']:
             self.leave_timer -= time_passed
             if self.leave_timer < 0 and not self.leaving:
                 self.fadeout_step = 255
@@ -956,6 +1019,7 @@ class HighscoreScene(Scene):
                 self.leaving = True
 
         if self.fade_leave_to and self.fadeout_step <= 0:
+            # todo: go to credits
             if self.fade_leave_to == 'game':
                 self.manager.go_to(IntroScene(0))
             elif self.previous_scene:
@@ -969,6 +1033,12 @@ class HighscoreScene(Scene):
 
         if self.mode == 'show':
             update_highlight_text(self)
+
+        if self.mode == 'gameover':
+            self.highlight_place_clock += time_passed
+            if self.highlight_place_clock >= 400:
+                self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+                self.highlight_place_clock = 0
 
     def handle_events(self, events):
         for e in events:
