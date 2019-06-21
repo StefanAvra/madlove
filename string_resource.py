@@ -15,7 +15,7 @@ __strings = {
     'start': 'press start',
     'coin': 'insert coin',
     'credit': 'credit(s): {}',
-    'zero_lives': 'you are out of cigarettes!\n go get some cigs!',
+    'zero_lives': 'you are out of\ncigarettes!\n go get some cigs!',
     'no_cigs': 'buy more cigs\nand keep playing\n\ncontinue?',
     'consume_coins': 'score: {}\n{}\ncredits: {}\ncigs: {}'
 }
@@ -66,6 +66,12 @@ with Reserved Font Name "Press Start 2P".
 """
 }
 
+__alphabet = [chr(char) for char in range(65, 91)]
+for num in range(0, 10):
+    __alphabet.append(str(num))
+for char in ['.', '?', '!', '-', ' ']:
+    __alphabet.append(char)
+
 
 fact_order = [i for i in range(len(__facts) - 1)]
 random.shuffle(fact_order)
@@ -93,4 +99,8 @@ def get_combo_msg(multi):
 def get_credits(view_no):
     # todo: formatting
     return __credit_views.get(view_no).upper()
+
+
+def get_alphabet():
+    return __alphabet
 

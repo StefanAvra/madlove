@@ -571,9 +571,7 @@ class GameOver(Scene):
         self.place, self.place_no = scores.get_place(self.score)
         self.blit_elements = [False] * 6
         self.timer = 0
-        self.alphabet = [chr(char) for char in range(65, 91)]
-        for char in ['-', ' ']:
-            self.alphabet.append(char)
+        self.alphabet = str_r.get_alphabet()
         self.cursor = 0
         self.alphabet_pointer = self.alphabet.index(' ')
         self.cursor_clock = 0
@@ -662,6 +660,11 @@ class GameOver(Scene):
                     self.blit_cursor = not self.blit_cursor
             elif self.fade_leave and self.fadeout_step <= 0:
                 self.manager.go_to(HighscoreScene(highlight_place=self.place_no, mode='gameover'))
+            elif not self.fade_leave:
+                self.timer += time_passed
+                if self.timer >= 5000:
+                    self.fade_leave = True
+                    self.fadeout_step = 255
 
     def handle_events(self, events):
         # todo: change chars by holding down
@@ -689,7 +692,7 @@ class GameOver(Scene):
                     self.next_char()
 
     def decr_char(self):
-        if self.name_input_active:
+        if self.name_input_active and self.blit_elements[5]:
             self.alphabet_pointer -= 1
             if self.alphabet_pointer < 0:
                 self.alphabet_pointer = len(self.alphabet) - 1
@@ -697,21 +700,21 @@ class GameOver(Scene):
             sound.sfx_lib.get('text').play()
 
     def incr_char(self):
-        if self.name_input_active:
+        if self.name_input_active and self.blit_elements[5]:
             self.alphabet_pointer += 1
             self.alphabet_pointer = self.alphabet_pointer % (len(self.alphabet))
             self.name[self.cursor] = self.alphabet[self.alphabet_pointer]
             sound.sfx_lib.get('text').play()
 
     def prev_char(self):
-        if self.name_input_active:
+        if self.name_input_active and self.blit_elements[5]:
             if self.cursor > 0:
                 self.cursor -= 1
                 self.alphabet_pointer = self.alphabet.index(self.name[self.cursor])
                 sound.sfx_lib.get('menu_nav').play()
 
     def next_char(self):
-        if self.name_input_active:
+        if self.name_input_active and self.blit_elements[5]:
             if self.cursor < len(self.name) - 1:
                 self.cursor += 1
                 self.alphabet_pointer = self.alphabet.index(self.name[self.cursor])
@@ -743,6 +746,10 @@ class ContinueScene(Scene):
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave_to = None
+        self.coin_text = str_r.get_str('coin')
+        self.coin_text_clock = 0
+        self.draw_coin_text = True
+        self.highlight_color = config.TEXT_COLOR
 
         if pg.mixer.music.get_busy():
             pg.mixer.music.stop()
@@ -754,12 +761,14 @@ class ContinueScene(Scene):
             for idx, line in enumerate(self.countdown_text):
                 text_surf = font_16.render(line, True, config.TEXT_COLOR)
                 text_rect = text_surf.get_rect()
-                text_rect.center = (screen.get_rect().centerx, 200 + idx * menus.PADDING)
+                text_rect.center = (screen.get_rect().centerx, 150 + idx * menus.PADDING)
                 screen.blit(text_surf, text_rect)
             counter = font_24.render(str(self.countdown), True, self.countdown_color)
             counter_pos = counter.get_rect()
             counter_pos.center = screen.get_rect().center
             screen.blit(counter, counter_pos)
+
+        render_coin_text(self, screen)
 
         # fade screen
         if self.fadein_step > 0:
@@ -797,6 +806,11 @@ class ContinueScene(Scene):
                 self.manager.go_to(GameOver(self.game_state))
             if self.fade_leave_to == 'consume_coin':
                 self.manager.go_to(ConsumeCoinScene(self.game_state))
+
+        self.coin_text_clock += time_passed
+        if self.coin_text_clock >= 400:
+            self.draw_coin_text = not self.draw_coin_text
+            self.coin_text_clock = 0
 
     def handle_events(self, events):
         for e in events:
