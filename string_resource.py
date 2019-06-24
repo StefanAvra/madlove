@@ -17,7 +17,13 @@ __strings = {
     'credit': 'credit(s): {}',
     'zero_lives': 'you are out of\ncigarettes!\n go get some cigs!',
     'no_cigs': 'buy more cigs\nand keep playing\n\ncontinue?',
-    'consume_coins': 'score: \npenalty\ncredits: \ncigs: '
+    'consume_coins': 'score: \npenalty\ncredits: \ncigs: ',
+    'reached_level': 'level:',
+    'cancer_stage': 'cancer stage:',
+    'end_score': 'Score: ',
+    'congrats': 'congratulations!\nyou placed {}!',
+    'enter_name': 'enter name:'
+
 }
 
 __facts = {
