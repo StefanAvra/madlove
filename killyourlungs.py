@@ -16,7 +16,6 @@ import bot
 import scores
 import controls as ctrls
 
-
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
 font_16 = None
@@ -757,18 +756,19 @@ class ContinueScene(Scene):
     def render(self, screen):
         screen.fill(bg_color)
 
-        if self.countdown_active:
-            for idx, line in enumerate(self.countdown_text):
-                text_surf = font_16.render(line, True, config.TEXT_COLOR)
-                text_rect = text_surf.get_rect()
-                text_rect.center = (screen.get_rect().centerx, 150 + idx * menus.PADDING)
-                screen.blit(text_surf, text_rect)
-            counter = font_24.render(str(self.countdown), True, self.countdown_color)
-            counter_pos = counter.get_rect()
-            counter_pos.center = screen.get_rect().center
-            screen.blit(counter, counter_pos)
+        # if self.countdown_active:
+        for idx, line in enumerate(self.countdown_text):
+            text_surf = font_16.render(line, True, config.TEXT_COLOR)
+            text_rect = text_surf.get_rect()
+            text_rect.center = (screen.get_rect().centerx, 150 + idx * menus.PADDING)
+            screen.blit(text_surf, text_rect)
+        counter = font_24.render(str(self.countdown), True, self.countdown_color)
+        counter_pos = counter.get_rect()
+        counter_pos.center = screen.get_rect().center
+        screen.blit(counter, counter_pos)
 
-        render_coin_text(self, screen)
+        if coins.get_credit() == 0:
+            render_coin_text(self, screen)
 
         # fade screen
         if self.fadein_step > 0:
@@ -830,20 +830,77 @@ class ConsumeCoinScene(Scene):
     def __init__(self, game_state):
         super(ConsumeCoinScene, self).__init__()
         self.game_state = game_state
+        self.penalty = 0
         self.consume_coins_text = str_r.get_str('consume_coins').splitlines()
         self.consume_coins = False
-        self.consume_coins_values = [score, 0, coins.get_credit(), 0]
+        self.consume_coins_values = [score, self.penalty, coins.get_credit(), self.game_state.lives]
+        self.blit_elements = [False] * 4
+        self.blit_timer = 0
+        self.score_timer = 0
+        self.points_done = False
+        self.cigs_bought = False
+        self.fadeout_step = 0
+        self.fadein_step = 0
+        self.leave = False
+        self.convert_step = 0
 
     def render(self, screen):
         screen.fill(bg_color)
+        lines = []
         for idx, line in enumerate(self.consume_coins_text):
-            text_surf = font_16.render(line.format(self.consume_coins_values[idx]), True, config.TEXT_COLOR)
-            text_rect = text_surf.get_rect()
-            text_rect.topleft = (200, 200 + idx * menus.PADDING)
-            screen.blit(text_surf, text_rect)
+            new_line = '{:<10} {:>13}'.format(line, self.consume_coins_values[idx])
+            text_surf = font_16.render(new_line, True, config.TEXT_COLOR)
+            text_pos = text_surf.get_rect()
+            text_pos.topleft = (50, 150 + (40 * idx))
+            lines.append((text_surf, text_pos))
+
+        for idx, blit in enumerate(self.blit_elements):
+            if blit:
+                screen.blit(lines[idx][0], lines[idx][1])
+
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
-        pass
+        global score
+        self.consume_coins_values = [score, self.penalty, coins.get_credit(), self.game_state.lives]
+        self.blit_timer += time_passed
+        if self.blit_timer >= 100:
+            self.blit_timer = 0
+            if False in self.blit_elements:
+                self.blit_elements.insert(0, True)
+                self.blit_elements.remove(False)
+
+        if False not in self.blit_elements:
+            self.score_timer += time_passed
+            if not self.cigs_bought:
+                if self.score_timer >= 1000:
+                    self.cigs_bought = True
+                    self.game_state.lives += coins.consume_coin()
+                    sound.sfx_lib.get('coin').play()
+                    self.penalty, self.convert_step = scores.get_penalty(score)
+            elif not self.points_done:
+                if self.score_timer >= 2000:
+                    # convert_step = 10
+                    score -= self.convert_step
+                    if score < 0:
+                        score = 0
+                    self.penalty += self.convert_step
+                    if self.penalty >= 0:
+                        self.penalty = 0
+                        self.points_done = True
+                        self.score_timer = 0
+                    sound.sfx_lib.get('point').play()
+            else:
+                if self.score_timer >= 2000 and not self.leave:
+                    self.fadeout_step = 255
+                    self.leave = True
+                if self.leave and self.fadeout_step <= 0:
+                    self.game_state.reset_round()
+                    self.manager.go_to(self.game_state)
 
     def handle_events(self, events):
         pass
@@ -999,7 +1056,6 @@ class HighscoreScene(Scene):
         place = 0
         for highscore in scores.highscores:
             place += 1
-            # new_line = '{name: <{fill}}    {highscore}'.format(name=highscore[0], fill='8', highscore=highscore[1])
             new_line = '{:<2}   {:<8} {:>10}'.format(place, highscore[0], highscore[1])
             if self.mode == 'gameover' and place == self.highlight_place:
                 self.lines.append(font_16.render(new_line, True, self.highlight_color))
@@ -1206,7 +1262,7 @@ class Ball(pg.sprite.Sprite):
         x_hit = paddle_rect.center[0]
         sound.sfx_lib.get('hit_wall').play()
         # self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -abs(self.velocity[1]))
-        self.velocity = (round((self.rect.centerx - x_hit)/5), -abs(self.velocity[1]))
+        self.velocity = (round((self.rect.centerx - x_hit) / 5), -abs(self.velocity[1]))
         self.rect.bottom = paddle_rect.y - 1
 
     def hit_wall(self, left_right):
@@ -1336,7 +1392,8 @@ class Brick(pg.sprite.Sprite):
     def __init__(self, x=0, y=0, color=(255, 0, 0), health=2, brick_type='b'):
         types = {'r': 'red', 'w': 'white', 'b': 'black'}
         super().__init__()
-        self.image = pg.image.load(os.path.join('assets', 'graphics', 'brick_{}.png'.format(types[brick_type]))).convert()
+        self.image = pg.image.load(
+            os.path.join('assets', 'graphics', 'brick_{}.png'.format(types[brick_type]))).convert()
         self.dark = pg.image.load(os.path.join('assets', 'graphics', 'brick_{}.png'.format(types['b']))).convert()
         self.max_health = health
         self.health = health
@@ -1561,7 +1618,7 @@ def render_credit(scene, screen):
     if scene.draw_credit and coins.get_credit():
         credit = font_16.render(scene.credit_text.format(coins.get_credit()), True, config.TEXT_COLOR)
         pos_credit = credit.get_rect()
-        pos_credit.midtop = (screen.get_width()/2, screen.get_height() * 0.96)
+        pos_credit.midtop = (screen.get_width() / 2, screen.get_height() * 0.96)
         screen.blit(credit, pos_credit)
 
 

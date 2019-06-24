@@ -17,7 +17,7 @@ __strings = {
     'credit': 'credit(s): {}',
     'zero_lives': 'you are out of\ncigarettes!\n go get some cigs!',
     'no_cigs': 'buy more cigs\nand keep playing\n\ncontinue?',
-    'consume_coins': 'score: {}\n{}\ncredits: {}\ncigs: {}'
+    'consume_coins': 'score: \npenalty\ncredits: \ncigs: '
 }
 
 __facts = {

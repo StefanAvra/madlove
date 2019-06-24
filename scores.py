@@ -118,3 +118,12 @@ def get_new_combo():
     __last_multi = __multiplier
     return return_multi
 
+
+def get_penalty(score):
+    penalty = score * 0.3
+    if penalty > 100:
+        convert_step = penalty / 100
+    else:
+        convert_step = 1
+    return -int(penalty), int(convert_step)
+
