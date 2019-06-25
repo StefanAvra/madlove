@@ -50,7 +50,7 @@ def get_place(new):
     place = score_list.index('$new') + 1
     place_string = ''
     if place in [4, 5, 6, 7, 8, 9, 10]:
-        place_string = f'{place}th'
+        place_string = '{}th'.format(place)
     elif place is 1:
         place_string = '1st'
     elif place is 2:

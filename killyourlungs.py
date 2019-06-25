@@ -685,8 +685,22 @@ class GameOver(Scene):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button == 1:
-                    # accept input
-                    self.cursor += 1
+                    if self.cursor == len(self.name) - 1:
+                        self.accept_name()
+                    else:
+                        self.next_char()
+
+            if e.type == pg.JOYAXISMOTION:
+                if e.axis == 1:
+                    if e.value < 0:
+                        self.decr_char()
+                    if e.value > 0:
+                        self.incr_char()
+                if e.axis == 0:
+                    if e.value < 0:
+                        self.prev_char()
+                    if e.value > 0:
+                        self.next_char()
 
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_SPACE:
