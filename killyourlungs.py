@@ -70,6 +70,7 @@ class GameScene(Scene):
         self.credit_text = str_r.get_str('credit')
         self.credit = coins.get_credit()
         self.credit_text_timer = 0
+        self.heartattack_enabled = False
 
         tile_offset_y = 10
         for line in self.level_data.bricks:
@@ -226,6 +227,34 @@ class GameScene(Scene):
                         ball.sticky = False
                 if e.key == pg.K_n:
                     self.bricks.empty()
+                if e.key == pg.K_h:
+                    pu_event = pg.event.Event(pg.USEREVENT, powerup='pack', cigs=1)
+                    pg.event.post(pu_event)
+
+            if e.type == pg.USEREVENT:
+                global score
+                s = ''
+                if e.powerup == 'pack':
+                    score += scores.increase_score('powerup')
+                    if e.cigs > 1:
+                        s = 's'
+                    self.lives += e.cigs
+                if e.powerup == 'heartattack':
+                    score += scores.increase_score('powerup')
+                    self.heartattack_enabled = True
+                if e.powerup == 'hotball':
+                    score += scores.increase_score('powerup')
+                if e.powerup == 'shorter':
+                    self.player.shorter()
+                if e.powerup == 'longer':
+                    self.player.longer()
+                    score += scores.increase_score('powerup')
+                if e.powerup == 'shoot':
+                    score += scores.increase_score('powerup')
+                if e.powerup == 'metastasis':
+                    score += scores.increase_score('powerup')
+
+                self.notif_stack.append(Message(str_r.get_str('pu_{}'.format(e.powerup)).format(s), 'normal'))
 
 
 class FinishedLevelScene(Scene):
@@ -254,7 +283,7 @@ class FinishedLevelScene(Scene):
 
         # render_hud(screen, str(score), stages[self.current_stage], str(self.lives), 4000, 0)
 
-        # todo: show time bonus, reached cancer stage, score
+        # todo: time bonus, perfect, picked up all power ups
 
         finished_text = font_16.render(str_r.get_str('finished'), True, config.TEXT_COLOR)
         finished_pos = finished_text.get_rect()
@@ -1376,7 +1405,7 @@ class Ball(pg.sprite.Sprite):
         if pg.sprite.collide_rect(self, player):
             self.hit_paddle(player.rect)
         collided_brick = pg.sprite.spritecollideany(self, bricks)
-        # todo: check collision via sub-rects, that go almost to the corners of ball.rect -- or maybe not? maybe circle?
+        # collision detection is just as accurate as it should be. at high speeds glitches can occure that
 
         if collided_brick:
             self.hit_brick(collided_brick)
@@ -1395,6 +1424,7 @@ class Player(pg.sprite.Sprite):
         self.rect.x = x
         self.rect.y = config.PLAYER_Y
         self.max_x = pg.display.get_surface().get_width()
+        self.lengths = ['s', 'm', 'l', 'xl']
 
     def update(self, left, right, up):
         if up:
@@ -1414,7 +1444,17 @@ class Player(pg.sprite.Sprite):
         self.image = pg.image.load(os.path.join('assets', 'graphics', 'paddle_{}.png'.format(self.type))).convert()
         self.rect = self.image.get_rect()
         self.rect.centerx = temp_rect.centerx
-        self.rect.y = 630
+        self.rect.y = config.PLAYER_Y
+
+    def longer(self):
+        current_length = self.lengths.index(self.type)
+        if current_length < len(self.lengths)-1:
+            self.update_length(self.lengths[current_length+1])
+
+    def shorter(self):
+        current_length = self.lengths.index(self.type)
+        if current_length > 0:
+            self.update_length(self.lengths[current_length-1])
 
 
 class Brick(pg.sprite.Sprite):

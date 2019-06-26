@@ -1,5 +1,4 @@
 import random
-import coins
 
 
 __strings = {
@@ -22,7 +21,14 @@ __strings = {
     'cancer_stage': 'cancer stage:',
     'end_score': 'Score: ',
     'congrats': 'congratulations!\nyou placed {}!',
-    'enter_name': 'enter name:'
+    'enter_name': 'enter name:',
+    'pu_shorter': 'getting shorter',
+    'pu_longer': 'bigger cig!',
+    'pu_pack': 'extra cig{}!',
+    'pu_heartattack': 'high risk of heart attack!',
+    'pu_hotball': 'hot ball!',
+    'pu_shoot': 'shooting!',
+    'pu_metastasis': 'metastasis!'
 
 }
 
