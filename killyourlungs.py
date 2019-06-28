@@ -51,7 +51,6 @@ class GameScene(Scene):
         self.bg.convert()
         self.bg.fill(bg_color)
         self.current_stage = 0
-        self.lives = coins.consume_coin()
         self.player = Player()
         self.balls = pg.sprite.Group()
         # self.balls.add(Ball())
@@ -88,6 +87,7 @@ class GameScene(Scene):
                 tile_offset_x += levels.TILE[0] + levels.TILE_PADDING
             tile_offset_y += levels.TILE[1] + levels.TILE_PADDING
         self.total_bricks = len(self.bricks)
+        self.current_total_bricks = self.total_bricks
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
@@ -100,7 +100,7 @@ class GameScene(Scene):
         if self.heartattack_mode is not None:
             render_heartattack(self, screen)
 
-        render_hud(screen, str(score), stages[self.current_stage], str(self.lives), self.timer,
+        render_hud(screen, str(score), stages[self.current_stage], str(coins.get_lives()), self.timer,
                    self.hud_highlight_combo)
 
         if self.notification is not None:
@@ -157,8 +157,15 @@ class GameScene(Scene):
 
         past_stage = self.current_stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
-        if stages[past_stage] == stages[0] and stages[past_stage] != stages[self.current_stage]:
-            self.notif_stack.append(Message("got cancer!", 'cancer'))
+        if stages[past_stage] != stages[self.current_stage]:
+            if stages[past_stage] == stages[0]:
+                self.notif_stack.append(Message("got cancer!", 'cancer'))
+
+        self.current_total_bricks = len(self.bricks)
+        if self.total_bricks * 0.1 >= self.current_total_bricks:
+            if self.heartattack_mode is None:
+                pu_event = pg.event.Event(pg.USEREVENT, powerup='heartattack')
+                pg.event.post(pu_event)
 
         if len(self.notif_stack) > 0 and self.notification is None:
             self.notification = self.notif_stack.pop(0)
@@ -211,6 +218,13 @@ class GameScene(Scene):
                 if e.button == 0:
                     self.manager.go_to(OverlayMenuScene(self, 'pause'))
                 if e.button == 1:
+                    if True not in [ball.sticky for ball in self.balls]:
+                        if self.heartattack_mode == 'ready':
+                            self.heartattack_mode = 'killing'
+                            self.heart_color = (255, 255, 255)
+                            pg.mixer.music.stop()
+                            sound.sfx_lib.get('heartattack').play()
+                            self.notif_stack.append(Message(str_r.get_str('heart_killing'), False))
                     for ball in self.balls:
                         ball.sticky = False
 
@@ -260,7 +274,7 @@ class GameScene(Scene):
                     score += scores.increase_score('powerup')
                     if e.cigs > 1:
                         s = 's'
-                    self.lives += e.cigs
+                    coins.add_life(e.cigs)
                 if e.powerup == 'heartattack':
                     score += scores.increase_score('powerup')
                     self.heartattack_mode = 'ready'
@@ -286,7 +300,6 @@ class FinishedLevelScene(Scene):
         super(FinishedLevelScene, self).__init__()
         self.finished_lvl = game_state.level_data.no
         self.current_stage = game_state.current_stage
-        self.lives = game_state.lives
         self.next_level = self.finished_lvl + 1
         self.fadein_step = 255
         self.fadeout_step = 0
@@ -341,11 +354,11 @@ class LostLifeScene(Scene):
     def __init__(self, game_state):
         super(LostLifeScene, self).__init__()
         self.game_state = game_state
-        self.game_state.lives -= 1
+        coins.lose_life()
         self.game_over = False
         pg.mixer.music.stop()
 
-        if self.game_state.lives <= 0:
+        if coins.get_lives() <= 0:
             sound.sfx_lib.get('game_over').play()
             self.lost_text = str_r.get_str('zero_lives').splitlines()
             self.game_over = True
@@ -562,6 +575,7 @@ class TitleScene(Scene):
                     if e.button == 0:
                         if self.ready_to_play:
                             sound.sfx_lib.get('select').play()
+                            coins.consume_coin()
                             self.fadeout_step = 255
                             self.fade_leave_to = 1
                         # f = self.menu_funcs[self.cursor]
@@ -590,6 +604,7 @@ class TitleScene(Scene):
                     if e.key in [pg.K_SPACE, pg.K_RETURN]:
                         if self.ready_to_play:
                             sound.sfx_lib.get('select').play()
+                            coins.consume_coin()
                             self.fadeout_step = 255
                             self.fade_leave_to = 1
                             # f = self.menu_funcs[self.cursor]
@@ -824,7 +839,7 @@ class ContinueScene(Scene):
     def __init__(self, game_state):
         super(ContinueScene, self).__init__()
         self.game_state = game_state
-        self.lives_left = game_state.lives
+        # self.lives_left = coins.get_lives()
         self.game_over = False
         self.countdown_timer = 10000
         self.countdown = int(self.countdown_timer / 1000)
@@ -923,7 +938,7 @@ class ConsumeCoinScene(Scene):
         self.penalty = 0
         self.consume_coins_text = str_r.get_str('consume_coins').splitlines()
         self.consume_coins = False
-        self.consume_coins_values = [score, self.penalty, coins.get_credit(), self.game_state.lives]
+        self.consume_coins_values = [score, self.penalty, coins.get_credit(), coins.get_lives()]
         self.blit_elements = [False] * 4
         self.blit_timer = 0
         self.score_timer = 0
@@ -956,7 +971,7 @@ class ConsumeCoinScene(Scene):
 
     def update(self):
         global score
-        self.consume_coins_values = [score, self.penalty, coins.get_credit(), self.game_state.lives]
+        self.consume_coins_values = [score, self.penalty, coins.get_credit(), coins.get_lives()]
         self.blit_timer += time_passed
         if self.blit_timer >= 100:
             self.blit_timer = 0
@@ -969,7 +984,7 @@ class ConsumeCoinScene(Scene):
             if not self.cigs_bought:
                 if self.score_timer >= 1000:
                     self.cigs_bought = True
-                    self.game_state.lives += coins.consume_coin()
+                    coins.consume_coin()
                     sound.sfx_lib.get('coin').play()
                     self.penalty, self.convert_step = scores.get_penalty(score)
             elif not self.points_done:
@@ -1203,10 +1218,19 @@ class HighscoreScene(Scene):
     def handle_events(self, events):
         for e in events:
             if not self.fade_leave_to:
+                if e.type == pg.JOYBUTTONDOWN:
+                    if e.button == 0:
+                        if self.ready_to_play:
+                            sound.sfx_lib.get('select').play()
+                            coins.consume_coin()
+                            self.fadeout_step = 255
+                            self.fade_leave_to = 'game'
+
                 if e.type == pg.KEYDOWN:
                     if self.ready_to_play:
                         if e.key in [pg.K_SPACE, pg.K_RETURN]:
                             sound.sfx_lib.get('select').play()
+                            coins.consume_coin()
                             self.fadeout_step = 255
                             self.fade_leave_to = 'game'
                     if e.key == pg.K_1:
