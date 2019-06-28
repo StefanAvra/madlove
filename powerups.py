@@ -1,5 +1,6 @@
 import pygame as pg
 import os
+import config
 
 
 class PowerUp(pg.sprite.Sprite):
@@ -12,9 +13,9 @@ class PowerUp(pg.sprite.Sprite):
         self.speed = 3
         self.cigs = cigs if pu_type == 'pack' else None
 
-    def update(self, screen, player_rect):
+    def update(self, player_rect):
         self.rect.y -= self.speed
-        if self.rect.top > screen.get_height():
+        if self.rect.top > config.HEIGHT():
             self.kill()
 
         if pg.sprite.collide_rect(self.rect, player_rect):

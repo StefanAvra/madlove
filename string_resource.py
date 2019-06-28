@@ -28,7 +28,8 @@ __strings = {
     'pu_heartattack': 'high risk of heart attack!',
     'pu_hotball': 'hot ball!',
     'pu_shoot': 'shooting!',
-    'pu_metastasis': 'metastasis!'
+    'pu_metastasis': 'metastasis!',
+    'heart_killing': 'heart attack!'
 
 }
 

@@ -57,6 +57,7 @@ class GameScene(Scene):
         # self.balls.add(Ball())
         self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
+        self.powerups = pg.sprite.Group()
         self.level_data = levels.Level(level_no)
         self.notif_stack = []
         self.notification = None
@@ -70,7 +71,12 @@ class GameScene(Scene):
         self.credit_text = str_r.get_str('credit')
         self.credit = coins.get_credit()
         self.credit_text_timer = 0
-        self.heartattack_enabled = False
+        self.heartattack_mode = None
+        self.heart_fade = 0
+        self.heart_color = pg.Color(255, 255, 255, 0)
+        self.heart_fade_inv = 1
+        self.heart_beat = 0
+        self.killing_timer = 0
 
         tile_offset_y = 10
         for line in self.level_data.bricks:
@@ -90,6 +96,9 @@ class GameScene(Scene):
 
     def render(self, screen):
         screen.fill(bg_color)
+
+        if self.heartattack_mode is not None:
+            render_heartattack(self, screen)
 
         render_hud(screen, str(score), stages[self.current_stage], str(self.lives), self.timer,
                    self.hud_highlight_combo)
@@ -119,27 +128,32 @@ class GameScene(Scene):
             self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
-        # if self.first_round:
-        #     pg.time.wait(1000)
-        #     pg.mixer.music.play(-1)
-        #     self.first_round = False
-
         self.timer += time_passed
-        # pressed = pg.key.get_pressed()
-        # up, left, right, down = [pressed[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
 
         up, left, right, down = [ctrls.get_buttons()[key] for key in (ctrls.UP, ctrls.LEFT, ctrls.RIGHT, ctrls.DOWN)]
 
         if config.ENABLE_BOT:
             left, right = bot.play(self.player, self.balls)
-        for ball in self.balls:
-            ball.update(self.player, self.bricks, self.bombs)
+        if not self.heartattack_mode == 'killing':
+            for ball in self.balls:
+                ball.update(self.player, self.bricks, self.bombs)
+            self.player.update(left, right, up)
+        else:
+            self.killing_timer += time_passed
+            if self.killing_timer >= 1200 and not self.fade_leave_to:
+                self.fadeout_step = 255
+                self.fade_leave_to = 'finished'
 
-        self.player.update(left, right, up)
+        if self.fade_leave_to == 'finished' and self.fadeout_step <= 0:
+            self.manager.go_to(FinishedLevelScene(self))
+
         if not self.balls.has(self.balls):
             self.manager.go_to(LostLifeScene(self))
-        if not self.bricks.has(self.bricks):
-            self.manager.go_to(FinishedLevelScene(self))
+        if not self.bricks.has(self.bricks) and not self.fade_leave_to:
+            self.fadeout_step = 255
+            self.fade_leave_to = 'finished'
+
+        self.powerups.update(self.player.rect)
 
         past_stage = self.current_stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
@@ -223,12 +237,20 @@ class GameScene(Scene):
                     config.SHOW_FPS = not config.SHOW_FPS
                     config.SHOW_VELOCITY = not config.SHOW_VELOCITY
                 if e.key == pg.K_SPACE:
+                    if True not in [ball.sticky for ball in self.balls]:
+                        if self.heartattack_mode == 'ready':
+                            self.heartattack_mode = 'killing'
+                            self.heart_color = (255, 255, 255)
+                            pg.mixer.music.stop()
+                            sound.sfx_lib.get('heartattack').play()
+                            self.notif_stack.append(Message(str_r.get_str('heart_killing'), False))
                     for ball in self.balls:
                         ball.sticky = False
+
                 if e.key == pg.K_n:
                     self.bricks.empty()
                 if e.key == pg.K_h:
-                    pu_event = pg.event.Event(pg.USEREVENT, powerup='pack', cigs=1)
+                    pu_event = pg.event.Event(pg.USEREVENT, powerup='heartattack')
                     pg.event.post(pu_event)
 
             if e.type == pg.USEREVENT:
@@ -241,7 +263,7 @@ class GameScene(Scene):
                     self.lives += e.cigs
                 if e.powerup == 'heartattack':
                     score += scores.increase_score('powerup')
-                    self.heartattack_enabled = True
+                    self.heartattack_mode = 'ready'
                 if e.powerup == 'hotball':
                     score += scores.increase_score('powerup')
                 if e.powerup == 'shorter':
@@ -255,6 +277,8 @@ class GameScene(Scene):
                     score += scores.increase_score('powerup')
 
                 self.notif_stack.append(Message(str_r.get_str('pu_{}'.format(e.powerup)).format(s), 'normal'))
+                if e.powerup == 'heartattack':
+                    self.notif_stack.append(Message('push button to kill!', None))
 
 
 class FinishedLevelScene(Scene):
@@ -264,6 +288,8 @@ class FinishedLevelScene(Scene):
         self.current_stage = game_state.current_stage
         self.lives = game_state.lives
         self.next_level = self.finished_lvl + 1
+        self.fadein_step = 255
+        self.fadeout_step = 0
         global score
         pg.mixer.music.stop()
 
@@ -289,6 +315,12 @@ class FinishedLevelScene(Scene):
         finished_pos = finished_text.get_rect()
         finished_pos.center = screen.get_rect().center
         screen.blit(finished_text, finished_pos)
+
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
         pass
@@ -1689,6 +1721,25 @@ def render_credit(scene, screen):
         pos_credit = credit.get_rect()
         pos_credit.midtop = (screen.get_width() / 2, screen.get_height() * 0.96)
         screen.blit(credit, pos_credit)
+
+
+def render_heartattack(scene, screen):
+    heart_bg = pg.Surface((config.WIDTH, config.HEIGHT)).convert_alpha()
+    if scene.heartattack_mode == 'killing':
+        scene.heart_beat += 1
+        if scene.heart_beat >= 4:
+            scene.heart_beat = 0
+            scene.heart_color = tuple(numpy.subtract((255, 255, 255), scene.heart_color))
+    elif scene.heartattack_mode == 'ready':
+        scene.heart_fade += 4 * scene.heart_fade_inv
+        if not 0 < scene.heart_fade < 255:
+            scene.heart_fade_inv *= -1
+            scene.heart_fade += 4 * scene.heart_fade_inv
+        scene.heart_color.a = 80 * round(scene.heart_fade / 80)
+
+    heart_bg.fill(bg_color)
+    heart_bg.fill(scene.heart_color)
+    screen.blit(heart_bg, (0, 0))
 
 
 def center_to(center_surface, surface):

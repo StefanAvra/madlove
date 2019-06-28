@@ -68,11 +68,11 @@ _levels = {
                    '                 '],
         'name': 'The Lungs',
         'powerups': {
-            'life': 1,
+            'pack': 1,
             'shoot': 1,
             'metastasis': 3,
-            'bigger': 2,
-            'smaller': 1
+            'longer': 2,
+            'shorter': 1
         },
         'bonus_time': 120
     },
