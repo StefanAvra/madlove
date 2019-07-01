@@ -25,7 +25,7 @@ stages = ['HEALTHY', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'I
 score = 0
 time_passed = 0
 
-intro_order = [i for i in range(7 - 1)]
+intro_order = [i for i in range(7)]
 random.shuffle(intro_order)
 current_intro = 1
 
@@ -342,12 +342,14 @@ class FinishedLevelScene(Scene):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button in [0, 1]:
-                    self.manager.go_to(GameScene(self.next_level))
+                    self.manager.go_to(IntroScene(self.next_level))
+                    # self.manager.go_to(GameScene(self.next_level))
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
                 if e.key == pg.K_SPACE:
-                    self.manager.go_to(GameScene(self.next_level))
+                    self.manager.go_to(IntroScene(self.next_level))
+                    # self.manager.go_to(GameScene(self.next_level))
 
 
 class LostLifeScene(Scene):
