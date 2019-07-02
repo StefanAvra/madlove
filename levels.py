@@ -67,14 +67,32 @@ _levels = {
                    '                 ',
                    '                 '],
         'name': 'The Lungs',
+        # 'powerups': {
+        #     'pack': 1,
+        #     'shoot': 1,
+        #     'metastasis': 3,
+        #     'longer': 2,
+        #     'shorter': 1
+        # },
         'powerups': {
-            'pack': 1,
-            'shoot': 1,
-            'metastasis': 3,
-            'longer': 2,
-            'shorter': 1
+            10: {
+                'pu_type': 'pack', 'amount': 1
+            },
+            40: {
+                'pu_type': 'longer'
+            },
+            60: {
+                'pu_type': 'shorter'
+            },
+            100: {
+                'pu_type': 'metastasis', 'amount': 2
+            },
+            150: {
+                'pu_type': 'metastasis', 'amount': 1
+            }
+
         },
-        'bonus_time': 120
+        'bonus_time': 300
     },
     1: {
         'bricks': ['                ',

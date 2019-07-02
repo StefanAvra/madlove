@@ -212,6 +212,17 @@ class GameScene(Scene):
         self.all_sprites.add(self.balls)
         self.player.rect.centerx = pg.display.get_surface().get_rect().centerx
 
+    def spread_metastasis(self, amount=1):
+        try:
+            new_ball_pos = self.balls.sprites()[0].rect
+        except IndexError:
+            new_ball_pos = (random.randint(0, config.WIDTH), random.randint(0, config.HEIGHT * 0.5))
+        for ball in range(amount):
+            self.balls.add(Ball(velocity=(random.randint(-3, 3), -3),
+                                pos_x=new_ball_pos[0], pos_y=new_ball_pos[1], sticky=False))
+            self.all_sprites.add(self.balls)
+            print(new_ball_pos)
+
     def handle_events(self, events):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
@@ -264,7 +275,7 @@ class GameScene(Scene):
                 if e.key == pg.K_n:
                     self.bricks.empty()
                 if e.key == pg.K_h:
-                    pu_event = pg.event.Event(pg.USEREVENT, powerup='heartattack')
+                    pu_event = pg.event.Event(pg.USEREVENT, powerup='metastasis')
                     pg.event.post(pu_event)
 
             if e.type == pg.USEREVENT:
@@ -289,7 +300,7 @@ class GameScene(Scene):
                     score += scores.increase_score('powerup')
                 if e.powerup == 'metastasis':
                     score += scores.increase_score('powerup')
-
+                    self.spread_metastasis(2)
                 self.notif_stack.append(Message(str_r.get_str('pu_{}'.format(e.powerup)).format(s), 'normal'))
                 if e.powerup == 'heartattack':
                     self.notif_stack.append(Message('push button to kill!', None))
