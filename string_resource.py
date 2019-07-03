@@ -29,7 +29,8 @@ __strings = {
     'pu_hotball': 'hot ball!',
     'pu_shoot': 'shooting!',
     'pu_metastasis': 'metastasis!',
-    'heart_killing': 'heart attack!'
+    'heart_killing': 'heart attack!',
+    'push_to_kill': 'push button to kill!'
 
 }
 

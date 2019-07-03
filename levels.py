@@ -75,10 +75,13 @@ _levels = {
         #     'shorter': 1
         # },
         'powerups': {
-            10: {
+            3: {
                 'pu_type': 'pack', 'amount': 1
             },
-            40: {
+            20: {
+                'pu_type': 'shoot'
+            },
+            10: {
                 'pu_type': 'longer'
             },
             60: {
@@ -88,6 +91,9 @@ _levels = {
                 'pu_type': 'metastasis', 'amount': 2
             },
             150: {
+                'pu_type': 'metastasis', 'amount': 1
+            },
+            14: {
                 'pu_type': 'metastasis', 'amount': 1
             }
 
@@ -428,3 +434,4 @@ class Level:
             self.bricks = _levels.get(no).get('bricks')
         except AttributeError:
             print('Level {} not found.'.format(no))
+        self.powerups = _levels.get(no).get('powerups')
