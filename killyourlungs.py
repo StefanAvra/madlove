@@ -58,6 +58,7 @@ class GameScene(Scene):
         self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
+        self.bullets = pg.sprite.Group()
         self.level_data = levels.Level(level_no)
         self.notif_stack = []
         self.notification = None
@@ -78,6 +79,9 @@ class GameScene(Scene):
         self.heart_beat = 0
         self.killing_timer = 0
         self.pu_queue = self.level_data.powerups
+        self.shooting_period = 0
+        self.shooting_active = False
+        self.shooting_timer = 0
 
         tile_offset_y = 10
         for line in self.level_data.bricks:
@@ -156,17 +160,26 @@ class GameScene(Scene):
 
         self.powerups.update(self.player)
         self.all_sprites.add(self.powerups)
-        # try:
-        #     new_powerup = self.pu_queue.pop(self.total_bricks-len(self.bricks))
-        #     self.powerups.add(powerups.PowerUp(new_powerup, ))
-        # except KeyError:
-        #     pass
+
+        if self.shooting_active:
+            self.shooting_period -= time_passed
+            self.shooting_timer += time_passed
+            if self.shooting_period < 0:
+                self.shooting_active = False
+                self.shooting_period = 0
+            if self.shooting_timer >= 130:
+                self.shooting_timer = 0
+                bullet = Bullet(self.player.rect.centerx, self.player.rect.top)
+                self.bullets.add(bullet)
+                self.all_sprites.add(self.bullets)
+        self.bullets.update(self.bricks, self)
 
         past_stage = self.current_stage
         self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
         if stages[past_stage] != stages[self.current_stage]:
             if stages[past_stage] == stages[0]:
                 self.notif_stack.append(Message("got cancer!", 'cancer'))
+                print('{} left'.format(len(self.bricks)))
 
         if self.total_bricks * 0.1 >= len(self.bricks):
             if self.heartattack_mode is None:
@@ -304,6 +317,8 @@ class GameScene(Scene):
                     score += scores.increase_score('powerup')
                 if e.powerup == 'shoot':
                     score += scores.increase_score('powerup')
+                    self.shooting_active = True
+                    self.shooting_period = e.timer
                 if e.powerup == 'metastasis':
                     score += scores.increase_score('powerup')
                     self.spread_metastasis(e.amount)
@@ -1488,7 +1503,6 @@ class Ball(pg.sprite.Sprite):
         if pg.sprite.collide_rect(self, player):
             self.hit_paddle(player.rect)
         collided_brick = pg.sprite.spritecollideany(self, bricks)
-        # collision detection is just as accurate as it should be. at high speeds glitches can occure that
 
         if collided_brick:
             self.hit_brick(collided_brick, game_state)
@@ -1562,6 +1576,45 @@ class Brick(pg.sprite.Sprite):
         self.dark.set_alpha(darken_factor)
 
         self.image.blit(self.dark, (0, 0))
+
+
+class Bullet(pg.sprite.Sprite):
+    def __init__(self, x, y):
+        super(Bullet, self).__init__()
+        self.image = pg.Surface((4, 10))
+        self.image.fill((255, 255, 255))
+        core = pg.Surface((2, 10))
+        core.fill((0, 0, 0))
+        self.image.blit(core, (1, 0))
+        self.rect = self.image.get_rect()
+        self.rect.bottom = y
+        self.rect.centerx = x
+        self.speed = 6
+        sound.sfx_lib.get('bullet').play()
+
+    def update(self, bricks, game_state):
+        # todo: refactor - should be global function
+        global score
+        self.rect.y -= self.speed
+        if self.rect.bottom < 0:
+            self.kill()
+        collided_brick = pg.sprite.spritecollideany(self, bricks)
+        if collided_brick:
+            collided_brick.health -= 1
+            collided_brick.update()
+            score += scores.increase_score()
+            scores.increase_multiplier()
+            if collided_brick.health <= 0:
+                collided_brick.kill()
+                score += scores.increase_score('killed_brick')
+                try:
+                    new_powerup = game_state.pu_queue.pop(game_state.total_bricks - len(game_state.bricks))
+                    game_state.powerups.add(powerups.PowerUp(new_powerup, pos=collided_brick.rect.center))
+                    print('added {}'.format(new_powerup))
+                except KeyError:
+                    pass
+            self.kill()
+            sound.sfx_lib.get('hit_brick').play()
 
 
 class Arrow(pg.sprite.Sprite):

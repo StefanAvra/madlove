@@ -75,17 +75,26 @@ _levels = {
         #     'shorter': 1
         # },
         'powerups': {
+            1: {
+                'pu_type': 'longer'
+            },
             3: {
                 'pu_type': 'pack', 'amount': 1
             },
-            20: {
-                'pu_type': 'shoot'
+            5: {
+                'pu_type': 'shoot', 'timer': 6000
             },
-            10: {
+            20: {
+                'pu_type': 'shorter'
+            },
+            27: {
+                'pu_type': 'metastasis', 'amount': 1
+            },
+            33: {
                 'pu_type': 'longer'
             },
-            60: {
-                'pu_type': 'shorter'
+            40: {
+                'pu_type': 'shoot', 'timer': 6000
             },
             100: {
                 'pu_type': 'metastasis', 'amount': 2
@@ -93,9 +102,12 @@ _levels = {
             150: {
                 'pu_type': 'metastasis', 'amount': 1
             },
-            14: {
+            190: {
                 'pu_type': 'metastasis', 'amount': 1
-            }
+            },
+            240: {
+                'pu_type': 'shoot', 'timer': 3000
+            },
 
         },
         'bonus_time': 300

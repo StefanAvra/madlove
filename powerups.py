@@ -12,6 +12,7 @@ class PowerUp(pg.sprite.Sprite):
         self.rect.center = pos
         self.speed = 2
         self.amount = pu['amount'] if 'amount' in pu else None
+        self.timer = pu['timer'] if 'timer' in pu else None
 
     def update(self, player):
         self.rect.y += self.speed
@@ -20,7 +21,7 @@ class PowerUp(pg.sprite.Sprite):
 
         if pg.sprite.collide_rect(self, player):
             self.kill()
-            pu_event = pg.event.Event(pg.USEREVENT, powerup=self.type, amount=self.amount)
+            pu_event = pg.event.Event(pg.USEREVENT, powerup=self.type, amount=self.amount, timer=self.timer)
             pg.event.post(pu_event)
 
 
