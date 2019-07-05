@@ -125,5 +125,9 @@ def get_penalty(score):
         convert_step = penalty / 100
     else:
         convert_step = 1
+
+    # the following is needed to avoid rounding issues
+    factor = int(penalty) / int(convert_step)
+    penalty = convert_step * int(factor)
     return -int(penalty), int(convert_step)
 
