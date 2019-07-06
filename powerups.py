@@ -14,10 +14,12 @@ class PowerUp(pg.sprite.Sprite):
         self.amount = pu['amount'] if 'amount' in pu else None
         self.timer = pu['timer'] if 'timer' in pu else None
 
-    def update(self, player):
+    def update(self, player, collect_all_pus):
         self.rect.y += self.speed
         if self.rect.top > config.HEIGHT:
             self.kill()
+            if self.type not in ['shorter']:
+                collect_all_pus = False
 
         if pg.sprite.collide_rect(self, player):
             self.kill()

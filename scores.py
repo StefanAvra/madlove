@@ -131,3 +131,14 @@ def get_penalty(score):
     penalty = convert_step * int(factor)
     return -int(penalty), int(convert_step)
 
+
+def get_bonus(bonus):
+    boni = {
+        'time_bonus': 300,
+        'no_continue': 20000,
+        'all_pus': 100000,
+        'clear': 20000,
+        'perfect': 1000000
+    }
+    return boni.get(bonus)
+

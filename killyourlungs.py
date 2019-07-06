@@ -82,6 +82,10 @@ class GameScene(Scene):
         self.shooting_period = 0
         self.shooting_active = False
         self.shooting_timer = 0
+        self.bonus_timer = self.level_data.bonus_time * 1000
+        self.collected_all_pus = True
+        self.no_continue = True
+        self.lost_life = False
 
         tile_offset_y = 10
         for line in self.level_data.bricks:
@@ -134,6 +138,7 @@ class GameScene(Scene):
 
     def update(self):
         self.timer += time_passed
+        self.bonus_timer -= time_passed
 
         up, left, right, down = [ctrls.get_buttons()[key] for key in (ctrls.UP, ctrls.LEFT, ctrls.RIGHT, ctrls.DOWN)]
 
@@ -158,7 +163,7 @@ class GameScene(Scene):
             self.fadeout_step = 255
             self.fade_leave_to = 'finished'
 
-        self.powerups.update(self.player)
+        self.powerups.update(self.player, self.collected_all_pus)
         self.all_sprites.add(self.powerups)
 
         if self.shooting_active:
@@ -331,36 +336,61 @@ class GameScene(Scene):
 class FinishedLevelScene(Scene):
     def __init__(self, game_state):
         super(FinishedLevelScene, self).__init__()
-        self.finished_lvl = game_state.level_data.no
+        self.game_state = game_state
+        self.finished_lvl = game_state.level_data.no + 1
         self.current_stage = game_state.current_stage
         self.next_level = self.finished_lvl + 1
         self.fadein_step = 255
         self.fadeout_step = 0
-        global score
+        self.leave = False
+
+        self.finished_lines = str_r.get_str('finished_lines').splitlines()
+
+        self.level_clear = True if len(game_state.bricks) == 0 else False
+        self.no_continue = game_state.no_continue
+        self.bonus_time = int(game_state.bonus_timer / 1000)
+        self.time_bonus = self.bonus_time * scores.get_bonus('time_bonus')
+        self.collected_all_pus = game_state.collected_all_pus
+        self.lost_life = game_state.lost_life
+        self.perfect_play = False if False in [self.level_clear, self.no_continue,
+                                               self.collected_all_pus] and not self.lost_life else True
+        self.level_clear_bonus = scores.get_bonus('clear') if self.level_clear else 0
+        self.no_continue_bonus = scores.get_bonus('no_continue') if self.no_continue else 0
+        self.collected_all_pus_bonus = scores.get_bonus('all_pus') if self.collected_all_pus else 0
+        self.perfect_play_bonus = scores.get_bonus('perfect') if self.perfect_play else 0
+
+        self.all_values = [score, self.time_bonus, self.level_clear_bonus, self.no_continue_bonus,
+                           self.collected_all_pus_bonus, self.perfect_play_bonus]
+
+        self.finished_all_levels = True if self.next_level == levels.get_total_levels() else False
+
+        self.blit_elements = [False] * 6
+        self.blit_timer = 0
+        self.score_timer = 0
+
         pg.mixer.music.stop()
 
     def render(self, screen):
         screen.fill(bg_color)
+        lines = []
 
-        # stage_text = font_16.render(stages[self.current_stage], True, config.TEXT_COLOR)
-        # stage_pos = stage_text.get_rect()
-        # stage_pos.midtop = (screen.get_width() / 2, 8)
-        # screen.blit(stage_text, stage_pos)
-        # lives_text = font_16.render(str_r.get_string('lives_text').format(self.lives), True, config.TEXT_COLOR)
-        # screen.blit(lives_text, (screen.get_width() - 150, 8))
-        # score_text = font_16.render(str(score), True, config.TEXT_COLOR)
-        # score_pos = score_text.get_rect()
-        # score_pos.topleft = (8, 8)
-        # screen.blit(score_text, score_pos)
-
-        # render_hud(screen, str(score), stages[self.current_stage], str(self.lives), 4000, 0)
+        finished_text = font_16.render(str_r.get_str('finished').format(self.finished_lvl), True, config.TEXT_COLOR)
+        finished_pos = finished_text.get_rect()
+        finished_pos.centerx = screen.get_rect().centerx
+        finished_pos.centery = screen.get_height() * 0.1
+        screen.blit(finished_text, finished_pos)
 
         # todo: time bonus, perfect, picked up all power ups
+        for idx, line in enumerate(self.finished_lines):
+            new_line = '{:<12} {:>13}'.format(line, self.all_values[idx])
+            text_surf = font_16.render(new_line, True, config.TEXT_COLOR)
+            text_pos = text_surf.get_rect()
+            text_pos.topleft = (34, 150 + (40 * idx))
+            lines.append((text_surf, text_pos))
 
-        finished_text = font_16.render(str_r.get_str('finished'), True, config.TEXT_COLOR)
-        finished_pos = finished_text.get_rect()
-        finished_pos.center = screen.get_rect().center
-        screen.blit(finished_text, finished_pos)
+        for idx, blit in enumerate(self.blit_elements):
+            if blit:
+                screen.blit(lines[idx][0], lines[idx][1])
 
         # fade screen
         if self.fadein_step > 0:
@@ -369,20 +399,67 @@ class FinishedLevelScene(Scene):
             self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
-        pass
+        global score
+        self.blit_timer += time_passed
+        if self.blit_timer >= 100:
+            self.blit_timer = 0
+            if False in self.blit_elements:
+                self.blit_elements.insert(0, True)
+                self.blit_elements.remove(False)
+
+        if False not in self.blit_elements:
+            self.score_timer += time_passed
+            if self.score_timer > 500:
+                if self.time_bonus > 0:
+                    self.time_bonus -= scores.get_bonus('time_bonus')
+                    score += scores.get_bonus('time_bonus')
+                    sound.sfx_lib.get('point').play()
+                    if self.time_bonus <= 0:
+                        self.time_bonus = 0
+                        self.score_timer = 0
+                elif self.level_clear_bonus > 0:
+                    self.level_clear_bonus -= 1000
+                    score += 1000
+                    sound.sfx_lib.get('point').play()
+                    if self.level_clear_bonus <= 0:
+                        self.level_clear_bonus = 0
+                        self.score_timer = 0
+                elif self.no_continue_bonus > 0:
+                    self.no_continue_bonus -= 1000
+                    score += 1000
+                    sound.sfx_lib.get('point').play()
+                    if self.no_continue_bonus <= 0:
+                        self.no_continue_bonus = 0
+                        self.score_timer = 0
+                elif self.collected_all_pus_bonus > 0:
+                    self.collected_all_pus_bonus -= 1000
+                    score += 1000
+                    sound.sfx_lib.get('point').play()
+                    if self.collected_all_pus_bonus <= 0:
+                        self.collected_all_pus_bonus = 0
+                        self.score_timer = 0
+                elif self.perfect_play_bonus > 0:
+                    self.perfect_play_bonus -= 4000
+                    score += 4000
+                    sound.sfx_lib.get('point').play()
+                    if self.perfect_play_bonus <= 0:
+                        self.perfect_play_bonus = 0
+                        self.score_timer = 0
+                elif not self.leave:
+                    self.fadeout_step = 255
+                    self.leave = True
+
+        self.all_values = [score, self.time_bonus, self.level_clear_bonus, self.no_continue_bonus,
+                           self.collected_all_pus_bonus, self.perfect_play_bonus]
+
+        if self.leave and self.fadeout_step <= 0:
+            if self.finished_all_levels:
+                self.manager.go_to(GameOver(self.game_state))
+            else:
+                self.manager.go_to(IntroScene(self.next_level))
 
     def handle_events(self, events):
-        for e in events:
-            if e.type == pg.JOYBUTTONDOWN:
-                if e.button in [0, 1]:
-                    self.manager.go_to(IntroScene(self.next_level))
-                    # self.manager.go_to(GameScene(self.next_level))
-            if e.type == pg.KEYDOWN:
-                if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'ingame-exit'))
-                if e.key == pg.K_SPACE:
-                    self.manager.go_to(IntroScene(self.next_level))
-                    # self.manager.go_to(GameScene(self.next_level))
+        pass
 
 
 class LostLifeScene(Scene):
@@ -390,6 +467,7 @@ class LostLifeScene(Scene):
         super(LostLifeScene, self).__init__()
         self.game_state = game_state
         coins.lose_life()
+        self.game_state.lost_life = True
         self.game_over = False
         pg.mixer.music.stop()
 
@@ -983,6 +1061,7 @@ class ConsumeCoinScene(Scene):
         self.fadein_step = 0
         self.leave = False
         self.convert_step = 0
+        self.game_state.no_continue = False
 
     def render(self, screen):
         screen.fill(bg_color)

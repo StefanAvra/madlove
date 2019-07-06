@@ -67,13 +67,6 @@ _levels = {
                    '                 ',
                    '                 '],
         'name': 'The Lungs',
-        # 'powerups': {
-        #     'pack': 1,
-        #     'shoot': 1,
-        #     'metastasis': 3,
-        #     'longer': 2,
-        #     'shorter': 1
-        # },
         'powerups': {
             1: {
                 'pu_type': 'longer'
@@ -173,7 +166,8 @@ _levels = {
                    '                ',
                    '                ',
                    '                '],
-        'name': 'The Bone'
+        'name': 'The Bone',
+        'bonus_time': 300
     },
     2: {
         'bricks': ['                 ',
@@ -238,7 +232,8 @@ _levels = {
                    '                 ',
                    '                 ',
                    '                 '],
-        'name': 'The Ovary'
+        'name': 'The Ovary',
+        'bonus_time': 300
     },
     3: {
         'bricks': ['                 ',
@@ -303,7 +298,8 @@ _levels = {
                    '                 ',
                    '                 ',
                    '                 '],
-        'name': 'The Large Bowel'
+        'name': 'The Large Bowel',
+        'bonus_time': 300
     },
     4: {
         'bricks': ['                 ',
@@ -368,7 +364,8 @@ _levels = {
                    '                 ',
                    '                 ',
                    '                 '],
-        'name': 'The Kidneys'
+        'name': 'The Kidneys',
+        'bonus_time': 300
     },
     5: {
         'bricks': ['                 ',
@@ -433,7 +430,8 @@ _levels = {
                    '                 ',
                    '                 ',
                    '                 '],
-        'name': 'The Heart'
+        'name': 'The Heart',
+        'bonus_time': 300
     }
 }
 
@@ -447,3 +445,8 @@ class Level:
         except AttributeError:
             print('Level {} not found.'.format(no))
         self.powerups = _levels.get(no).get('powerups')
+        self.bonus_time = _levels.get(no).get('bonus_time')
+
+
+def get_total_levels():
+    return len(_levels)
