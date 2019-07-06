@@ -54,7 +54,6 @@ class GameScene(Scene):
         self.current_stage = 0
         self.player = Player()
         self.balls = pg.sprite.Group()
-        # self.balls.add(Ball())
         self.bricks = pg.sprite.Group()
         self.bombs = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
@@ -299,7 +298,7 @@ class GameScene(Scene):
                 if e.key == pg.K_n:
                     self.bricks.empty()
                 if e.key == pg.K_h:
-                    pu_event = pg.event.Event(pg.USEREVENT, powerup='metastasis', amount=2)
+                    pu_event = pg.event.Event(pg.USEREVENT, powerup='hotball', timer=5000)
                     pg.event.post(pu_event)
 
             if e.type == pg.USEREVENT:
@@ -315,6 +314,7 @@ class GameScene(Scene):
                     self.heartattack_mode = 'ready'
                 if e.powerup == 'hotball':
                     score += scores.increase_score('powerup')
+                    self.balls.sprites()[0].hot_timer += e.timer
                 if e.powerup == 'shorter':
                     self.player.shorter()
                 if e.powerup == 'longer':
@@ -380,7 +380,6 @@ class FinishedLevelScene(Scene):
         finished_pos.centery = screen.get_height() * 0.1
         screen.blit(finished_text, finished_pos)
 
-        # todo: time bonus, perfect, picked up all power ups
         for idx, line in enumerate(self.finished_lines):
             new_line = '{:<12} {:>13}'.format(line, self.all_values[idx])
             text_surf = font_16.render(new_line, True, config.TEXT_COLOR)
@@ -1474,6 +1473,9 @@ class Ball(pg.sprite.Sprite):
         self.last_bounce_times = collections.deque([], 3)
         self.tail = collections.deque([], 10)
         self.sticky = sticky
+        self.hot = False
+        self.hot_timer = 0
+        self.hot_blink = 0
 
     def check_collision(self, rect):
         # intended to be called only after collision detected!
@@ -1538,11 +1540,15 @@ class Ball(pg.sprite.Sprite):
     def hit_brick(self, brick, game_state):
         global score
         self.check_collision(brick.rect)
-        if True in self.collisions[::2]:
-            self.bounce(self.collisions[::2].index(True) * 2)
+        if not self.hot:
+            if True in self.collisions[::2]:
+                self.bounce(self.collisions[::2].index(True) * 2)
+            else:
+                self.bounce(self.collisions.index(True))
+            brick.health -= 1
         else:
-            self.bounce(self.collisions.index(True))
-        brick.health -= 1
+            brick.health -= 2
+            score += scores.increase_score()
         brick.update()
         score += scores.increase_score()
         scores.increase_multiplier()
@@ -1559,6 +1565,18 @@ class Ball(pg.sprite.Sprite):
         sound.sfx_lib.get('hit_brick').play()
 
     def update(self, player, bricks, bombs, game_state):
+        if self.hot_timer > 0:
+            self.hot = True
+            self.hot_timer -= time_passed
+            self.hot_blink += time_passed
+            if self.hot_blink > 100:
+                self.hot_blink = 0
+                self.color = tuple(numpy.subtract((255, 255, 255), self.color))
+            if self.hot_timer < 0:
+                self.hot_timer = 0
+                self.hot = False
+                self.color = config.BALL_COLOR
+        pg.draw.circle(self.image, self.color, (int(self.size / 2),) * 2, int(self.size / 2))
         if self.sticky:
             self.rect.x = player.rect.centerx
             self.rect.bottom = player.rect.top
@@ -1634,7 +1652,7 @@ class Player(pg.sprite.Sprite):
 
 
 class Brick(pg.sprite.Sprite):
-    def __init__(self, x=0, y=0, color=(255, 0, 0), health=2, brick_type='b'):
+    def __init__(self, x=0, y=0, health=2, brick_type='b'):
         types = {'r': 'red', 'w': 'white', 'b': 'black'}
         super().__init__()
         self.image = pg.image.load(
@@ -1645,12 +1663,8 @@ class Brick(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        # self.color = [(0, 0, 0), color]
 
     def update(self):
-        # darken_factor = numpy.interp(self.health, [1, self.max_health], [255, 100])
-        # darker = pg.Surface(self.image.get_size()).convert_alpha()
-        # darker.fill((0, 0, 0, darken_factor * 255))
         darken_factor = 255
         self.dark.set_alpha(darken_factor)
 

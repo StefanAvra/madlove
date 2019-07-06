@@ -8,7 +8,7 @@ __strings = {
     'game_over': 'GAME OVER\nCANCER FAILED\n YOUR BODY IS A TEMPLE',
     'metastasis': 'METASTASIS UNLOCKED',
     'finished': 'Finished Level {}!',
-    'finished_lines': 'score\ntime bonus\nno continue\nall powerups\nlevel clear\nperfect',
+    'finished_lines': 'score\ntime bonus\nlevel clear\nno continue\nall powerups\nperfect',
     'copyright': '© 2019 GURKIMAN, AVRA',
     'combo': 'COMBO X{}',
     'highscores_title': 'HIGHSCORES',

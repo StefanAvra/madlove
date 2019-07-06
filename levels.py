@@ -81,13 +81,28 @@ _levels = {
                 'pu_type': 'shorter'
             },
             27: {
-                'pu_type': 'metastasis', 'amount': 1
+                'pu_type': 'metastasis', 'amount': 2
             },
             33: {
                 'pu_type': 'longer'
             },
             40: {
                 'pu_type': 'shoot', 'timer': 6000
+            },
+            50: {
+                'pu_type': 'hotball', 'timer': 1500
+            },
+            51: {
+                'pu_type': 'hotball', 'timer': 1500
+            },
+            60: {
+                'pu_type': 'hotball', 'timer': 2000
+            },
+            70: {
+                'pu_type': 'metastasis', 'amount': 3
+            },
+            80: {
+                'pu_type': 'shoot', 'timer': 3000
             },
             100: {
                 'pu_type': 'metastasis', 'amount': 2
@@ -100,6 +115,15 @@ _levels = {
             },
             240: {
                 'pu_type': 'shoot', 'timer': 3000
+            },
+            250: {
+                'pu_type': 'hotball', 'timer': 2000
+            },
+            260: {
+                'pu_type': 'metastasis', 'amount': 1
+            },
+            261: {
+                'pu_type': 'metastasis', 'amount': 2
             },
 
         },
@@ -167,6 +191,7 @@ _levels = {
                    '                ',
                    '                '],
         'name': 'The Bone',
+        'powerups': {},
         'bonus_time': 300
     },
     2: {
@@ -233,6 +258,7 @@ _levels = {
                    '                 ',
                    '                 '],
         'name': 'The Ovary',
+        'powerups': {},
         'bonus_time': 300
     },
     3: {
@@ -299,6 +325,7 @@ _levels = {
                    '                 ',
                    '                 '],
         'name': 'The Large Bowel',
+        'powerups': {},
         'bonus_time': 300
     },
     4: {
@@ -365,6 +392,7 @@ _levels = {
                    '                 ',
                    '                 '],
         'name': 'The Kidneys',
+        'powerups': {},
         'bonus_time': 300
     },
     5: {
@@ -431,6 +459,7 @@ _levels = {
                    '                 ',
                    '                 '],
         'name': 'The Heart',
+        'powerups': {},
         'bonus_time': 300
     }
 }
