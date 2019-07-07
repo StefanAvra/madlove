@@ -147,9 +147,11 @@ class GameScene(Scene):
             for ball in self.balls:
                 ball.update(self.player, self.bricks, self.bombs, self)
             self.player.update(left, right, up)
+            self.powerups.update(self.player, self)
+
         else:
             self.killing_timer += time_passed
-            if self.killing_timer >= 1200 and not self.fade_leave_to:
+            if self.killing_timer >= 3000 and not self.fade_leave_to:
                 self.fadeout_step = 255
                 self.fade_leave_to = 'finished'
 
@@ -162,7 +164,6 @@ class GameScene(Scene):
             self.fadeout_step = 255
             self.fade_leave_to = 'finished'
 
-        self.powerups.update(self.player, self)
         self.all_sprites.add(self.powerups)
 
         if self.shooting_active:
@@ -1585,9 +1586,10 @@ class Ball(pg.sprite.Sprite):
             brick.kill()
             score += scores.increase_score('killed_brick')
             try:
-                new_powerup = game_state.pu_queue.pop(game_state.total_bricks-len(game_state.bricks))
-                game_state.powerups.add(powerups.PowerUp(new_powerup, pos=brick.rect.center))
-                print('added {}'.format(new_powerup))
+                if len(game_state.powerups) < 3:
+                    new_powerup = game_state.pu_queue.pop(game_state.total_bricks-len(game_state.bricks))
+                    game_state.powerups.add(powerups.PowerUp(new_powerup, pos=brick.rect.center))
+                    print('added {}'.format(new_powerup))
             except KeyError:
                 pass
 
@@ -1731,9 +1733,10 @@ class Bullet(pg.sprite.Sprite):
                 collided_brick.kill()
                 score += scores.increase_score('killed_brick')
                 try:
-                    new_powerup = game_state.pu_queue.pop(game_state.total_bricks - len(game_state.bricks))
-                    game_state.powerups.add(powerups.PowerUp(new_powerup, pos=collided_brick.rect.center))
-                    print('added {}'.format(new_powerup))
+                    if len(game_state.powerups) < 3:
+                        new_powerup = game_state.pu_queue.pop(game_state.total_bricks - len(game_state.bricks))
+                        game_state.powerups.add(powerups.PowerUp(new_powerup, pos=collided_brick.rect.center))
+                        print('added {}'.format(new_powerup))
                 except KeyError:
                     pass
             self.kill()

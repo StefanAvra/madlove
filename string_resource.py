@@ -59,21 +59,26 @@ __credit_views = {
     1: """Game Idea by Gurkiman
 
 Game Design by
-Gurkiman and Avra
+Gurkiman & Avra
 
 Programmed by
 Avra
 Code published under MIT License
 
-Graphic Designer
+Graphic Design by
 Gurkiman""",
     2: """Music by Ozzed
+"Boktipset fran helvetet"
+"Here Comes the 8-Bit Empire"
+"About Ducks"
 
-in-game Font
+In-Game Font
 © 2012 The Press Start 2P
 Project Authors (cody@zone38.net),
 with Reserved Font Name "Press Start 2P".""",
-    3: """© 2019 Gurkiman, Avra"""
+    3: """Special Thanks
+    Uli Veit""",
+    4: """© 2019 Gurkiman, Avra"""
 }
 
 __alphabet = [chr(char) for char in range(65, 91)]
