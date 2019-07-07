@@ -120,7 +120,7 @@ def get_new_combo():
 
 
 def get_penalty(score):
-    penalty = score * 0.3
+    penalty = score * 0.1
     if penalty > 100:
         convert_step = int(penalty / 100)
     else:

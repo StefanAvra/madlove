@@ -727,9 +727,8 @@ class TitleScene(Scene):
                             #     self.fade_leave_to = 2
                             # elif f == 'credits':
                             #     pass
-                    if e.key == pg.K_1:
-                        # coins.add_coin()
-                        pass
+                    if e.key == pg.K_c:
+                        self.manager.go_to(CreditsScene(0))
                     if e.key == pg.K_ESCAPE:
                         self.manager.go_to(OverlayMenuScene(self, 'exit'))
                     if e.key == pg.K_h:
@@ -1364,11 +1363,19 @@ class CreditsScene(Scene):
 
     def render(self, screen):
         screen.fill(bg_color)
+        line_height = 30
+        view_height = line_height * len(self.views[self.view_idx].splitlines())
+        view_surf = pg.Surface((config.WIDTH, view_height))
+        view_surf.fill(bg_color)
+        view_rect = view_surf.get_rect()
         for idx, line in enumerate(self.views[self.view_idx].splitlines()):
             text_surf = font_16.render(line, True, config.TEXT_COLOR)
             text_pos = text_surf.get_rect()
-            text_pos.topleft = (50, 150 + (40 * idx))
-            screen.blit(text_surf, text_pos)
+            text_pos.centerx = view_rect.centerx
+            text_pos.y = line_height * idx
+            view_surf.blit(text_surf, text_pos)
+        view_rect.center = screen.get_rect().center
+        screen.blit(view_surf, view_rect)
 
         # fade screen
         if self.fadein_step > 0:
@@ -1379,7 +1386,7 @@ class CreditsScene(Scene):
     def update(self):
         if self.fadeout_step <= 0 and self.fadein_step <= 0 and not self.leave:
             self.next_view_timer += time_passed
-            if self.next_view_timer > 2000:
+            if self.next_view_timer > 3000:
                 self.fadeout_step = 255
                 self.leave = True
                 if self.view_idx + 1 >= len(self.views):
@@ -1395,7 +1402,7 @@ class CreditsScene(Scene):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button in [0, 1]:
-                    self.next_view_timer += 2000
+                    self.next_view_timer += 3000
 
 
 class IntroScene(Scene):

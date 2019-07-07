@@ -55,7 +55,10 @@ __combos = {
 }
 
 __credit_views = {
-    0: "A project by\nChristian 'Gurkiman' Angele\n&\nStefan 'Avra' Avramescu",
+    0: """A project by
+Christian 'Gurkiman' Angele
+&
+Stefan 'Avra' Avramescu""",
     1: """Game Idea by Gurkiman
 
 Game Design by
@@ -63,7 +66,8 @@ Gurkiman & Avra
 
 Programmed by
 Avra
-Code published under MIT License
+Code published under
+MIT License
 
 Graphic Design by
 Gurkiman""",
@@ -72,13 +76,20 @@ Gurkiman""",
 "Here Comes the 8-Bit Empire"
 "About Ducks"
 
-In-Game Font
+SFX by
+Juhani Junkala
+"The Essential Retro
+Video Game Sound
+Effects Collection"
+""",
+    3: """In-Game Font
 © 2012 The Press Start 2P
-Project Authors (cody@zone38.net),
-with Reserved Font Name "Press Start 2P".""",
-    3: """Special Thanks
-    Uli Veit""",
-    4: """© 2019 Gurkiman, Avra"""
+Project Authors,
+with Reserved Font Name
+"Press Start 2P" """,
+    4: """Special Thanks
+Uli Veit""",
+    5: """© 2019 Gurkiman, Avra"""
 }
 
 __alphabet = [chr(char) for char in range(65, 91)]
