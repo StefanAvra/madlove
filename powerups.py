@@ -14,12 +14,12 @@ class PowerUp(pg.sprite.Sprite):
         self.amount = pu['amount'] if 'amount' in pu else None
         self.timer = pu['timer'] if 'timer' in pu else None
 
-    def update(self, player, collect_all_pus):
+    def update(self, player, game_state):
         self.rect.y += self.speed
         if self.rect.top > config.HEIGHT:
             self.kill()
             if self.type not in ['shorter']:
-                collect_all_pus = False
+                game_state.collected_all_pus = False
 
         if pg.sprite.collide_rect(self, player):
             self.kill()
@@ -31,8 +31,8 @@ def get_pu_image(pu_type):
     if pu_type == 'pack':
         file = 'pack'
     else:
-        file = 'pack'
+        file = 'pu_{}'.format(pu_type)
 
-    return pg.image.load(os.path.join('assets', 'graphics', '{}.png').format(file)).convert()
+    return pg.image.load(os.path.join('assets', 'graphics', '{}.png').format(file)).convert_alpha()
 
 

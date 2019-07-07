@@ -77,7 +77,7 @@ class GameScene(Scene):
         self.heart_fade_inv = 1
         self.heart_beat = 0
         self.killing_timer = 0
-        self.pu_queue = self.level_data.powerups
+        self.pu_queue = self.level_data.powerups.copy()
         self.shooting_period = 0
         self.shooting_active = False
         self.shooting_timer = 0
@@ -162,7 +162,7 @@ class GameScene(Scene):
             self.fadeout_step = 255
             self.fade_leave_to = 'finished'
 
-        self.powerups.update(self.player, self.collected_all_pus)
+        self.powerups.update(self.player, self)
         self.all_sprites.add(self.powerups)
 
         if self.shooting_active:
@@ -298,7 +298,7 @@ class GameScene(Scene):
                 if e.key == pg.K_n:
                     self.bricks.empty()
                 if e.key == pg.K_h:
-                    pu_event = pg.event.Event(pg.USEREVENT, powerup='hotball', timer=5000)
+                    pu_event = pg.event.Event(pg.USEREVENT, powerup='shoot', timer=5000)
                     pg.event.post(pu_event)
 
             if e.type == pg.USEREVENT:
@@ -339,7 +339,7 @@ class FinishedLevelScene(Scene):
         self.game_state = game_state
         self.finished_lvl = game_state.level_data.no + 1
         self.current_stage = game_state.current_stage
-        self.next_level = self.finished_lvl + 1
+        self.next_level = self.finished_lvl
         self.fadein_step = 255
         self.fadeout_step = 0
         self.leave = False
@@ -352,8 +352,8 @@ class FinishedLevelScene(Scene):
         self.time_bonus = self.bonus_time * scores.get_bonus('time_bonus')
         self.collected_all_pus = game_state.collected_all_pus
         self.lost_life = game_state.lost_life
-        self.perfect_play = False if False in [self.level_clear, self.no_continue,
-                                               self.collected_all_pus] and not self.lost_life else True
+        self.perfect_play = False if False in [not self.lost_life, not self.level_clear, self.no_continue,
+                                               self.collected_all_pus] else True
         self.level_clear_bonus = scores.get_bonus('clear') if self.level_clear else 0
         self.no_continue_bonus = scores.get_bonus('no_continue') if self.no_continue else 0
         self.collected_all_pus_bonus = scores.get_bonus('all_pus') if self.collected_all_pus else 0
@@ -956,6 +956,7 @@ class ContinueScene(Scene):
         self.countdown_timer = 10000
         self.countdown = int(self.countdown_timer / 1000)
         self.countdown_active = False if coins.get_credit() > 0 else True
+        self.no_countdown = self.countdown_active
         self.countdown_text = str_r.get_str('no_cigs').splitlines()
         self.countdown_color = config.TEXT_COLOR
         self.highlight_clock = 0
@@ -973,16 +974,16 @@ class ContinueScene(Scene):
     def render(self, screen):
         screen.fill(bg_color)
 
-        # if self.countdown_active:
-        for idx, line in enumerate(self.countdown_text):
-            text_surf = font_16.render(line, True, config.TEXT_COLOR)
-            text_rect = text_surf.get_rect()
-            text_rect.center = (screen.get_rect().centerx, 150 + idx * menus.PADDING)
-            screen.blit(text_surf, text_rect)
-        counter = font_24.render(str(self.countdown), True, self.countdown_color)
-        counter_pos = counter.get_rect()
-        counter_pos.center = screen.get_rect().center
-        screen.blit(counter, counter_pos)
+        if self.no_countdown:
+            for idx, line in enumerate(self.countdown_text):
+                text_surf = font_16.render(line, True, config.TEXT_COLOR)
+                text_rect = text_surf.get_rect()
+                text_rect.center = (screen.get_rect().centerx, 150 + idx * menus.PADDING)
+                screen.blit(text_surf, text_rect)
+            counter = font_24.render(str(self.countdown), True, self.countdown_color)
+            counter_pos = counter.get_rect()
+            counter_pos.center = screen.get_rect().center
+            screen.blit(counter, counter_pos)
 
         if coins.get_credit() == 0:
             render_coin_text(self, screen)
@@ -1031,16 +1032,9 @@ class ContinueScene(Scene):
 
     def handle_events(self, events):
         for e in events:
-            if e.type == pg.JOYBUTTONDOWN:
-                if e.button == 0:
-                    sound.sfx_lib.get('game_over').stop()
-                    self.manager.go_to(TitleScene())
-
             if e.type == pg.KEYDOWN:
                 if e.key in [pg.K_SPACE]:
                     self.countdown_timer -= 1000
-                if e.key == pg.K_ESCAPE:
-                    self.manager.go_to(OverlayMenuScene(self, 'exit'))
 
 
 class ConsumeCoinScene(Scene):
@@ -1307,17 +1301,19 @@ class HighscoreScene(Scene):
                 self.leaving = True
 
         if self.fade_leave_to and self.fadeout_step <= 0:
-            # todo: go to credits
-            if self.fade_leave_to == 'game':
-                self.manager.go_to(IntroScene(0))
-            elif self.previous_scene:
-                self.previous_scene.fade_leave_to = False
-                self.previous_scene.timer = 0
-                self.previous_scene.fadein_step = 255
-                self.previous_scene.title.restart_animation(timer=2000)
-                self.manager.go_to(self.previous_scene)
+            if self.mode == 'gameover':
+                self.manager.go_to(CreditsScene(0))
             else:
-                self.manager.go_to(TitleScene())
+                if self.fade_leave_to == 'game':
+                    self.manager.go_to(IntroScene(0))
+                elif self.previous_scene:
+                    self.previous_scene.fade_leave_to = False
+                    self.previous_scene.timer = 0
+                    self.previous_scene.fadein_step = 255
+                    self.previous_scene.title.restart_animation(timer=2000)
+                    self.manager.go_to(self.previous_scene)
+                else:
+                    self.manager.go_to(TitleScene())
 
         if self.mode == 'show':
             update_highlight_text(self)
@@ -1355,17 +1351,50 @@ class HighscoreScene(Scene):
 
 
 class CreditsScene(Scene):
-    def __init__(self):
+    def __init__(self, view_no):
         super(CreditsScene, self).__init__()
+        self.views = str_r.get_credits()
+        self.view_idx = view_no
+        self.next_view_timer = 0
+        self.fadein_step = 255
+        self.fadeout_step = 0
+        self.leave = False
+        self.leave_to_title = False
 
     def render(self, screen):
-        pass
+        screen.fill(bg_color)
+        for idx, line in enumerate(self.views[self.view_idx].splitlines()):
+            text_surf = font_16.render(line, True, config.TEXT_COLOR)
+            text_pos = text_surf.get_rect()
+            text_pos.topleft = (50, 150 + (40 * idx))
+            screen.blit(text_surf, text_pos)
+
+        # fade screen
+        if self.fadein_step > 0:
+            self.fadein_step = render_fading(screen, self.fadein_step, 0)
+        if self.fadeout_step > 0:
+            self.fadeout_step = render_fading(screen, self.fadeout_step, 1)
 
     def update(self):
-        pass
+        if self.fadeout_step <= 0 and self.fadein_step <= 0 and not self.leave:
+            self.next_view_timer += time_passed
+            if self.next_view_timer > 2000:
+                self.fadeout_step = 255
+                self.leave = True
+                if self.view_idx + 1 >= len(self.views):
+                    self.leave_to_title = True
+
+        if self.leave and self.fadeout_step <= 0:
+            if self.leave_to_title:
+                self.manager.go_to(TitleScene())
+            else:
+                self.manager.go_to(CreditsScene(self.view_idx + 1))
 
     def handle_events(self, events):
-        pass
+        for e in events:
+            if e.type == pg.JOYBUTTONDOWN:
+                if e.button in [0, 1]:
+                    self.next_view_timer += 2000
 
 
 class IntroScene(Scene):
@@ -1575,7 +1604,8 @@ class Ball(pg.sprite.Sprite):
             if self.hot_timer < 0:
                 self.hot_timer = 0
                 self.hot = False
-                self.color = config.BALL_COLOR
+        else:
+            self.color = config.BALL_COLOR
         pg.draw.circle(self.image, self.color, (int(self.size / 2),) * 2, int(self.size / 2))
         if self.sticky:
             self.rect.x = player.rect.centerx
@@ -1674,9 +1704,9 @@ class Brick(pg.sprite.Sprite):
 class Bullet(pg.sprite.Sprite):
     def __init__(self, x, y):
         super(Bullet, self).__init__()
-        self.image = pg.Surface((4, 10))
+        self.image = pg.Surface((6, 10))
         self.image.fill((255, 255, 255))
-        core = pg.Surface((2, 10))
+        core = pg.Surface((4, 10))
         core.fill((0, 0, 0))
         self.image.blit(core, (1, 0))
         self.rect = self.image.get_rect()
@@ -1802,7 +1832,7 @@ class SpriteSheet:
 
 class Message:
     def __init__(self, msg, sfx='normal'):
-        self.timer = 2000
+        self.timer = 1000
         self.color = config.TEXT_COLOR
         self.msg = msg.upper()
         self.highlight_clock = 0

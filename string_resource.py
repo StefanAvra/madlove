@@ -55,9 +55,8 @@ __combos = {
 }
 
 __credit_views = {
-    0: "A project by\nGurkiman\n&\nStefan 'Avra' Avramescu",
-    1: """
-Game Idea by Gurkiman
+    0: "A project by\nChristian 'Gurkiman' Angele\n&\nStefan 'Avra' Avramescu",
+    1: """Game Idea by Gurkiman
 
 Game Design by
 Gurkiman and Avra
@@ -67,18 +66,14 @@ Avra
 Code published under MIT License
 
 Graphic Designer
-Gurkiman
-""",
-    2: """
-Music by Ozzed
+Gurkiman""",
+    2: """Music by Ozzed
 
 in-game Font
-© 2012 The Press Start 2P Project Authors (cody@zone38.net),
-with Reserved Font Name "Press Start 2P".
-""",
-    3: """
-© 2019 Gurkiman, Avra
-"""
+© 2012 The Press Start 2P
+Project Authors (cody@zone38.net),
+with Reserved Font Name "Press Start 2P".""",
+    3: """© 2019 Gurkiman, Avra"""
 }
 
 __alphabet = [chr(char) for char in range(65, 91)]
@@ -111,9 +106,11 @@ def get_combo_msg(multi):
     return __combos.get(multi)
 
 
-def get_credits(view_no):
-    # todo: formatting
-    return __credit_views.get(view_no).upper()
+def get_credits():
+    d = {}
+    for key, value in __credit_views.items():
+        d.update({key: value.upper()})
+    return d
 
 
 def get_alphabet():
