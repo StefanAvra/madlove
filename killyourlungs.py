@@ -353,7 +353,7 @@ class FinishedLevelScene(Scene):
         self.time_bonus = self.bonus_time * scores.get_bonus('time_bonus')
         self.collected_all_pus = game_state.collected_all_pus
         self.lost_life = game_state.lost_life
-        self.perfect_play = False if False in [not self.lost_life, not self.level_clear, self.no_continue,
+        self.perfect_play = False if False in [not self.lost_life, self.level_clear, self.no_continue,
                                                self.collected_all_pus] else True
         self.level_clear_bonus = scores.get_bonus('clear') if self.level_clear else 0
         self.no_continue_bonus = scores.get_bonus('no_continue') if self.no_continue else 0
