@@ -769,6 +769,8 @@ class GameOver(Scene):
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave = False
+        self.char_timer = 0
+        self.char_timer_threshold = 0
 
         pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
         pg.mixer.music.play(-1)
@@ -868,8 +870,24 @@ class GameOver(Scene):
                     self.fade_leave = True
                     self.fadeout_step = 255
 
+        up, left, right, down = [ctrls.get_buttons()[key] for key in (ctrls.UP, ctrls.LEFT, ctrls.RIGHT, ctrls.DOWN)]
+
+        if up:
+            self.char_timer_threshold += time_passed
+            if self.char_timer_threshold > 800:
+                self.char_timer += time_passed
+                if self.char_timer >= 100:
+                    self.char_timer = 0
+                    self.decr_char()
+        if down:
+            self.char_timer_threshold += time_passed
+            if self.char_timer_threshold > 1000:
+                self.char_timer += time_passed
+                if self.char_timer >= 100:
+                    self.char_timer = 0
+                    self.incr_char()
+
     def handle_events(self, events):
-        # todo: change chars by holding down
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button == 1:
@@ -889,6 +907,17 @@ class GameOver(Scene):
                         self.prev_char()
                     if e.value > 0:
                         self.next_char()
+
+            if e.type == pg.JOYAXISMOTION:
+                if e.axis == 1:
+                    if e.value == 0:
+                        self.char_timer = 0
+                        self.char_timer_threshold = 0
+
+            if e.type == pg.KEYUP:
+                if e.key in [pg.K_DOWN, pg.K_UP]:
+                    self.char_timer = 0
+                    self.char_timer_threshold = 0
 
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_SPACE:
