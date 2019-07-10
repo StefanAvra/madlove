@@ -350,7 +350,7 @@ class FinishedLevelScene(Scene):
         self.level_clear = True if len(game_state.bricks) == 0 else False
         self.no_continue = game_state.no_continue
         self.bonus_time = int(game_state.bonus_timer / 1000)
-        self.time_bonus = self.bonus_time * scores.get_bonus('time_bonus')
+        self.time_bonus = max(self.bonus_time * scores.get_bonus('time_bonus'), 0)
         self.collected_all_pus = game_state.collected_all_pus
         self.lost_life = game_state.lost_life
         self.perfect_play = False if False in [not self.lost_life, self.level_clear, self.no_continue,
