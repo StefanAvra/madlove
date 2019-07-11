@@ -771,8 +771,10 @@ class GameOver(Scene):
         self.fade_leave = False
         self.char_timer = 0
         self.char_timer_threshold = 0
-
-        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
+        if self.place_no == 1:
+            pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, '1stplace.ogg'))
+        else:
+            pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
         pg.mixer.music.play(-1)
 
     def render(self, screen):
@@ -863,6 +865,9 @@ class GameOver(Scene):
                     self.cursor_clock = 0
                     self.blit_cursor = not self.blit_cursor
             elif self.fade_leave and self.fadeout_step <= 0:
+                if self.place_no == 1:
+                    pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
+                    pg.mixer.music.play(-1)
                 self.manager.go_to(HighscoreScene(highlight_place=self.place_no, mode='gameover'))
             elif not self.fade_leave:
                 self.timer += time_passed
@@ -902,17 +907,14 @@ class GameOver(Scene):
                         self.decr_char()
                     if e.value > 0:
                         self.incr_char()
+                    if e.value == 0:
+                        self.char_timer = 0
+                        self.char_timer_threshold = 0
                 if e.axis == 0:
                     if e.value < 0:
                         self.prev_char()
                     if e.value > 0:
                         self.next_char()
-
-            if e.type == pg.JOYAXISMOTION:
-                if e.axis == 1:
-                    if e.value == 0:
-                        self.char_timer = 0
-                        self.char_timer_threshold = 0
 
             if e.type == pg.KEYUP:
                 if e.key in [pg.K_DOWN, pg.K_UP]:
@@ -1431,6 +1433,9 @@ class CreditsScene(Scene):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button in [0, 1]:
+                    self.next_view_timer += 3000
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_SPACE:
                     self.next_view_timer += 3000
 
 

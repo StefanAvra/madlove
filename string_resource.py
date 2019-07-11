@@ -75,6 +75,8 @@ Gurkiman""",
 "Boktipset fran helvetet"
 "Here Comes the 8-Bit Empire"
 "About Ducks"
+"8-Bit Party"
+
 
 SFX by
 Juhani Junkala
@@ -88,7 +90,10 @@ Project Authors,
 with Reserved Font Name
 "Press Start 2P" """,
     4: """Special Thanks
-Uli Veit""",
+    
+Uli Veit
+Trung Bui
+Jo Löhmann""",
     5: """© 2019 Gurkiman, Avra"""
 }
 
