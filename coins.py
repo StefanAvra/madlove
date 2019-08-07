@@ -1,5 +1,5 @@
 import sound
-
+import config
 
 __credit = 0
 __life_to_credit_ratio = 3
@@ -41,4 +41,11 @@ def lose_life():
     if __lives < 0:
         __lives = 0
 
+
+def handle_free_mode():
+    global __credit
+    if not config.FREE_MODE:
+        return
+    if __credit <= 0:
+        __credit = 1
 

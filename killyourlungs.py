@@ -739,6 +739,9 @@ class TitleScene(Scene):
                 self.cig_fade_invert = self.cig_fade_invert * -1
             self.cig_fade += 1 * self.cig_fade_invert
 
+        if config.FREE_MODE:
+            coins.handle_free_mode()
+
     def handle_events(self, events):
         if not self.fade_leave_to:
             for e in events:
@@ -1075,7 +1078,7 @@ class ContinueScene(Scene):
         self.countdown_timer = 10000
         self.countdown = int(self.countdown_timer / 1000)
         self.countdown_active = False if coins.get_credit() > 0 else True
-        self.no_countdown = self.countdown_active
+        self.no_countdown = not self.countdown_active or config.FREE_MODE
         self.countdown_text = str_r.get_str('no_cigs').splitlines()
         self.countdown_color = config.TEXT_COLOR
         self.highlight_clock = 0
@@ -1093,7 +1096,7 @@ class ContinueScene(Scene):
     def render(self, screen):
         screen.fill(bg_color)
 
-        if self.no_countdown:
+        if not self.no_countdown:
             for idx, line in enumerate(self.countdown_text):
                 text_surf = font_16.render(line, True, config.TEXT_COLOR)
                 text_rect = text_surf.get_rect()
@@ -1115,7 +1118,7 @@ class ContinueScene(Scene):
 
     def update(self):
         if self.fade_leave_to is None:
-            if self.game_over:
+            if self.game_over or config.FREE_MODE:
                 self.fadeout_step = 255
                 self.fade_leave_to = 'gameover'
             else:
@@ -1475,6 +1478,9 @@ class HighscoreScene(Scene):
             if self.highlight_place_clock >= 400:
                 self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
                 self.highlight_place_clock = 0
+
+        if config.FREE_MODE:
+            coins.handle_free_mode()
 
     def handle_events(self, events):
         for e in events:
@@ -2133,11 +2139,12 @@ def render_coin_text(scene, screen, y_pos=0.7):
 
 
 def render_credit(scene, screen):
-    if scene.draw_credit and coins.get_credit():
-        credit = font_16.render(scene.credit_text.format(coins.get_credit()), True, config.TEXT_COLOR)
-        pos_credit = credit.get_rect()
-        pos_credit.midtop = (screen.get_width() / 2, screen.get_height() * 0.96)
-        screen.blit(credit, pos_credit)
+    if not config.FREE_MODE:
+        if scene.draw_credit and coins.get_credit():
+            credit = font_16.render(scene.credit_text.format(coins.get_credit()), True, config.TEXT_COLOR)
+            pos_credit = credit.get_rect()
+            pos_credit.midtop = (screen.get_width() / 2, screen.get_height() * 0.96)
+            screen.blit(credit, pos_credit)
 
 
 def render_heartattack(scene, screen):

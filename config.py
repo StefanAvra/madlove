@@ -20,6 +20,8 @@ FLAGS = 0
 
 USE_JOYSTICK = True
 
+FREE_MODE = False
+
 BACKGROUND_COLOR = "#ffb3ce"
 FONT = "assets/font/PressStart2P-Regular.ttf"
 TEXT_COLOR = (0, 0, 0)
