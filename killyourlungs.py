@@ -1421,7 +1421,7 @@ class HighscoreScene(Scene):
         screen.blit(self.title, title_pos)
         self.lines = []
         place = 0
-        for highscore in scores.highscores:
+        for highscore in scores.highscores[:10]:
             place += 1
             new_line = '{:<2}   {:<8} {:>10}'.format(place, highscore[0], highscore[1])
             if self.mode == 'gameover' and place == self.highlight_place:

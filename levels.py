@@ -658,6 +658,8 @@ _levels = {
         'bonus_time': 300
     }
 }
+
+
 class Level:
     def __init__(self, no):
         global _levels
