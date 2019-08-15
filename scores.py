@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import config
 import operator
 import pickle
@@ -37,6 +39,7 @@ def lowest_score():
 def update_highscores(new_score=None):
     global highscores
     if new_score is not None:
+        new_score += (str(datetime.utcnow()), config.FREE_MODE)
         highscores.append(new_score)
     highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
     # highscores = highscores[:10]

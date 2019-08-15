@@ -861,7 +861,7 @@ class GameOver(Scene):
         if self.blit_elements[0]:
             # level = font_16.render(f'YOU REACHED LEVEL {self.reached_lvl}', True, config.TEXT_COLOR)
             level = font_16.render(f_line.format(str_r.get_str('reached_level'),
-                                                self.reached_lvl), True, config.TEXT_COLOR)
+                                                 self.reached_lvl), True, config.TEXT_COLOR)
             level_pos = level.get_rect()
             level_pos.topleft = (50, y_offset)
             screen.blit(level, level_pos)
@@ -870,7 +870,7 @@ class GameOver(Scene):
             # stage = font_16.render(f'CANCER STAGE {stages[self.reached_stage]}' if self.reached_stage > 0
             #                        else stages[self.reached_stage], True, config.TEXT_COLOR)
             stage = font_16.render(f_line.format(str_r.get_str('cancer_stage'),
-                                               stages[self.reached_stage]), True, config.TEXT_COLOR)
+                                                 stages[self.reached_stage]), True, config.TEXT_COLOR)
             stage_pos = stage.get_rect()
             stage_pos.topleft = (50, y_offset)
             screen.blit(stage, stage_pos)
@@ -1772,7 +1772,7 @@ class Ball(pg.sprite.Sprite):
             score += scores.increase_score('killed_brick')
             try:
                 if len(game_state.powerups) < 3:
-                    new_powerup = game_state.pu_queue.pop(game_state.total_bricks-len(game_state.bricks))
+                    new_powerup = game_state.pu_queue.pop(game_state.total_bricks - len(game_state.bricks))
                     game_state.powerups.add(powerups.PowerUp(new_powerup, pos=brick.rect.center))
                     print('added {}'.format(new_powerup))
             except KeyError:
@@ -1861,13 +1861,13 @@ class Player(pg.sprite.Sprite):
 
     def longer(self):
         current_length = self.lengths.index(self.type)
-        if current_length < len(self.lengths)-1:
-            self.update_length(self.lengths[current_length+1])
+        if current_length < len(self.lengths) - 1:
+            self.update_length(self.lengths[current_length + 1])
 
     def shorter(self):
         current_length = self.lengths.index(self.type)
         if current_length > 0:
-            self.update_length(self.lengths[current_length-1])
+            self.update_length(self.lengths[current_length - 1])
 
 
 class Brick(pg.sprite.Sprite):
