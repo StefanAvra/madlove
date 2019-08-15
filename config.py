@@ -21,6 +21,7 @@ FLAGS = 0
 USE_JOYSTICK = True
 
 FREE_MODE = True
+LOCATION = 'Fais Dodo'
 
 BACKGROUND_COLOR = "#ffb3ce"
 FONT = "assets/font/PressStart2P-Regular.ttf"

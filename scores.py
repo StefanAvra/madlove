@@ -39,7 +39,7 @@ def lowest_score():
 def update_highscores(new_score=None):
     global highscores
     if new_score is not None:
-        new_score += (str(datetime.utcnow()), config.FREE_MODE)
+        new_score += (str(datetime.utcnow()), config.FREE_MODE, config.LOCATION)
         highscores.append(new_score)
     highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
     # highscores = highscores[:10]
