@@ -823,8 +823,8 @@ class GameOver(Scene):
         self.reached_lvl = game_state.level_data.no + 1
         self.reached_stage = game_state.current_stage
         self.game_over_text = 'GAME OVER'
-        self.is_highscore = self.score > scores.lowest_score()
         self.place, self.place_no = scores.get_place(self.score)
+        self.is_highscore = self.place_no <= 10
         self.blit_elements = [False] * 5
         self.timer = 0
         self.alphabet = str_r.get_alphabet()
