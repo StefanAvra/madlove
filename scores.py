@@ -19,10 +19,10 @@ def load_highscores():
         with open(config.HIGHSCORE_FILE, 'rb') as f:
             highscores = pickle.load(f)
             highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
-            # highscores = highscores[:10]
+            highscores = highscores[:10]
     except IOError:
         highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
-        # highscores = highscores[:10]
+        highscores = highscores[:10]
         save_highscores()
 
 
@@ -39,10 +39,10 @@ def lowest_score():
 def update_highscores(new_score=None):
     global highscores
     if new_score is not None:
-        new_score += (str(datetime.utcnow()), config.FREE_MODE, config.LOCATION)
+        new_score += (str(datetime.utcnow()), config.FREE_MODE, config.LOCATION, config.CABINET_ID)
         highscores.append(new_score)
     highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
-    # highscores = highscores[:10]
+    highscores = highscores[:10]
 
 
 def get_place(new):

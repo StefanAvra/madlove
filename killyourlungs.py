@@ -834,7 +834,7 @@ class GameOver(Scene):
         self.cursor_color = config.MENU_COLOR_HIGHLIGHT
         self.blit_cursor = False
         self.name = list('        ')
-        self.name_input_active = True if self.is_highscore else False
+        self.name_input_active = self.is_highscore
         self.fadein_step = 255
         self.fadeout_step = 0
         self.fade_leave = False
