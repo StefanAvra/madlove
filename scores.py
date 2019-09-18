@@ -23,7 +23,9 @@ def load_highscores():
             highscores = pickle.load(f)
             highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
             highscores = highscores[:10]
+            print('high scores loaded.')
     except IOError:
+        print('HIGHSCORES COULD NOT BE LOADED: {}'.format(IOError))
         highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
         highscores = highscores[:10]
         save_highscores()
@@ -101,6 +103,7 @@ def get_place(new):
 def save_highscores():
     with open(config.HIGHSCORE_FILE, 'wb') as f:
         pickle.dump(highscores, f)
+        print('highscores saved to local file')
 
 
 def increase_score(reason='hit_brick', no_combo=False):
@@ -182,4 +185,5 @@ def get_bonus(bonus):
 
 
 load_queue()
+load_highscores()  # make sure highscores are loaded at boot!
 

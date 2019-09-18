@@ -818,6 +818,7 @@ class GameOver(Scene):
     def __init__(self, game_state):
         super(GameOver, self).__init__()
         global score
+        scores.load_highscores()  # make sure to load actual highscores
         self.score = score
         score = 0
         self.reached_lvl = game_state.level_data.no + 1
@@ -1421,7 +1422,7 @@ class HighscoreScene(Scene):
         screen.blit(self.title, title_pos)
         self.lines = []
         place = 0
-        for highscore in scores.highscores[:10]:
+        for highscore in scores.highscores:
             place += 1
             new_line = '{:<2}   {:<8} {:>10}'.format(place, highscore[0], highscore[1])
             if self.mode == 'gameover' and place == self.highlight_place:
@@ -2051,7 +2052,7 @@ def render_fading(screen, fade_step, invert_fading=0):
     fading_surf = pg.Surface(screen.get_size(), pg.SRCALPHA)
     fade_color = bg_color
     alpha = 80 * round(alpha / 80)  # fades a bit rougher
-    print('fading {} {}'.format(('out' if invert_fading else 'in'), alpha))
+    # print('fading {} {}'.format(('out' if invert_fading else 'in'), alpha))
     fade_color.a = alpha
     fading_surf.fill(fade_color)
     screen.blit(fading_surf, (0, 0))
