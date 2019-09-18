@@ -21,7 +21,7 @@ FLAGS = 0
 USE_JOYSTICK = True
 
 FREE_MODE = True
-LOCATION = 'Fais Dodo'
+LOCATION = 'virtual'
 CABINET_ID = 0
 
 BACKGROUND_COLOR = "#ffb3ce"

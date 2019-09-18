@@ -12,7 +12,7 @@ db = firestore.client()
 
 
 def upload_highscore(score, name, time):
-    doc_ref = db.collection(u'highscores').document()
+    doc_ref = db.collection('highscores').document()
     doc_ref.set({
         'date': time,
         'score': score,
@@ -24,7 +24,7 @@ def upload_highscore(score, name, time):
 
 
 def print_all_scores():
-    docs = db.collection(u'highscores').order_by('score', direction=firestore.Query.DESCENDING).stream()
+    docs = db.collection('highscores').order_by('score', direction=firestore.Query.DESCENDING).stream()
     for doc in docs:
         print(u'{} => {}'.format(doc.id, doc.to_dict()))
 

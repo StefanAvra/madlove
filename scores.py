@@ -74,10 +74,13 @@ def process_queue():
     global upload_queue
     new_upload_queue = []
     for entry in upload_queue:
-        firebase_api.upload_highscore(entry[1], entry[0], entry[2])
-        # copy to new list if not uploaded
-        # new_upload_queue.append(entry)
-        pass
+        try:
+            firebase_api.upload_highscore(entry[1], entry[0], entry[2])
+        except Exception as e:
+            print(e)
+            # copy to new list if not uploaded
+            new_upload_queue.append(entry)
+    print('uploaded {} scores to database'.format(len(upload_queue) - len(new_upload_queue)))
     upload_queue = new_upload_queue
     update_queue()  # saves to pickle file
 
