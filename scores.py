@@ -3,10 +3,13 @@ from datetime import datetime
 import config
 import operator
 import pickle
+import firebase_api
 
 highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333), ('Granger', 500), ('Grawp', 44),
               ('Umbridge', 77), ('Rosmerta', 555),
               ('Krum', 2111), ('Elphias', 8)]
+
+upload_queue = []
 
 __multiplier = 0
 __decrease_timer = 0
@@ -39,10 +42,42 @@ def lowest_score():
 def update_highscores(new_score=None):
     global highscores
     if new_score is not None:
+        queue_score = new_score + (datetime.utcnow(),)
+        update_queue(queue_score)
         new_score += (str(datetime.utcnow()), config.FREE_MODE, config.LOCATION, config.CABINET_ID)
         highscores.append(new_score)
     highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
     highscores = highscores[:10]
+    process_queue()
+
+
+def load_queue():
+    global upload_queue
+    try:
+        with open(config.UPLOAD_QUEUE, 'wb') as f:
+            upload_queue = pickle.load(f)
+    except IOError:
+        upload_queue = []
+
+
+def update_queue(entry=None):
+    global upload_queue
+    if entry is not None:
+        upload_queue.append(entry)
+    with open(config.UPLOAD_QUEUE, 'wb') as f:
+        pickle.dump(upload_queue, f)
+
+
+def process_queue():
+    global upload_queue
+    new_upload_queue = []
+    for entry in upload_queue:
+        firebase_api.upload_highscore(entry[1], entry[0], entry[2])
+        # copy to new list if not uploaded
+        # new_upload_queue.append(entry)
+        pass
+    upload_queue = new_upload_queue
+    update_queue()  # saves to pickle file
 
 
 def get_place(new):
@@ -144,4 +179,7 @@ def get_bonus(bonus):
         'perfect': 1000000
     }
     return boni.get(bonus)
+
+
+load_queue()
 

@@ -36,4 +36,6 @@ ENABLE_BOT = False
 SHOW_FPS = False
 SHOW_VELOCITY = False
 HIGHSCORE_FILE = './scores'
+FIREBASE_CRED = '/path/to/cred.json'
+UPLOAD_QUEUE = './uploadqueue'
 PLAYER_Y = 625
