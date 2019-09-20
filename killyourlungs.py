@@ -85,6 +85,7 @@ class GameScene(Scene):
         self.collected_all_pus = True
         self.no_continue = True
         self.lost_life = False
+        scores.reset_multiplier()
 
         tile_offset_y = 10
         for line in self.level_data.bricks:

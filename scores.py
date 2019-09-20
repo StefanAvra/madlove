@@ -144,6 +144,11 @@ def decrease_multiplier(time_passed):
             __multiplier = 0
 
 
+def reset_multiplier():
+    global __multiplier
+    __multiplier = 0
+
+
 def is_combo():
     return __multiplier >= 2
 
