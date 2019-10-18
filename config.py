@@ -23,6 +23,7 @@ USE_JOYSTICK = True
 FREE_MODE = True
 LOCATION = 'virtual'
 CABINET_ID = 0
+OFFLINE_MODE = True
 
 BACKGROUND_COLOR = "#ffb3ce"
 FONT = "assets/font/PressStart2P-Regular.ttf"

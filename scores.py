@@ -3,7 +3,8 @@ from datetime import datetime
 import config
 import operator
 import pickle
-import firebase_api
+if not config.OFFLINE_MODE:
+    import firebase_api
 
 highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333), ('Granger', 500), ('Grawp', 44),
               ('Umbridge', 77), ('Rosmerta', 555),
@@ -74,11 +75,14 @@ def process_queue():
     global upload_queue
     new_upload_queue = []
     for entry in upload_queue:
-        try:
-            firebase_api.upload_highscore(entry[1], entry[0], entry[2])
-        except Exception as e:
-            print(e)
-            # copy to new list if not uploaded
+        if not config.OFFLINE_MODE:
+            try:
+                firebase_api.upload_highscore(entry[1], entry[0], entry[2])
+            except Exception as e:
+                print(e)
+                # copy to new list if not uploaded
+                new_upload_queue.append(entry)
+        else:
             new_upload_queue.append(entry)
     print('uploaded {} scores to database'.format(len(upload_queue) - len(new_upload_queue)))
     upload_queue = new_upload_queue
