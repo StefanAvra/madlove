@@ -6,6 +6,8 @@ Avra developed the game in Python using Pygame. It features graphics by Gurkiman
 The project premiered at the Rundgang of the State Academy of Fine Arts Stuttgart 19th - 21st of July 2019. In addition, the game was displayed in two bars in Stuttgart and was also playable in Dresden at a festival. The local press reported about the project. (Stadtkind Stuttgart, Tagblatt)
 
 Game Design by Gurkiman & Avra
+
 Programmed by Avra
+
 Graphic Design by Gurkiman
 
