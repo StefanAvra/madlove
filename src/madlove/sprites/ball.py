@@ -10,9 +10,10 @@ from madlove.sprites.powerup import PowerUp
 
 
 class Ball(pg.sprite.Sprite):
-    # the default velocity is drawn only once, at import (see ROADMAP.md, known issues)
-    def __init__(self, pos_x=240, pos_y=550, velocity=(random.randint(-3, 3), -3), size=7, sticky=True):  # noqa: B008
+    def __init__(self, pos_x=240, pos_y=550, velocity=None, size=7, sticky=True):
         super().__init__()
+        if velocity is None:
+            velocity = (random.randint(-3, 3), -3)
         self.velocity = velocity
         self.x = pos_x
         self.y = pos_y

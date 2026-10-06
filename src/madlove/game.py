@@ -2,7 +2,7 @@
 
 import pygame as pg
 
-from madlove import audio, coins, config, scores
+from madlove import audio, bot, coins, config, scores
 from madlove import controls as ctrls
 from madlove import strings as str_r
 from madlove.scenes import title
@@ -34,6 +34,7 @@ class Game:
         self.highscores.load()
         self.facts = str_r.Facts()
         self.intro_no = 1
+        self.bot = bot.Bot()  # plays when settings.bot is on
 
         audio.init()
         ctrls.init()

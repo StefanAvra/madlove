@@ -4,7 +4,7 @@ import random
 
 import pygame as pg
 
-from madlove import audio, bot, config, hud, levels, utils
+from madlove import audio, config, hud, levels, utils
 from madlove import controls as ctrls
 from madlove import strings as str_r
 from madlove.scenes import base, level_end, lives, menu
@@ -139,7 +139,7 @@ class GameScene(base.Scene):
         up, left, right, down = [ctrls.get_buttons()[key] for key in (ctrls.UP, ctrls.LEFT, ctrls.RIGHT, ctrls.DOWN)]
 
         if self.game.settings.bot:
-            left, right = bot.play(self.player, self.balls)
+            left, right = self.game.bot.play(self.player, self.balls)
         if not self.heartattack_mode == 'killing':
             for ball in self.balls:
                 ball.update(self.player, self.bricks, self.bombs, self)
