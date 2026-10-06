@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Tests (`uv run pytest`): a headless smoke test that plays the whole game and compares it against a recorded trace, and unit tests for scores, coins and the level data.
 - Linting and formatting with ruff.
 - GitHub Actions workflow that runs the linter, the format check and the tests.
+- A browser version built with pygbag (`web/build.py`). It saves high scores in the browser's local storage and has no exit menu.
 
 ### Changed
 - Switched from `pygame` to `pygame-ce`, the actively maintained fork. Requires Python 3.11 or newer.
@@ -22,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - High scores are saved as JSON (`highscores.json`) in the platform's app data folder, instead of a pickle file in the current directory. Each entry records the date in UTC and whether it was played in free mode.
 - The code is a Python package in `src/madlove/`, installed with the `madlove` command. The 2,000-line `killyourlungs.py` is split into scenes, sprites and a `Game` object that holds the state of a running game; nothing starts or reads files at import any more.
 - Choosing YES in the exit menu ends the main loop instead of calling `sys.exit()`.
+- The main loop is async, so the same code runs in the browser.
+- The sound effects are OGG instead of WAV, because the browser version can only play OGG.
 
 ### Removed
 - `numpy` and `noise` dependencies, replaced by small built-in helpers.

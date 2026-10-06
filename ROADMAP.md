@@ -69,11 +69,13 @@ A golden trace of two scripted games (`tests/golden/`) checked that every step l
 
 Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and pygame-ce to WebAssembly and packages the game as a static site. Check its current docs before starting.
 
-- [ ] Make `Game.run()` an `async` function that calls `await asyncio.sleep(0)` once per frame (`Game.step()` already runs a single frame)
-- [ ] Save high scores in browser storage
-- [ ] Default to free mode, or add an on-screen coin/start button
+- [x] Make `Game.run()` an `async` function that calls `await asyncio.sleep(0)` once per frame
+- [x] Build with pygbag 0.9.3 (`web/build.py`; Python 3.12 in the browser) and convert the WAV sound effects to OGG
+- [x] Save high scores in browser storage (`localStorage`, key `madlove.highscores`)
+- [x] Default to free mode (already the default since Phase 1). The exit menu is off in the browser.
 - [ ] Touch controls for phones (the 480×640 portrait layout already suits phones)
-- [ ] "Click to start" screen, because browsers block audio until the player interacts
+- [ ] "Click to start" screen, because browsers block audio until the player interacts. pygbag's default template waits for a click, but only shows a grey page, so it needs a custom template that says what to do.
+- [ ] Polish the page: hide the focus outline around the game, and drop the "leave site?" question when reloading
 - [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
 - [ ] Optionally also publish on itch.io
 - [ ] Release `v2.0.0`

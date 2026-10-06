@@ -70,6 +70,17 @@ The code lives in `src/madlove/`: `game.py` has the main loop and the `Game` obj
 
 The smoke test plays two scripted games and compares every scene change, with its frame and score, against `tests/golden/`. If a change to the gameplay is intended, regenerate the traces with `MADLOVE_UPDATE_GOLDEN=1 uv run pytest tests/test_smoke.py` and say why in the commit message.
 
+### Web version
+
+The browser version is built with [pygbag](https://github.com/pygame-web/pygbag), which runs Python and pygame-ce as WebAssembly. It plays in free mode, saves high scores in the browser's local storage and has no exit menu.
+
+```sh
+uv run --group web python web/build.py --serve   # build it and play it at http://localhost:8000
+uv run --group web python web/build.py           # only build it, into build/madlove/build/web
+```
+
+Click the page once to start it: browsers only play sound after the player has interacted with the page. The page loads the Python runtime from pygbag's CDN, so building and playing need an internet connection.
+
 ### Raspberry Pi cabinet
 
 The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a CRT over composite video. The original SD card, with its boot script and display settings, is lost. These steps are a starting point and **have not yet been tested on a Pi**.
