@@ -2,7 +2,6 @@
 
 import dataclasses
 import json
-import os
 from datetime import UTC, datetime
 
 POINTS = {'hit_brick': 10, 'killed_brick': 20, 'phagocyte': 15, 'powerup': 85}
@@ -79,19 +78,17 @@ class Combo:
 
 
 class HighScores:
-    """the top ten, saved as JSON in the data folder"""
+    """the top ten, saved as JSON in a store from madlove.storage"""
 
-    def __init__(self, data_dir):
-        self.data_dir = data_dir
-        self.path = os.path.join(data_dir, 'highscores.json')
+    def __init__(self, store):
+        self.store = store
         self.entries = list(DEFAULT_HIGHSCORES)
 
     def load(self):
         """reads the saved list. without a readable one, keeps the current list and saves it"""
         try:
-            with open(self.path, encoding='utf-8') as f:
-                self.entries = [Entry(**entry) for entry in json.load(f)]
-                print('high scores loaded.')
+            self.entries = [Entry(**entry) for entry in json.loads(self.store.read())]
+            print('high scores loaded.')
         except (OSError, ValueError, TypeError) as error:
             print(f'HIGHSCORES COULD NOT BE LOADED: {error}')
             self.sort()
@@ -99,10 +96,10 @@ class HighScores:
         self.sort()
 
     def save(self):
-        os.makedirs(self.data_dir, exist_ok=True)
-        with open(self.path, 'w', encoding='utf-8') as f:
-            json.dump([dataclasses.asdict(entry) for entry in self.entries], f, indent=2, ensure_ascii=False)
-            print('highscores saved to local file')
+        self.store.write(
+            json.dumps([dataclasses.asdict(entry) for entry in self.entries], indent=2, ensure_ascii=False)
+        )
+        print('high scores saved.')
 
     def sort(self):
         self.entries = sorted(self.entries, key=lambda entry: entry.score, reverse=True)[:10]

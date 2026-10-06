@@ -4,7 +4,7 @@ import asyncio
 
 import pygame as pg
 
-from madlove import audio, bot, coins, config, scores
+from madlove import audio, bot, coins, config, scores, storage
 from madlove import controls as ctrls
 from madlove import strings as str_r
 from madlove.scenes import title
@@ -32,7 +32,7 @@ class Game:
         self.dt = 0  # milliseconds since the last frame
         self.wallet = coins.Wallet()
         self.combo = scores.Combo()
-        self.highscores = scores.HighScores(self.settings.data_dir)
+        self.highscores = scores.HighScores(storage.highscores_store(self.settings))
         self.highscores.load()
         self.facts = str_r.Facts()
         self.intro_no = 1

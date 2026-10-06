@@ -6,6 +6,7 @@ import pygame as pg
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+WEB = sys.platform == 'emscripten'  # running in the browser, built with pygbag
 
 
 def asset(*parts):
