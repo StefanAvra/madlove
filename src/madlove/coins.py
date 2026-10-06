@@ -1,48 +1,29 @@
-from madlove import config
+"""Credits and lives. A coin buys a credit, and starting a game or continuing turns a credit into lives."""
 
-__credit = 0
-__life_to_credit_ratio = 3
-__lives = 0
+LIVES_PER_CREDIT = 3
 
 
-def consume_coin():
-    """resets credit and returns amount of lives to add in-game"""
-    global __credit
-    global __lives
-    if __credit > 0:
-        __lives = __life_to_credit_ratio
-        __credit -= 1
+class Wallet:
+    def __init__(self):
+        self.credit = 0
+        self.lives = 0
 
+    def add_coin(self):
+        self.credit += 1
 
-def get_credit():
-    """returns credit amount without resetting"""
-    return __credit
+    def consume_coin(self):
+        """turns a credit into a full set of lives"""
+        if self.credit > 0:
+            self.lives = LIVES_PER_CREDIT
+            self.credit -= 1
 
+    def add_life(self, add=1):
+        self.lives += add
 
-def add_coin():
-    global __credit
-    __credit += 1
+    def lose_life(self):
+        self.lives = max(self.lives - 1, 0)
 
-
-def get_lives():
-    return __lives
-
-
-def add_life(add=1):
-    global __lives
-    __lives += add
-
-
-def lose_life():
-    global __lives
-    __lives -= 1
-    if __lives < 0:
-        __lives = 0
-
-
-def handle_free_mode():
-    global __credit
-    if not config.FREE_MODE:
-        return
-    if __credit <= 0:
-        __credit = 1
+    def give_free_credit(self):
+        """in free play there is always a credit"""
+        if self.credit <= 0:
+            self.credit = 1

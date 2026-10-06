@@ -49,6 +49,8 @@ def test_powerups_drop(no):
 
 @pytest.mark.parametrize('no', LEVEL_NOS)
 def test_game_scene_builds_every_brick(game, no):
-    scene = game.GameScene(no)
+    from madlove import killyourlungs
+
+    scene = killyourlungs.GameScene(game, no)
     assert scene.total_bricks == count_bricks(levels.Level(no).bricks)
     assert all(0 <= brick.rect.left and brick.rect.right <= config.WIDTH for brick in scene.bricks)

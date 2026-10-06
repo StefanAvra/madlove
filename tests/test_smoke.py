@@ -46,37 +46,32 @@ class FakeClock:
 
 
 @pytest.fixture
-def trace(game, scores, coins, monkeypatch):
+def trace(game, monkeypatch):
     """records [frame, scene, score] for every scene change"""
-    from madlove import string_resource
+    from madlove import killyourlungs
 
-    # the facts and level intros are shuffled or counted at import; pin them so the runs repeat exactly
-    monkeypatch.setattr(string_resource, 'fact_order', list(range(len(string_resource.fact_order))))
-    monkeypatch.setattr(string_resource, 'current_fact', 0)
-    monkeypatch.setattr(game, 'current_intro', 1)
-    monkeypatch.setattr(scores, 'highscores', list(scores.DEFAULT_HIGHSCORES))
+    # the facts are shuffled when the game starts; pin them so the runs repeat exactly
+    game.facts.order = sorted(game.facts.order)
 
     changes = []
-    go_to = game.SceneManager.go_to
+    go_to = killyourlungs.SceneManager.go_to
 
     def record(manager, scene):
         frame = FakeClock.current.frame if FakeClock.current else 0
         changes.append([frame, type(scene).__name__, game.score])
         go_to(manager, scene)
 
-    monkeypatch.setattr(game.SceneManager, 'go_to', record)
+    monkeypatch.setattr(killyourlungs.SceneManager, 'go_to', record)
     return changes
 
 
 def run_game(game, monkeypatch, frames, bot):
-    monkeypatch.setattr(config, 'ENABLE_BOT', bot)
-    monkeypatch.setattr(config, 'FREE_MODE', True)
+    game.settings.bot = bot
     monkeypatch.setattr(FakeClock, 'frames', frames)
     monkeypatch.setattr(FakeClock, 'current', None)
     monkeypatch.setattr(pg.time, 'Clock', FakeClock)
-    monkeypatch.setattr(game, 'score', 0)
     random.seed(2019)
-    game.main()  # returns when it gets the QUIT event
+    game.run()  # returns when it gets the QUIT event
 
 
 def check_golden(name, trace):

@@ -1,9 +1,13 @@
+"""Points, the combo multiplier, bonuses and the high-score list."""
+
 import operator
 import os
 import pickle
 from datetime import datetime
 
-from madlove import config
+POINTS = {'hit_brick': 10, 'killed_brick': 20, 'phagocyte': 15, 'powerup': 85}
+BONUSES = {'time_bonus': 300, 'no_continue': 20000, 'all_pus': 100000, 'clear': 20000, 'perfect': 1000000}
+COMBO_TIMEOUT = 1000  # milliseconds without a hit until the multiplier drops back
 
 DEFAULT_HIGHSCORES = [
     ('Errol', 323),
@@ -17,129 +21,112 @@ DEFAULT_HIGHSCORES = [
     ('Krum', 2111),
     ('Elphias', 8),
 ]
-highscores = list(DEFAULT_HIGHSCORES)
-
-__multiplier = 0
-__decrease_timer = 0
-__last_multi = 0
 
 
-def load_highscores():
-    global highscores
-    try:
-        with open(config.HIGHSCORE_FILE, 'rb') as f:
-            highscores = pickle.load(f)
-            highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
-            highscores = highscores[:10]
-            print('high scores loaded.')
-    except OSError:
-        print(f'HIGHSCORES COULD NOT BE LOADED: {IOError}')
-        highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
-        highscores = highscores[:10]
-        save_highscores()
+class Combo:
+    """the score multiplier, which grows with every hit and drops back after a second without one"""
+
+    def __init__(self):
+        self.multiplier = 0
+        self.decrease_timer = 0
+        self.last_multiplier = 0
+
+    @property
+    def value(self):
+        return max(self.multiplier, 1)
+
+    def is_combo(self):
+        return self.multiplier >= 2
+
+    def points(self, reason='hit_brick', no_combo=False):
+        multi = 1 if no_combo else self.value
+        add = POINTS[reason]
+        print(f'{add} * {multi}')
+        return add * multi
+
+    def hit(self):
+        self.multiplier += 1
+        self.decrease_timer = 0
+
+    def update(self, dt):
+        """call this once per frame"""
+        if self.multiplier > 0:
+            self.decrease_timer += dt
+            if self.decrease_timer > COMBO_TIMEOUT:
+                self.decrease_timer = 0
+                self.multiplier = 0
+
+    def reset(self):
+        self.multiplier = 0
+
+    def new_combo(self):
+        """returns the previous multiplier once after it changed, otherwise None"""
+        if self.last_multiplier != self.multiplier:
+            previous = self.last_multiplier
+        else:
+            previous = None
+        self.last_multiplier = self.multiplier
+        return previous
 
 
-def highest_score():
-    load_highscores()
-    return sorted(highscores, key=operator.itemgetter(1), reverse=True)[0][1]
+class HighScores:
+    """the top ten, saved in the data folder"""
 
+    def __init__(self, data_dir):
+        self.data_dir = data_dir
+        self.path = os.path.join(data_dir, 'scores')
+        self.entries = list(DEFAULT_HIGHSCORES)
 
-def lowest_score():
-    load_highscores()
-    return sorted(highscores, key=operator.itemgetter(1), reverse=False)[0][1]
+    def load(self):
+        """reads the saved list. without one, keeps the current list and saves it"""
+        try:
+            with open(self.path, 'rb') as f:
+                self.entries = pickle.load(f)
+                print('high scores loaded.')
+        except OSError as error:
+            print(f'HIGHSCORES COULD NOT BE LOADED: {error}')
+            self.sort()
+            self.save()
+        self.sort()
 
+    def save(self):
+        os.makedirs(self.data_dir, exist_ok=True)
+        with open(self.path, 'wb') as f:
+            pickle.dump(self.entries, f)
+            print('highscores saved to local file')
 
-def update_highscores(new_score=None):
-    global highscores
-    if new_score is not None:
-        new_score += (str(datetime.utcnow()), config.FREE_MODE)
-        highscores.append(new_score)
-    highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
-    highscores = highscores[:10]
+    def sort(self):
+        self.entries = sorted(self.entries, key=lambda t: t[1], reverse=True)[:10]
 
+    def add(self, name, score, free_mode):
+        self.entries.append((name, score, str(datetime.utcnow()), free_mode))
+        self.sort()
 
-def get_place(new):
-    score_list = highscores.copy()
-    score_list.append(('$new', new))
-    score_list.sort(key=operator.itemgetter(1), reverse=True)
-    score_list = [score[0] for score in score_list]
-    place = score_list.index('$new') + 1
-    place_string = ''
-    if place in [4, 5, 6, 7, 8, 9, 10]:
-        place_string = f'{place}th'
-    elif place == 1:
-        place_string = '1st'
-    elif place == 2:
-        place_string = '2nd'
-    elif place == 3:
-        place_string = '3rd'
-    return place_string.upper(), place
+    def highest(self):
+        self.load()
+        return self.entries[0][1]
 
+    def lowest(self):
+        self.load()
+        return self.entries[-1][1]
 
-def save_highscores():
-    os.makedirs(config.DATA_DIR, exist_ok=True)
-    with open(config.HIGHSCORE_FILE, 'wb') as f:
-        pickle.dump(highscores, f)
-        print('highscores saved to local file')
-
-
-def increase_score(reason='hit_brick', no_combo=False):
-    if no_combo:
-        multi = 1
-    else:
-        multi = max(__multiplier, 1)
-    if reason == 'hit_brick':
-        add = 10
-    elif reason == 'killed_brick':
-        add = 20
-    elif reason == 'phagocyte':
-        add = 15
-    elif reason == 'powerup':
-        add = 85
-    print(f'{add} * {multi}')
-    return add * multi
-
-
-def increase_multiplier():
-    global __multiplier
-    global __decrease_timer
-    __multiplier += 1
-    __decrease_timer = 0
-
-
-def decrease_multiplier(time_passed):
-    # call this in game loop
-    global __decrease_timer
-    global __multiplier
-    if __multiplier > 0:
-        __decrease_timer += time_passed
-        if __decrease_timer > 1000:
-            __decrease_timer = 0
-            __multiplier = 0
-
-
-def reset_multiplier():
-    global __multiplier
-    __multiplier = 0
-
-
-def is_combo():
-    return __multiplier >= 2
-
-
-def get_combo():
-    return max(__multiplier, 1)
-
-
-def get_new_combo():
-    # this returns a new combo multiplier only once
-    global __last_multi
-    if __last_multi != __multiplier:
-        return_multi = __last_multi
-    else:
-        return_multi = None
-    __last_multi = __multiplier
-    return return_multi
+    def place(self, new):
+        """returns the place a new score would get, as a label ('1ST') and a number. 11 means not listed"""
+        score_list = self.entries.copy()
+        score_list.append(('$new', new))
+        score_list.sort(key=operator.itemgetter(1), reverse=True)
+        score_list = [score[0] for score in score_list]
+        place = score_list.index('$new') + 1
+        place_string = ''
+        if place in [4, 5, 6, 7, 8, 9, 10]:
+            place_string = f'{place}th'
+        elif place == 1:
+            place_string = '1st'
+        elif place == 2:
+            place_string = '2nd'
+        elif place == 3:
+            place_string = '3rd'
+        return place_string.upper(), place
 
 
 def get_penalty(score):
@@ -156,8 +143,4 @@ def get_penalty(score):
 
 
 def get_bonus(bonus):
-    boni = {'time_bonus': 300, 'no_continue': 20000, 'all_pus': 100000, 'clear': 20000, 'perfect': 1000000}
-    return boni.get(bonus)
-
-
-load_highscores()  # make sure highscores are loaded at boot!
+    return BONUSES.get(bonus)
