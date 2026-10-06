@@ -4,7 +4,6 @@ Plan for polishing MadLove after its 2019 run: make it runnable anywhere, put te
 
 ## Known issues
 
-- **Unknown premiere build.** The last commit before the Rundgang is `b0503a6` (2019-07-18, *"dirty fix for weird bug that occurs randomly on the raspberry pi"*). Code may have been edited directly on the Pi afterwards.
 - **Written for Python 3.5.** The cabinet didn't support f-strings.
 - **Barely used dependencies.**
   - `numpy` is only used for `interp` and for inverting colours.
@@ -26,7 +25,7 @@ Semantic versioning, with git tags for the historic builds:
 
 | Tag | Commit | Meaning |
 |---|---|---|
-| `v1.0.0` | `b0503a6` (2019-07-18) | Rundgang premiere build (to be confirmed against the Pi's SD card) |
+| `v1.0.0` | `b0503a6` (2019-07-18) | Rundgang premiere build (the SD card is lost, so the last commit before the premiere is assumed to be it) |
 | `v1.1.0` | `fff788d` (2019-10-18) | End of the 2019 tour: free mode, location/cabinet ID, online + offline high scores |
 | `v2.0.0` | — | Modernised codebase, runs anywhere, web build |
 
@@ -37,14 +36,12 @@ Changes are recorded in `CHANGELOG.md`.
 No code changes.
 
 - [x] Get the missing `pu_*.png` power-up images back from the Pi's SD card or old machines
-- [ ] Get the 2019 high-score file back, if it still exists
-- [ ] Compare the SD card's code with the repo to confirm what `v1.0.0` really was
-- [ ] Tag `v1.0.0` and `v1.1.0`
-- [ ] Write `CHANGELOG.md` with the two historic entries, taken from the commit log
-- [ ] Clarify asset licensing before any public release:
+- [x] Tag `v1.0.0` and `v1.1.0`
+- [x] Write `CHANGELOG.md` with the two historic entries, taken from the commit log
+- [x] Clarify asset licensing before any public release:
   - MIT covers the code
   - the music (Ozzed, CC BY-SA) and font (OFL) may be redistributed with credit
-  - Gurkiman's graphics need explicit permission
+  - Gurkiman approved publishing the graphics with the web version (2026-10-06)
 
 ## Phase 1: Make it runnable
 
@@ -74,7 +71,7 @@ Tests come before the refactor, so the refactor has something to check it agains
 - [ ] Replace the globals (`score`, the fonts, `time_passed`, the state in `coins` and `scores`) with an explicit game-state object
 - [ ] Remove the import-time side effects and the circular import
 - [ ] Fix the known bugs listed above
-- [ ] Store high scores as JSON instead of pickle, with a one-time migration from the 2019 format
+- [ ] Store high scores as JSON instead of pickle (no migration needed, since no 2019 score file survived)
 - [ ] Remove the Firebase code or move it behind an optional extra
 - [ ] Release `v2.0.0`
 
@@ -94,4 +91,3 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 
 - [ ] Online leaderboard behind a small API (the Firebase admin SDK can't run in a browser and would expose credentials)
 - [ ] Attract mode: a demo played by the bot
-- [ ] 2019 hall of fame with the original cabinet high scores
