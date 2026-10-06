@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Linting and formatting with ruff.
 - GitHub Actions workflow that runs the linter, the format check and the tests.
 - A browser version built with pygbag (`web/build.py`). It saves high scores in the browser's local storage and has no exit menu.
+- The browser version's own page: a start screen with a rotating 3D cabinet, and on touch screens the cabinet's control panel with the stick and the Start / Pause and Action buttons.
 
 ### Changed
 - Switched from `pygame` to `pygame-ce`, the actively maintained fork. Requires Python 3.11 or newer.
@@ -35,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `SyntaxWarning`s on modern Python from `is` comparisons with numbers.
 - The background colour lost its opacity after the first screen fade, because `render_fading()` modified the shared colour instead of a copy. This was invisible on the 2019 cabinet, but in windows with an alpha channel, such as on macOS, the logo and text were drawn with black or white boxes around them.
 - Every ball added with the debug key `B` started in the same direction, because the default velocity was drawn only once.
+- Holding the stick up or down on the name entry repeated letters in the opposite direction, because the held stick's up and down were swapped.
 - Power-up graphics (`pu_hotball`, `pu_longer`, `pu_metastasis`, `pu_shoot`, `pu_shorter`) were never committed, so a fresh checkout crashed when a power-up dropped. They have been recovered and added.
 
 ## [1.1.0] - 2019-10-18

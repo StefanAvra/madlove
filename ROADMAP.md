@@ -73,9 +73,11 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 - [x] Build with pygbag 0.9.3 (`web/build.py`; Python 3.12 in the browser) and convert the WAV sound effects to OGG
 - [x] Save high scores in browser storage (`localStorage`, key `madlove.highscores`)
 - [x] Default to free mode (already the default since Phase 1). The exit menu is off in the browser.
-- [ ] Touch controls for phones (the 480×640 portrait layout already suits phones)
-- [ ] "Click to start" screen, because browsers block audio until the player interacts. pygbag's default template waits for a click, but only shows a grey page, so it needs a custom template that says what to do.
-- [ ] Polish the page: hide the focus outline around the game, and drop the "leave site?" question when reloading
+- [x] Touch controls for phones: the cabinet's control panel (stick, Start / Pause, Action) below the game, working as a virtual joystick
+- [ ] Optional second touch mode: the paddle follows your finger, with its speed capped at the stick's, and a tap launches the ball
+- [x] "Click to start" screen, because browsers block audio until the player interacts: our own page (`web/madlove.tmpl`) with the rotating cabinet while loading
+- [x] Polish the page: no focus outline around the game, no "leave site?" question when reloading
+- [ ] Test the touch controls on real phones (iOS Safari and Android Chrome)
 - [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
 - [ ] Optionally also publish on itch.io
 - [x] Name all four Ozzed tracks in the README, as CC BY-SA attribution asks

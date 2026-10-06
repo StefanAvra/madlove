@@ -79,11 +79,14 @@ The smoke test plays two scripted games and compares every scene change, with it
 The browser version is built with [pygbag](https://github.com/pygame-web/pygbag), which runs Python and pygame-ce as WebAssembly. It plays in free mode, saves high scores in the browser's local storage and has no exit menu.
 
 ```sh
-uv run --group web python web/build.py --serve   # build it and play it at http://localhost:8000
-uv run --group web python web/build.py           # only build it, into build/madlove/build/web
+uv run --group web python web/build.py --serve         # build it and play it at http://127.0.0.1:8000
+uv run --group web python web/build.py --serve --lan   # also playable on phones in the same Wi-Fi
+uv run --group web python web/build.py                 # only build it, into build/madlove/build/web
 ```
 
-Click the page once to start it: browsers only play sound after the player has interacted with the page. The page loads the Python runtime from pygbag's CDN, so building and playing need an internet connection.
+The page is `web/madlove.tmpl`, with its styles and scripts in `web/static/`. While the game loads, it shows the rotating cabinet. Then it asks for a click, tap or key press, because browsers only play sound after the player has interacted with the page. The page loads the Python runtime from pygbag's CDN, so building and playing need an internet connection.
+
+On touch screens, the page shows the cabinet's control panel below the game, or on both sides of it in landscape: the stick, Start / Pause and Action. It works like the cabinet's joystick, so every screen behaves as on the cabinet. Add `?touch=1` to the address to show it anywhere, or `?touch=0` to hide it.
 
 ### Raspberry Pi cabinet
 
