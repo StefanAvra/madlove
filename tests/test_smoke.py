@@ -48,20 +48,20 @@ class FakeClock:
 @pytest.fixture
 def trace(game, monkeypatch):
     """records [frame, scene, score] for every scene change"""
-    from madlove import killyourlungs
+    from madlove import game as game_module
 
     # the facts are shuffled when the game starts; pin them so the runs repeat exactly
     game.facts.order = sorted(game.facts.order)
 
     changes = []
-    go_to = killyourlungs.SceneManager.go_to
+    go_to = game_module.SceneManager.go_to
 
     def record(manager, scene):
         frame = FakeClock.current.frame if FakeClock.current else 0
         changes.append([frame, type(scene).__name__, game.score])
         go_to(manager, scene)
 
-    monkeypatch.setattr(killyourlungs.SceneManager, 'go_to', record)
+    monkeypatch.setattr(game_module.SceneManager, 'go_to', record)
     return changes
 
 

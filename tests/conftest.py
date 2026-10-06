@@ -19,7 +19,7 @@ def settings(tmp_path):
 @pytest.fixture
 def game(settings):
     """a game with an open (headless) display and its fonts loaded, before its first frame"""
-    from madlove import killyourlungs
+    from madlove import game as game_module
 
-    yield killyourlungs.Game(settings)
+    yield game_module.Game(settings)
     pg.display.quit()

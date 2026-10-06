@@ -3,7 +3,7 @@
 import argparse
 import importlib.metadata
 
-from madlove import config, killyourlungs
+from madlove import config, game
 
 
 def parse_args(argv=None):
@@ -33,7 +33,7 @@ def settings_from_args(args):
 
 
 def run(argv=None):
-    killyourlungs.main(settings_from_args(parse_args(argv)))
+    game.main(settings_from_args(parse_args(argv)))
 
 
 if __name__ == '__main__':
