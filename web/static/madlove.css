@@ -79,26 +79,38 @@ html, body {
 
 /* ---------- touch screens: the control panel ---------- */
 
+body.touch {
+    --button-w: min(76px, 19vw);
+    /* the panel is at least as tall as the buttons need, with some room below them */
+    --panel-h: calc(var(--button-w) * 2.9 + 48px + env(safe-area-inset-bottom));
+}
 body.touch #legend { display: none; }
 body.touch .panel-part { display: flex; }
 
-/* portrait: the game on top, the panel below */
+/* portrait: the game on top, the panel below. beside a narrower game, as on tablets, the page stays dark */
 body.touch #stage {
     align-content: stretch;
     justify-content: stretch;
     grid-template-areas:
-        "screen screen"
-        "stick  buttons";
+        "screen"
+        "panel";
     grid-template-rows: auto 1fr;
-    grid-template-columns: 1fr 1.25fr;
-    background: var(--pink);
+    grid-template-columns: 1fr;
 }
+
+#panel {
+    grid-area: panel;
+    background: var(--pink);
+    border-top: 6px solid var(--ink);
+}
+#panel > * { display: flex; }
+#stick-zone { flex: 1; }
+#buttons { flex: 1.25; }
 
 body.touch #screen {
     justify-self: center;
     height: auto;
-    width: min(100vw, calc((100dvh - 190px) * 3 / 4));
-    border-bottom: 6px solid var(--ink);
+    width: min(100vw, calc((100dvh - var(--panel-h)) * 3 / 4));
 }
 
 /* landscape: stick left of the game, buttons right of it */
@@ -115,8 +127,12 @@ body.touch #screen {
         border-left: 6px solid var(--ink);
         border-right: 6px solid var(--ink);
     }
+    /* the panel splits into its two halves, one on each side */
+    body.touch #panel { display: contents; }
+    body.touch #stick-zone { grid-area: stick; }
+    body.touch #buttons { grid-area: buttons; }
     /* thumbs rest a little below the middle of the sides */
-    body.touch #stick-zone, body.touch #buttons { padding-top: 14dvh; }
+    body.touch #stick-zone, body.touch #buttons { background: var(--pink); padding-top: 14dvh; }
 }
 
 /* the stick and the buttons sit at the same height, clear of the phone's home bar. the whole stick
@@ -124,23 +140,18 @@ body.touch #screen {
 #stick-zone, #buttons {
     align-items: center;
     justify-content: center;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 #stick-zone {
-    grid-area: stick;
     padding-left: 4vw;
     touch-action: none;
-}
-
-#buttons {
-    grid-area: buttons;
 }
 
 /* the right thumb pivots near the phone's lower right corner: Action, the button used most, sits
    lower and closer to it; Start / Pause further up and out, so it isn't hit by accident */
 #cluster {
-    --w: min(76px, 19vw);
+    --w: var(--button-w);
     position: relative;
     width: calc(var(--w) * 2.6);
     height: calc(var(--w) * 2.9);

@@ -128,28 +128,31 @@ config = {
             <canvas id="canvas" width="480" height="640" oncontextmenu="event.preventDefault()" tabindex="1"></canvas>
         </div>
 
-        <div id="stick-zone" class="panel-part" aria-label="Stick">
-            <div id="stick">
-                <span class="arrow up"></span>
-                <span class="arrow down"></span>
-                <span class="arrow left"></span>
-                <span class="arrow right"></span>
-                <span id="stick-washer"></span>
-                <span id="stick-shaft"></span>
-                <span id="stick-ball"></span>
-            </div>
-        </div>
-
-        <div id="buttons" class="panel-part">
-            <!-- on the cabinet's diagonal: Action lower left, Start / Pause upper right -->
-            <div id="cluster">
-                <div class="button-cell" id="cell-start" data-button="start" role="button" aria-label="Start / Pause">
-                    <span class="arcade-button"><span class="cap"></span></span>
-                    <span class="label">Start / Pause</span>
+        <!-- the control panel, on touch screens -->
+        <div id="panel" class="panel-part">
+            <div id="stick-zone" aria-label="Stick">
+                <div id="stick">
+                    <span class="arrow up"></span>
+                    <span class="arrow down"></span>
+                    <span class="arrow left"></span>
+                    <span class="arrow right"></span>
+                    <span id="stick-washer"></span>
+                    <span id="stick-shaft"></span>
+                    <span id="stick-ball"></span>
                 </div>
-                <div class="button-cell" id="cell-action" data-button="action" role="button" aria-label="Action">
-                    <span class="arcade-button"><span class="cap"></span></span>
-                    <span class="label">Action</span>
+            </div>
+
+            <div id="buttons">
+                <!-- on the cabinet's diagonal: Action lower left, Start / Pause upper right -->
+                <div id="cluster">
+                    <div class="button-cell" id="cell-start" data-button="start" role="button" aria-label="Start / Pause">
+                        <span class="arcade-button"><span class="cap"></span></span>
+                        <span class="label">Start / Pause</span>
+                    </div>
+                    <div class="button-cell" id="cell-action" data-button="action" role="button" aria-label="Action">
+                        <span class="arcade-button"><span class="cap"></span></span>
+                        <span class="label">Action</span>
+                    </div>
                 </div>
             </div>
         </div>
