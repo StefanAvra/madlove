@@ -8,9 +8,18 @@ import config
 if not config.OFFLINE_MODE:
     import firebase_api
 
-highscores = [('Errol', 323), ('Scabbers', 444), ('Severus', 400), ('Irma', 333), ('Granger', 500), ('Grawp', 44),
-              ('Umbridge', 77), ('Rosmerta', 555),
-              ('Krum', 2111), ('Elphias', 8)]
+highscores = [
+    ('Errol', 323),
+    ('Scabbers', 444),
+    ('Severus', 400),
+    ('Irma', 333),
+    ('Granger', 500),
+    ('Grawp', 44),
+    ('Umbridge', 77),
+    ('Rosmerta', 555),
+    ('Krum', 2111),
+    ('Elphias', 8),
+]
 
 upload_queue = []
 
@@ -190,16 +199,9 @@ def get_penalty(score):
 
 
 def get_bonus(bonus):
-    boni = {
-        'time_bonus': 300,
-        'no_continue': 20000,
-        'all_pus': 100000,
-        'clear': 20000,
-        'perfect': 1000000
-    }
+    boni = {'time_bonus': 300, 'no_continue': 20000, 'all_pus': 100000, 'clear': 20000, 'perfect': 1000000}
     return boni.get(bonus)
 
 
 load_queue()
 load_highscores()  # make sure highscores are loaded at boot!
-

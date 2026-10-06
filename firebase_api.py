@@ -1,4 +1,3 @@
-
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -12,19 +11,19 @@ db = firestore.client()
 
 def upload_highscore(score, name, time):
     doc_ref = db.collection('highscores').document()
-    doc_ref.set({
-        'date': time,
-        'score': score,
-        'name': name,
-        'clientID': config.CABINET_ID,
-        'location': config.LOCATION,
-        'freemode': config.FREE_MODE
-    })
+    doc_ref.set(
+        {
+            'date': time,
+            'score': score,
+            'name': name,
+            'clientID': config.CABINET_ID,
+            'location': config.LOCATION,
+            'freemode': config.FREE_MODE,
+        }
+    )
 
 
 def print_all_scores():
     docs = db.collection('highscores').order_by('score', direction=firestore.Query.DESCENDING).stream()
     for doc in docs:
         print(f'{doc.id} => {doc.to_dict()}')
-
-

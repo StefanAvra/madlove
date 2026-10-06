@@ -34,5 +34,3 @@ def get_pu_image(pu_type):
         file = f'pu_{pu_type}'
 
     return pg.image.load(config.asset('graphics', f'{file}.png')).convert_alpha()
-
-

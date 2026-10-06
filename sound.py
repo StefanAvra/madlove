@@ -22,4 +22,3 @@ for filename in os.listdir(SFX_DIR):
         name = os.path.splitext(filename)[0]
         sound = pg.mixer.Sound(file=os.path.join(SFX_DIR, filename))
         sfx_lib[name] = sound
-

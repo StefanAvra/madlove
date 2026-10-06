@@ -12,17 +12,13 @@ def get_entries(menu_type):
     entries = {
         'exit': ['NO', 'YES'],
         'ingame-exit': ['CONTINUE', 'GIVE UP'],
-        'titlescreen': ['START', 'HIGHSCORES', 'CREDITS']
+        'titlescreen': ['START', 'HIGHSCORES', 'CREDITS'],
     }
     return entries.get(menu_type)
 
 
 def get_title(menu_type):
-    titles = {
-        'exit': 'EXIT GAME?',
-        'ingame-exit': 'PAUSE',
-        'pause': 'SMOKE BREAK'
-    }
+    titles = {'exit': 'EXIT GAME?', 'ingame-exit': 'PAUSE', 'pause': 'SMOKE BREAK'}
     return titles.get(menu_type)
 
 
@@ -31,7 +27,7 @@ def get_funcs(menu_type):
         'exit': ['back', killyourlungs.quit_game],
         'ingame-exit': ['back', killyourlungs.quit_game],
         'titlescreen': ['start', 'scores', 'credits'],
-        'pause': ['back']
+        'pause': ['back'],
     }
     return funcs.get(menu_type)
 
@@ -54,4 +50,3 @@ def get_surf(menu_type):
 def make_outline(surface, fill_color, outline_color=config.TEXT_COLOR, border=4):
     surface.fill(outline_color)
     surface.fill(fill_color, surface.get_rect().inflate(-border, -border))
-

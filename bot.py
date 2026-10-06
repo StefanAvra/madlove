@@ -30,15 +30,14 @@ def play(player, balls):
     right = False
     ball_to_follow = balls.sprites()[0]
     trigger_range_offset = utils.interp(ball_to_follow.rect.y, [0, config.PLAYER_Y - 10], [400, 0])
-    trigger_range = (player.rect.centerx - trigger_range_offset/2, player.rect.centerx + trigger_range_offset/2)
+    trigger_range = (player.rect.centerx - trigger_range_offset / 2, player.rect.centerx + trigger_range_offset / 2)
 
     for ball in balls:
         if ball.sticky and random.randint(0, 50) == 11:
             ball.sticky = False
 
     if not trigger_range[0] < ball_to_follow.rect.centerx < trigger_range[1]:
-        offset = utils.interp(_noise1(_step), [0, 1],
-                              [-player.rect.width * inaccuracy, player.rect.width * inaccuracy])
+        offset = utils.interp(_noise1(_step), [0, 1], [-player.rect.width * inaccuracy, player.rect.width * inaccuracy])
         # print(offset)
         if player.rect.centerx > ball_to_follow.rect.centerx + offset:
             left = True

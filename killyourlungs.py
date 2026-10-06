@@ -20,8 +20,24 @@ bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
 font_16 = None
 font_24 = None
-stages = ['HEALTHY', 'IA1', 'IA2', 'IA3', 'IB', 'IIA', 'IIB', 'IIIA', 'IIIB', 'IIIC', 'IVA', 'IVA', 'IVB',
-          'IVB', 'IVB', 'IVB']
+stages = [
+    'HEALTHY',
+    'IA1',
+    'IA2',
+    'IA3',
+    'IB',
+    'IIA',
+    'IIB',
+    'IIIA',
+    'IIIB',
+    'IIIC',
+    'IVA',
+    'IVA',
+    'IVB',
+    'IVB',
+    'IVB',
+    'IVB',
+]
 score = 0
 time_passed = 0
 
@@ -108,8 +124,9 @@ class GameScene(Scene):
         if self.heartattack_mode is not None:
             render_heartattack(self, screen)
 
-        render_hud(screen, str(score), stages[self.current_stage], str(coins.get_lives()), self.timer,
-                   self.hud_highlight_combo)
+        render_hud(
+            screen, str(score), stages[self.current_stage], str(coins.get_lives()), self.timer, self.hud_highlight_combo
+        )
 
         if self.notification is not None:
             text = font_16.render(self.notification.msg, True, self.notification.color)
@@ -122,8 +139,7 @@ class GameScene(Scene):
         if config.SHOW_VELOCITY:
             # first ball only
             velocity = self.balls.sprites()[0].velocity
-            velocity = font_8.render(str((round(velocity[0], 2),
-                                          round(velocity[1], 2))), True, config.DEBUG_COLOR)
+            velocity = font_8.render(str((round(velocity[0], 2), round(velocity[1], 2))), True, config.DEBUG_COLOR)
             screen.blit(velocity, (40, 0))
 
         # if self.draw_credit:
@@ -252,8 +268,9 @@ class GameScene(Scene):
         except IndexError:
             new_ball_pos = (random.randint(0, config.WIDTH), random.randint(0, config.HEIGHT * 0.5))
         for _ in range(amount):
-            self.balls.add(Ball(velocity=(random.randint(-3, 3), -3),
-                                pos_x=new_ball_pos[0], pos_y=new_ball_pos[1], sticky=False))
+            self.balls.add(
+                Ball(velocity=(random.randint(-3, 3), -3), pos_x=new_ball_pos[0], pos_y=new_ball_pos[1], sticky=False)
+            )
             self.all_sprites.add(self.balls)
             print(new_ball_pos)
 
@@ -375,15 +392,22 @@ class FinishedLevelScene(Scene):
         self.time_bonus = max(self.bonus_time * scores.get_bonus('time_bonus'), 0)
         self.collected_all_pus = game_state.collected_all_pus
         self.lost_life = game_state.lost_life
-        self.perfect_play = False if False in [not self.lost_life, self.level_clear, self.no_continue,
-                                               self.collected_all_pus] else True
+        self.perfect_play = (
+            False if False in [not self.lost_life, self.level_clear, self.no_continue, self.collected_all_pus] else True
+        )
         self.level_clear_bonus = scores.get_bonus('clear') if self.level_clear else 0
         self.no_continue_bonus = scores.get_bonus('no_continue') if self.no_continue else 0
         self.collected_all_pus_bonus = scores.get_bonus('all_pus') if self.collected_all_pus else 0
         self.perfect_play_bonus = scores.get_bonus('perfect') if self.perfect_play else 0
 
-        self.all_values = [score, self.time_bonus, self.level_clear_bonus, self.no_continue_bonus,
-                           self.collected_all_pus_bonus, self.perfect_play_bonus]
+        self.all_values = [
+            score,
+            self.time_bonus,
+            self.level_clear_bonus,
+            self.no_continue_bonus,
+            self.collected_all_pus_bonus,
+            self.perfect_play_bonus,
+        ]
 
         self.finished_all_levels = True if self.next_level == levels.get_total_levels() else False
 
@@ -491,8 +515,14 @@ class FinishedLevelScene(Scene):
                     self.fadeout_step = 255
                     self.leave = True
 
-        self.all_values = [score, self.time_bonus, self.level_clear_bonus, self.no_continue_bonus,
-                           self.collected_all_pus_bonus, self.perfect_play_bonus]
+        self.all_values = [
+            score,
+            self.time_bonus,
+            self.level_clear_bonus,
+            self.no_continue_bonus,
+            self.collected_all_pus_bonus,
+            self.perfect_play_bonus,
+        ]
 
         if self.leave and self.fadeout_step <= 0:
             if self.finished_all_levels:
@@ -547,13 +577,14 @@ class LostLifeScene(Scene):
             lost_line_surf = font_16.render(line, True, config.TEXT_COLOR)
             lost_line_pos = lost_line_surf.get_rect()
             lost_line_pos.center = (screen.get_rect().centerx, screen.get_rect().centery + 100 + idx * menus.PADDING)
-            lost_line_pos = (x_center_to(self.text_bg_surf, lost_line_surf),
-                             menus.PADDING + idx * menus.MENU_LINE_OFFSET)
+            lost_line_pos = (
+                x_center_to(self.text_bg_surf, lost_line_surf),
+                menus.PADDING + idx * menus.MENU_LINE_OFFSET,
+            )
             self.text_bg_surf.blit(lost_line_surf, lost_line_pos)
 
         text_bg_pos = center_to(screen, self.text_bg_surf)
-        text_bg_shadow_pos = (text_bg_pos[0] + config.MENU_SHADOW_OFFSET,
-                              text_bg_pos[1] + config.MENU_SHADOW_OFFSET)
+        text_bg_shadow_pos = (text_bg_pos[0] + config.MENU_SHADOW_OFFSET, text_bg_pos[1] + config.MENU_SHADOW_OFFSET)
 
         screen.blit(self.text_bg_shadow, text_bg_shadow_pos)
         screen.blit(self.text_bg_surf, text_bg_pos)
@@ -861,8 +892,9 @@ class GameOver(Scene):
         f_line = '{:<13} {:>10}'
         if self.blit_elements[0]:
             # level = font_16.render(f'YOU REACHED LEVEL {self.reached_lvl}', True, config.TEXT_COLOR)
-            level = font_16.render(f_line.format(str_r.get_str('reached_level'),
-                                                 self.reached_lvl), True, config.TEXT_COLOR)
+            level = font_16.render(
+                f_line.format(str_r.get_str('reached_level'), self.reached_lvl), True, config.TEXT_COLOR
+            )
             level_pos = level.get_rect()
             level_pos.topleft = (50, y_offset)
             screen.blit(level, level_pos)
@@ -870,8 +902,9 @@ class GameOver(Scene):
         if self.blit_elements[1]:
             # stage = font_16.render(f'CANCER STAGE {stages[self.reached_stage]}' if self.reached_stage > 0
             #                        else stages[self.reached_stage], True, config.TEXT_COLOR)
-            stage = font_16.render(f_line.format(str_r.get_str('cancer_stage'),
-                                                 stages[self.reached_stage]), True, config.TEXT_COLOR)
+            stage = font_16.render(
+                f_line.format(str_r.get_str('cancer_stage'), stages[self.reached_stage]), True, config.TEXT_COLOR
+            )
             stage_pos = stage.get_rect()
             stage_pos.topleft = (50, y_offset)
             screen.blit(stage, stage_pos)
@@ -905,8 +938,9 @@ class GameOver(Scene):
                     y_offset += place_pos.height * 2
             if self.blit_elements[4]:
                 # name = font_16.render(f'ENTER NAME: {"".join(self.name)}', True, config.TEXT_COLOR)
-                name = font_16.render(f_line.format(str_r.get_str('enter_name'), ''.join(self.name)),
-                                      True, config.TEXT_COLOR)
+                name = font_16.render(
+                    f_line.format(str_r.get_str('enter_name'), ''.join(self.name)), True, config.TEXT_COLOR
+                )
                 name_pos = name.get_rect()
                 name_pos.center = (screen.get_width() / 2, y_offset)
                 screen.blit(name, name_pos)
@@ -1296,8 +1330,10 @@ class OverlayMenuScene(Scene):
                 else:
                     color = config.TEXT_COLOR
                 entry_surf = font_16.render(entry, True, color)
-                entry_pos = (x_center_to(self.menu_surf, entry_surf),
-                             menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_LINE_OFFSET)
+                entry_pos = (
+                    x_center_to(self.menu_surf, entry_surf),
+                    menus.PADDING + menus.HEADER_SIZE + idx * menus.MENU_LINE_OFFSET,
+                )
                 self.menu_surf.blit(entry_surf, entry_pos)
         else:
             animation_pos = (x_center_to(self.menu_surf, self.animation.image), menus.PADDING + menus.HEADER_SIZE)
@@ -1429,7 +1465,7 @@ class HighscoreScene(Scene):
                 self.lines.append(font_16.render(new_line, True, self.highlight_color))
             else:
                 self.lines.append(font_16.render(new_line, True, config.TEXT_COLOR))
-        for idx, line in enumerate(self.lines[:self.print_step]):
+        for idx, line in enumerate(self.lines[: self.print_step]):
             screen.blit(line, (50, 150 + (40 * idx)))
 
         if self.mode == 'show':
@@ -1593,7 +1629,7 @@ class IntroScene(Scene):
         # screen.fill(bg_color)
         screen.blit(self.intro, (0, 0))
         fact_offset = 0
-        for text in self.text[:self.text_cursor].split('\n'):
+        for text in self.text[: self.text_cursor].split('\n'):
             fact = font_16.render(text, True, config.MENU_COLOR_HIGHLIGHT)
             screen.blit(fact, (8, 8 + fact_offset))
             fact_offset += 24
@@ -1876,8 +1912,7 @@ class Brick(pg.sprite.Sprite):
     def __init__(self, x=0, y=0, health=2, brick_type='b'):
         types = {'r': 'red', 'w': 'white', 'b': 'black'}
         super().__init__()
-        self.image = pg.image.load(
-            config.asset('graphics', f'brick_{types[brick_type]}.png')).convert()
+        self.image = pg.image.load(config.asset('graphics', f'brick_{types[brick_type]}.png')).convert()
         self.dark = pg.image.load(config.asset('graphics', 'brick_{}.png'.format(types['b']))).convert()
         self.max_health = health
         self.health = health

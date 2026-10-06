@@ -30,8 +30,7 @@ __strings = {
     'pu_shoot': 'shooting!',
     'pu_metastasis': 'metastasis!',
     'heart_killing': 'heart attack!',
-    'push_to_kill': 'push button to kill!'
-
+    'push_to_kill': 'push button to kill!',
 }
 
 __facts = {
@@ -44,14 +43,10 @@ __facts = {
     6: '67% of Indonesia\'s\nmale population smokes.',
     7: 'The MadLove Man is still used\nin Japan, where smoking is\nwidespread in the male\npopulation.',
     8: 'The company that sells MadLove\ntobacco is known to sponsor legal\ncosts in lawsuits, if a country\n'
-       ' happens to sue another country\nover anti-smoking laws.'
+    ' happens to sue another country\nover anti-smoking laws.',
 }
 
-__combos = {
-    25: 'super combo!',
-    50: 'ultra combo!',
-    100: 'holy moly!'
-}
+__combos = {25: 'super combo!', 50: 'ultra combo!', 100: 'holy moly!'}
 
 __credit_views = {
     0: """A project by
@@ -93,7 +88,7 @@ with Reserved Font Name
 Uli Veit
 Trung Bui
 Jo Löhmann""",
-    5: """© 2019 Gurkiman, Avra"""
+    5: """© 2019 Gurkiman, Avra""",
 }
 
 __alphabet = [chr(char) for char in range(65, 91)]
@@ -135,4 +130,3 @@ def get_credits():
 
 def get_alphabet():
     return __alphabet
-

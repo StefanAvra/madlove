@@ -48,4 +48,3 @@ def handle_free_mode():
         return
     if __credit <= 0:
         __credit = 1
-

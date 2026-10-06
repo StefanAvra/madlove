@@ -60,5 +60,3 @@ def get_buttons():
     # print(pressed)
 
     return pressed
-
-
