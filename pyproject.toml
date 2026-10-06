@@ -37,3 +37,5 @@ quote-style = "preserve"
 testpaths = ["tests"]
 # the game modules live in the repository root until they move into a package
 pythonpath = ["."]
+# a test that runs longer than this prints the stack of every thread, to show where it hangs
+faulthandler_timeout = 60

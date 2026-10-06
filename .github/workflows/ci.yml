@@ -9,6 +9,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # the whole job takes about a minute; without this a hang runs for 6 hours
+    timeout-minutes: 10
     env:
       # no display or sound card on the runner
       SDL_VIDEODRIVER: dummy
