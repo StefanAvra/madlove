@@ -14,7 +14,10 @@ Programmed by Avra
 
 Graphic Design by Gurkiman
 
-Music by [Ozzed](https://ozzed.net/) under Creative Commons license (CC BY-SA)
+Music by [Ozzed](https://ozzed.net/) under Creative Commons license (CC BY-SA):
+- "About Ducks"
+- "Boktipset från helvetet"
+- the names of the other two tracks are still being looked up
 
 
 [Teaser Video on Youtube](https://www.youtube.com/watch?v=CY5pmC3nwCw)
