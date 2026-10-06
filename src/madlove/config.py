@@ -34,6 +34,7 @@ class Settings:
     bot: bool = False
     show_fps: bool = False
     show_velocity: bool = False
+    can_quit: bool = True  # False in the browser, where quitting would leave a frozen page
     data_dir: str = dataclasses.field(default_factory=default_data_dir)  # where high scores are saved
 
 

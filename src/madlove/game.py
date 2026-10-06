@@ -45,6 +45,10 @@ class Game:
         self.screen = pg.display.set_mode(config.DISPLAY, flags, config.DEPTH)
         pg.mouse.set_visible(False)
         pg.display.set_caption(config.CAPTION)
+        if config.WEB:
+            from platform import window  # pygbag adds the browser's window object to this module
+
+            window.canvas.style.imageRendering = 'pixelated'  # scale up without blurring the pixels
         self.font_8 = pg.font.Font(config.FONT, 8)
         self.font_16 = pg.font.Font(config.FONT, 16)
         self.font_24 = pg.font.Font(config.FONT, 24)

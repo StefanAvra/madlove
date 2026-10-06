@@ -206,7 +206,7 @@ class TitleScene(base.Scene):
                             #     pass
                     if e.key == pg.K_c:
                         self.manager.go_to(credits.CreditsScene(self.game, 0))
-                    if e.key == pg.K_ESCAPE:
+                    if e.key == pg.K_ESCAPE and self.game.settings.can_quit:
                         self.manager.go_to(menu.OverlayMenuScene(self.game, self, 'exit'))
                     if e.key == pg.K_h:
                         self.manager.go_to(highscores.HighscoreScene(self.game))
