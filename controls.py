@@ -1,4 +1,5 @@
 import pygame as pg
+
 import config
 
 joystick = None
@@ -53,7 +54,8 @@ def get_buttons():
 
     else:
         pressed_keyboard = pg.key.get_pressed()
-        pressed[UP], pressed[LEFT], pressed[RIGHT], pressed[DOWN] = [pressed_keyboard[key] for key in (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)]
+        keys = (pg.K_UP, pg.K_LEFT, pg.K_RIGHT, pg.K_DOWN)
+        pressed[UP], pressed[LEFT], pressed[RIGHT], pressed[DOWN] = [pressed_keyboard[key] for key in keys]
 
     # print(pressed)
 

@@ -1,10 +1,11 @@
 import pygame as pg
+
 import config
 
 
 class PowerUp(pg.sprite.Sprite):
     def __init__(self, pu, pos):
-        super(PowerUp, self).__init__()
+        super().__init__()
         self.type = pu['pu_type']
         self.image = get_pu_image(self.type)
         self.rect = self.image.get_rect()
@@ -30,8 +31,8 @@ def get_pu_image(pu_type):
     if pu_type == 'pack':
         file = 'pack'
     else:
-        file = 'pu_{}'.format(pu_type)
+        file = f'pu_{pu_type}'
 
-    return pg.image.load(config.asset('graphics', '{}.png'.format(file))).convert_alpha()
+    return pg.image.load(config.asset('graphics', f'{file}.png')).convert_alpha()
 
 

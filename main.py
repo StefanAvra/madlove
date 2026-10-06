@@ -15,7 +15,7 @@ def get_version():
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(prog='madlove', description='MadLove - the arcade game.')
-    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(get_version()))
+    parser.add_argument('--version', action='version', version=f'%(prog)s {get_version()}')
     parser.add_argument('--fullscreen', action='store_true', help='run in fullscreen')
     parser.add_argument('--coin-op', action='store_true',
                         help='require coins to play (default: free play)')

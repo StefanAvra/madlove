@@ -667,7 +667,7 @@ class Level:
         try:
             self.bricks = _levels.get(no).get('bricks')
         except AttributeError:
-            print('Level {} not found.'.format(no))
+            print(f'Level {no} not found.')
         self.powerups = _levels.get(no).get('powerups')
         self.bonus_time = _levels.get(no).get('bonus_time')
 

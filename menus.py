@@ -1,4 +1,5 @@
 import pygame as pg
+
 import config
 import killyourlungs
 

@@ -1,6 +1,5 @@
 import random
 
-
 __strings = {
     'lost_life': 'YOU LOST A CIG!\nPRESS START TO LIGHT UP\nANOTHER ONE',
     'stage_text': 'STAGE: {}',
@@ -90,7 +89,7 @@ Project Authors,
 with Reserved Font Name
 "Press Start 2P" """,
     4: """Special Thanks
-    
+
 Uli Veit
 Trung Bui
 Jo Löhmann""",

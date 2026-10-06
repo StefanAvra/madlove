@@ -1,9 +1,8 @@
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-from datetime import datetime
-import config
 
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+import config
 
 cred = credentials.Certificate(config.FIREBASE_CRED)
 default_app = firebase_admin.initialize_app(cred)
@@ -26,6 +25,6 @@ def upload_highscore(score, name, time):
 def print_all_scores():
     docs = db.collection('highscores').order_by('score', direction=firestore.Query.DESCENDING).stream()
     for doc in docs:
-        print(u'{} => {}'.format(doc.id, doc.to_dict()))
+        print(f'{doc.id} => {doc.to_dict()}')
 
 

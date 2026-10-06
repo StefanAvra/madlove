@@ -1,9 +1,10 @@
-from datetime import datetime
-
-import config
 import operator
 import os
 import pickle
+from datetime import datetime
+
+import config
+
 if not config.OFFLINE_MODE:
     import firebase_api
 
@@ -26,8 +27,8 @@ def load_highscores():
             highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
             highscores = highscores[:10]
             print('high scores loaded.')
-    except IOError:
-        print('HIGHSCORES COULD NOT BE LOADED: {}'.format(IOError))
+    except OSError:
+        print(f'HIGHSCORES COULD NOT BE LOADED: {IOError}')
         highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
         highscores = highscores[:10]
         save_highscores()
@@ -60,7 +61,7 @@ def load_queue():
     try:
         with open(config.UPLOAD_QUEUE, 'wb') as f:
             upload_queue = pickle.load(f)
-    except IOError:
+    except OSError:
         upload_queue = []
 
 
@@ -86,7 +87,7 @@ def process_queue():
                 new_upload_queue.append(entry)
         else:
             new_upload_queue.append(entry)
-    print('uploaded {} scores to database'.format(len(upload_queue) - len(new_upload_queue)))
+    print(f'uploaded {len(upload_queue) - len(new_upload_queue)} scores to database')
     upload_queue = new_upload_queue
     update_queue()  # saves to pickle file
 
@@ -99,7 +100,7 @@ def get_place(new):
     place = score_list.index('$new') + 1
     place_string = ''
     if place in [4, 5, 6, 7, 8, 9, 10]:
-        place_string = '{}th'.format(place)
+        place_string = f'{place}th'
     elif place == 1:
         place_string = '1st'
     elif place == 2:
@@ -129,7 +130,7 @@ def increase_score(reason='hit_brick', no_combo=False):
         add = 15
     elif reason == 'powerup':
         add = 85
-    print('{} * {}'.format(add, multi))
+    print(f'{add} * {multi}')
     return add * multi
 
 

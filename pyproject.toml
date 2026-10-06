@@ -16,3 +16,24 @@ dependencies = [
 online = [
     "firebase-admin>=6",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.16",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP"]
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# the game modules live in the repository root until they move into a package
+pythonpath = ["."]

@@ -1,5 +1,5 @@
-import sound
 import config
+import sound
 
 __credit = 0
 __life_to_credit_ratio = 3
