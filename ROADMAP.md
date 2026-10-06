@@ -81,6 +81,19 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 - [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
 - [ ] Optionally also publish on itch.io
 
+### CRT look
+
+The original cabinet showed the game on a CRT, fed with analog composite video from the Pi. The web version should recreate that look with a shader. Expect some experimenting.
+
+- [ ] Choose where the shader runs, e.g. a WebGL post-processing pass over pygbag's canvas in a custom HTML template
+- [ ] Experiment with the effects, comparing against the teaser video and photos of the cabinet:
+  - scanlines and the phosphor mask
+  - composite artefacts: colour bleed, blur, dot crawl
+  - screen curvature, vignette, bloom and glow
+  - slight flicker or jitter
+- [ ] Look at existing CRT and NTSC shaders (e.g. the libretro collection) for reference, and check their licences before reusing any code
+- [ ] Add a switch to turn the effect off, and check performance on phones
+
 ## Phase 5: Optional extras
 
 - [ ] Online leaderboard behind a small API (the Firebase admin SDK can't run in a browser and would expose credentials)
