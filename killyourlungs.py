@@ -3,8 +3,6 @@ import random
 
 import pygame as pg
 import sys
-import numpy
-import os
 
 import coins
 import sound
@@ -16,6 +14,7 @@ import bot
 import scores
 import controls as ctrls
 import powerups
+import utils
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None
@@ -99,7 +98,7 @@ class GameScene(Scene):
         self.total_bricks = len(self.bricks)
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
-        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
+        pg.mixer.music.load(config.asset('sounds', 'music', 'bgm.ogg'))
         pg.mixer.music.set_volume(0.8)
         self.reset_round()
 
@@ -181,7 +180,7 @@ class GameScene(Scene):
         self.bullets.update(self.bricks, self)
 
         past_stage = self.current_stage
-        self.current_stage = int(numpy.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
+        self.current_stage = int(utils.interp(len(self.bricks), [0, self.total_bricks], [len(stages) - 1, 0]))
         if stages[past_stage] != stages[self.current_stage]:
             if stages[past_stage] == stages[0]:
                 self.notif_stack.append(Message("got cancer!", 'cancer'))
@@ -612,7 +611,7 @@ class TitleScene(Scene):
         self.arrow = Arrow()
         self.bg_arrow = Arrow(True)
         self.blit_elements = [False, False, False, False]
-        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'titlescreen.ogg'))
+        pg.mixer.music.load(config.asset('sounds', 'music', 'titlescreen.ogg'))
         # pg.mixer.music.play(-1)
         try:
             sound.sfx_lib.get('intro1').play()
@@ -631,7 +630,7 @@ class TitleScene(Scene):
         for y in range(cig_grid[1]):
             for x in range(cig_grid[0]):
                 cig = pg.sprite.Sprite()
-                cig.image = pg.image.load(os.path.join('assets', 'graphics', 'paddle_m.png')).convert()
+                cig.image = pg.image.load(config.asset('graphics', 'paddle_m.png')).convert()
                 cig.image = pg.transform.rotate(cig.image, -90)
                 cig.rect = cig.image.get_rect()
                 cig.rect.midtop = (cig_offset[0] * x + 48, cig_offset[1] * y)
@@ -657,7 +656,7 @@ class TitleScene(Scene):
         # for idx, entry in enumerate(self.menu):
         #     if self.cursor == idx:
         #         if self.highlight_clock >= 100:
-        #             self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+        #             self.highlight_color = utils.invert_color(self.highlight_color)
         #             self.highlight_clock = 0
         #         color = self.highlight_color
         #     else:
@@ -843,9 +842,9 @@ class GameOver(Scene):
         self.char_timer = 0
         self.char_timer_threshold = 0
         if self.place_no == 1:
-            pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, '1stplace.ogg'))
+            pg.mixer.music.load(config.asset('sounds', 'music', '1stplace.ogg'))
         else:
-            pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
+            pg.mixer.music.load(config.asset('sounds', 'music', 'smoke_break.ogg'))
         try:
             pg.mixer.music.play(-1)
         except AttributeError as error:
@@ -940,7 +939,7 @@ class GameOver(Scene):
                     self.blit_cursor = not self.blit_cursor
             elif self.fade_leave and self.fadeout_step <= 0:
                 if self.place_no == 1:
-                    pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
+                    pg.mixer.music.load(config.asset('sounds', 'music', 'smoke_break.ogg'))
                     try:
                         pg.mixer.music.play(-1)
                     except AttributeError as error:
@@ -1135,7 +1134,7 @@ class ContinueScene(Scene):
                     self.highlight_clock += time_passed
                     if self.highlight_clock >= 100:
                         self.highlight_clock = 0
-                        self.countdown_color = tuple(numpy.subtract((255, 255, 255), self.countdown_color))
+                        self.countdown_color = utils.invert_color(self.countdown_color)
                 if self.countdown_timer > 0:
                     self.countdown_timer -= time_passed
                 else:
@@ -1273,7 +1272,7 @@ class OverlayMenuScene(Scene):
             except AttributeError as error:
                 pass
             self.animation = Ashtray()
-            pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'smoke_break.ogg'))
+            pg.mixer.music.load(config.asset('sounds', 'music', 'smoke_break.ogg'))
 
     def render(self, screen):
 
@@ -1291,7 +1290,7 @@ class OverlayMenuScene(Scene):
             for idx, entry in enumerate(self.menu_entries):
                 if self.cursor == idx:
                     if self.highlight_clock >= 100:
-                        self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+                        self.highlight_color = utils.invert_color(self.highlight_color)
                         self.highlight_clock = 0
                     color = self.highlight_color
                 else:
@@ -1382,7 +1381,7 @@ class OverlayMenuScene(Scene):
             sound.sfx_lib.get('pause_out').play()
         except AttributeError as error:
             pass
-        pg.mixer.music.load(os.path.join(sound.MUSIC_DIR, 'bgm.ogg'))
+        pg.mixer.music.load(config.asset('sounds', 'music', 'bgm.ogg'))
         try:
             pg.mixer.music.play(-1)
         except AttributeError as error:
@@ -1478,7 +1477,7 @@ class HighscoreScene(Scene):
         if self.mode == 'gameover':
             self.highlight_place_clock += time_passed
             if self.highlight_place_clock >= 400:
-                self.highlight_color = tuple(numpy.subtract((255, 255, 255), self.highlight_color))
+                self.highlight_color = utils.invert_color(self.highlight_color)
                 self.highlight_place_clock = 0
 
         if config.FREE_MODE:
@@ -1581,7 +1580,7 @@ class IntroScene(Scene):
         self.next_lvl = next_lvl
         self.text = str_r.get_fact()
         self.text_cursor = 0
-        self.intro = pg.image.load(os.path.join('assets', 'graphics', 'level_intro_{}.png'.format(self.get_intro())))
+        self.intro = pg.image.load(config.asset('graphics', 'level_intro_{}.png'.format(self.get_intro())))
         self.timer = 0
         self.text_cursor_speed = 40
         self.fadein_step = 255
@@ -1791,7 +1790,7 @@ class Ball(pg.sprite.Sprite):
             self.hot_blink += time_passed
             if self.hot_blink > 100:
                 self.hot_blink = 0
-                self.color = tuple(numpy.subtract((255, 255, 255), self.color))
+                self.color = utils.invert_color(self.color)
             if self.hot_timer < 0:
                 self.hot_timer = 0
                 self.hot = False
@@ -1834,7 +1833,7 @@ class Player(pg.sprite.Sprite):
         super().__init__()
         self.type = p_type
         self.speed = speed
-        self.image = pg.image.load(os.path.join('assets', 'graphics', 'paddle_{}.png'.format(self.type))).convert()
+        self.image = pg.image.load(config.asset('graphics', 'paddle_{}.png'.format(self.type))).convert()
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = config.PLAYER_Y
@@ -1856,7 +1855,7 @@ class Player(pg.sprite.Sprite):
     def update_length(self, p_type):
         self.type = p_type
         temp_rect = self.rect
-        self.image = pg.image.load(os.path.join('assets', 'graphics', 'paddle_{}.png'.format(self.type))).convert()
+        self.image = pg.image.load(config.asset('graphics', 'paddle_{}.png'.format(self.type))).convert()
         self.rect = self.image.get_rect()
         self.rect.centerx = temp_rect.centerx
         self.rect.y = config.PLAYER_Y
@@ -1877,8 +1876,8 @@ class Brick(pg.sprite.Sprite):
         types = {'r': 'red', 'w': 'white', 'b': 'black'}
         super().__init__()
         self.image = pg.image.load(
-            os.path.join('assets', 'graphics', 'brick_{}.png'.format(types[brick_type]))).convert()
-        self.dark = pg.image.load(os.path.join('assets', 'graphics', 'brick_{}.png'.format(types['b']))).convert()
+            config.asset('graphics', 'brick_{}.png'.format(types[brick_type]))).convert()
+        self.dark = pg.image.load(config.asset('graphics', 'brick_{}.png'.format(types['b']))).convert()
         self.max_health = health
         self.health = health
         self.rect = self.image.get_rect()
@@ -1938,7 +1937,7 @@ class Bullet(pg.sprite.Sprite):
 class Arrow(pg.sprite.Sprite):
     def __init__(self, second=False):
         super().__init__()
-        self.image = pg.image.load(os.path.join('assets', 'graphics', 'arrow.png')).convert_alpha()
+        self.image = pg.image.load(config.asset('graphics', 'arrow.png')).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.centery = 0 - self.rect.height
         self.done = False
@@ -1955,8 +1954,8 @@ class Arrow(pg.sprite.Sprite):
 class Title(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pg.image.load(os.path.join('assets', 'graphics', 'title.png')).convert_alpha()
-        self.image_clean = pg.image.load(os.path.join('assets', 'graphics', 'title.png')).convert_alpha()
+        self.image = pg.image.load(config.asset('graphics', 'title.png')).convert_alpha()
+        self.image_clean = pg.image.load(config.asset('graphics', 'title.png')).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = (240, 220)
         self.animate = False
@@ -2011,9 +2010,9 @@ class Ashtray(pg.sprite.Sprite):
 class SpriteSheet:
     def __init__(self, filename, size, image_count, alpha=False):
         if alpha:
-            self.sheet = pg.image.load(os.path.join('assets', 'graphics', '{}.png'.format(filename))).convert_alpha()
+            self.sheet = pg.image.load(config.asset('graphics', '{}.png'.format(filename))).convert_alpha()
         else:
-            self.sheet = pg.image.load(os.path.join('assets', 'graphics', '{}.png'.format(filename))).convert()
+            self.sheet = pg.image.load(config.asset('graphics', '{}.png'.format(filename))).convert()
         self.sprites = []
         for x in range(image_count):
             self.sprites.append(self.load_image(size, (size[0] * x, 0)))
@@ -2040,7 +2039,7 @@ class Message:
         self.timer -= time_passed
         self.highlight_clock += time_passed
         if self.highlight_clock >= 50:
-            self.color = tuple(numpy.subtract((255, 255, 255), self.color))
+            self.color = utils.invert_color(self.color)
             self.highlight_clock = 0
 
 
@@ -2051,7 +2050,7 @@ def render_fading(screen, fade_step, invert_fading=0):
     else:
         alpha = fade_step
     fading_surf = pg.Surface(screen.get_size(), pg.SRCALPHA)
-    fade_color = bg_color
+    fade_color = pg.Color(bg_color)  # copy, so the global background color stays opaque
     alpha = 80 * round(alpha / 80)  # fades a bit rougher
     # print('fading {} {}'.format(('out' if invert_fading else 'in'), alpha))
     fade_color.a = alpha
@@ -2088,7 +2087,7 @@ def render_hud(screen, hud_score, stage, lives, timer, highlight_combo=0):
     lives__text_pos.topright = (screen.get_width() - 28, 8)
     screen.blit(lives_text, lives__text_pos)
 
-    pack = pg.image.load(os.path.join('assets', 'graphics', 'pack.png')).convert()
+    pack = pg.image.load(config.asset('graphics', 'pack.png')).convert()
     screen.blit(pack, (screen.get_width() - 24, 8))
 
     score_pos = score_text.get_rect()
@@ -2104,7 +2103,7 @@ def render_falling_cigs(screen, offset):
     y_off = y_off_step
     for y in range(grid[1]):
         for x in range(grid[0]):
-            cig = pg.image.load(os.path.join('assets', 'graphics', 'paddle_m.png')).convert()
+            cig = pg.image.load(config.asset('graphics', 'paddle_m.png')).convert()
             cig = pg.transform.rotate(cig, -90)
             screen.blit(cig, (x_off, y_off))
             x_off += x_off_step
@@ -2118,7 +2117,7 @@ def update_highlight_text(scene):
     if scene.ready_to_play:
         scene.highlight_clock += time_passed
         if scene.highlight_clock >= 100:
-            scene.highlight_color = tuple(numpy.subtract((255, 255, 255), scene.highlight_color))
+            scene.highlight_color = utils.invert_color(scene.highlight_color)
             scene.highlight_clock = 0
     else:
         scene.highlight_clock += time_passed
@@ -2155,7 +2154,7 @@ def render_heartattack(scene, screen):
         scene.heart_beat += 1
         if scene.heart_beat >= 4:
             scene.heart_beat = 0
-            scene.heart_color = tuple(numpy.subtract((255, 255, 255), scene.heart_color))
+            scene.heart_color = utils.invert_color(scene.heart_color)
     elif scene.heartattack_mode == 'ready':
         scene.heart_fade += 4 * scene.heart_fade_inv
         if not 0 < scene.heart_fade < 255:

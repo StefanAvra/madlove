@@ -18,9 +18,80 @@ Music by [Ozzed](https://ozzed.net/) under Creative Commons license (CC BY-SA)
 [Teaser Video on Youtube](https://www.youtube.com/watch?v=CY5pmC3nwCw)
 
 
-## Usage
+## Running the game
 
-The code is not an installable package. It was designed to run on a Raspberry Pi 3 with a resolution of 480 x 640 output through composite video. A boot script would configure the necessary settings and then run ```killyourlungs.py``` in Python 3. It is not designed to run outside the cabinet although by taking care of the dependencies it would work.
+You need [uv](https://docs.astral.sh/uv/getting-started/installation/), which installs the right Python version and the dependencies into a project-local virtual environment (`.venv`).
+
+```sh
+git clone https://github.com/StefanAvra/madlove.git
+cd madlove
+uv run main.py
+```
+
+The game opens in a 480 × 640 window in free play mode. Options:
+
+| Option | Effect |
+|---|---|
+| `--fullscreen` | Run in fullscreen, scaled to fit the screen |
+| `--coin-op` | Require coins to play (press `1` to insert one) |
+| `--cabinet` | Arcade cabinet settings: same as `--fullscreen --coin-op` |
+| `--data-dir PATH` | Where high scores are saved (default: your platform's app data folder) |
+| `--bot` | Let the bot play |
+| `--show-fps` | Show frames per second |
+| `--version` | Print the version |
+
+### Controls
+
+| Action | Keyboard | Arcade cabinet |
+|---|---|---|
+| Move the paddle | ← → | Stick |
+| Navigate menus, change letters of your name | ↑ ↓ | Stick |
+| Start a game | Space / Enter | Start button |
+| Launch the ball, confirm your name | Space | Action button |
+| Smoke break (pause) | Esc | Start button |
+| Insert coin | 1 | Coin acceptor |
+| Toggle music | M | — |
+
+Debug keys during a game: `B` adds a ball, `N` clears the level, `H` gives the shooting power-up, `O`/`P` slow down/speed up the balls, `F` shows FPS and ball velocity, `,` toggles the bot.
+
+### Raspberry Pi cabinet
+
+The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a CRT over composite video. The original SD card, with its boot script and display settings, is lost. These steps are a starting point and **have not yet been tested on a Pi**.
+
+1. Install the 64-bit Raspberry Pi OS Lite. pygame-ce publishes ready-made packages for 64-bit ARM only.
+2. Set up composite output and the resolution in `/boot/firmware/config.txt`.
+3. Install uv and the game:
+
+   ```sh
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   git clone https://github.com/StefanAvra/madlove.git ~/madlove
+   cd ~/madlove
+   uv sync
+   ```
+
+   Recent Raspberry Pi OS versions don't allow `pip install` into the system Python. uv installs everything into `~/madlove/.venv` instead.
+4. Start the game at boot with a systemd service. Save this as `/etc/systemd/system/madlove.service`, replacing `pi` with your user name:
+
+   ```ini
+   [Unit]
+   Description=MadLove arcade game
+   After=multi-user.target
+
+   [Service]
+   User=pi
+   WorkingDirectory=/home/pi/madlove
+   ExecStart=/home/pi/.local/bin/uv run --frozen main.py --cabinet
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   Then enable it with `sudo systemctl enable --now madlove`.
+
+## Versions
+
+See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` is the build that premiered at the Rundgang in July 2019, `v1.1.0` the one that toured afterwards. Plans for the future are in [ROADMAP.md](ROADMAP.md).
 
 ## Features
 - **High scores**: players that reach a top ten high score can enter their name. It will be saved to local storage, so high scores will be kept even if powering off. Although their is code for a feature that syncs the high score list to a Firebase DB, this feature has been dropped and was never used.

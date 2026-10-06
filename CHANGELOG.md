@@ -8,8 +8,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 - `ROADMAP.md` with the plan for modernising the game and bringing it to the web.
+- `pyproject.toml` and `uv.lock`: run the game with `uv run main.py`.
+- `main.py` entry point with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
+- README instructions for running the game, its controls and setting up a Raspberry Pi cabinet.
+
+### Changed
+- Switched from `pygame` to `pygame-ce`, the actively maintained fork. Requires Python 3.11 or newer.
+- Free play is the default; coins are only required with `--coin-op` or `--cabinet`.
+- The window uses pygame's `SCALED` mode, so the game always draws on an opaque surface. In fullscreen the picture is scaled to fit with black bars, instead of switching the screen resolution.
+- High scores are saved in the platform's app data folder instead of the current directory.
+- `firebase-admin` is now an optional dependency (`online` extra).
+
+### Removed
+- `numpy` and `noise` dependencies, replaced by small built-in helpers.
 
 ### Fixed
+- Assets load no matter which directory the game is started from.
+- `SyntaxWarning`s on modern Python from `is` comparisons with numbers.
+- The background colour lost its opacity after the first screen fade, because `render_fading()` modified the shared colour instead of a copy. This was invisible on the 2019 cabinet, but in windows with an alpha channel, such as on macOS, the logo and text were drawn with black or white boxes around them.
 - Power-up graphics (`pu_hotball`, `pu_longer`, `pu_metastasis`, `pu_shoot`, `pu_shorter`) were never committed, so a fresh checkout crashed when a power-up dropped. They have been recovered and added.
 
 ## [1.1.0] - 2019-10-18

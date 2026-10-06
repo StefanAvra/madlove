@@ -4,19 +4,12 @@ Plan for polishing MadLove after its 2019 run: make it runnable anywhere, put te
 
 ## Known issues
 
-- **Written for Python 3.5.** The cabinet didn't support f-strings.
-- **Barely used dependencies.**
-  - `numpy` is only used for `interp` and for inverting colours.
-  - `noise`, an unmaintained C extension, is only used by the bot.
 - **Import-time side effects.**
   - Importing `sound.py` starts the audio mixer.
   - Importing `controls.py` starts the joystick.
   - Importing `scores.py` reads and writes files.
   - `menus.py` and `killyourlungs.py` import each other.
-- **Small bugs.**
-  - `scores.load_queue()` opens the queue file with `'wb'`, so the queue is emptied at every start.
-  - `place is 1`-style comparisons produce `SyntaxWarning`.
-  - Asset paths only work when the game is started from the repo root.
+- **Upload queue bug.** `scores.load_queue()` opens the queue file with `'wb'`, so the queue is emptied at every start. Just fixing the mode would make the queue grow forever in offline mode, so fix it together with the high-score rework in Phase 3.
 - **One huge file.** `killyourlungs.py` is 2,243 lines with every scene, every sprite and globals. It does already have a single main loop with scenes, which suits the web build.
 
 ## Versioning
@@ -45,13 +38,14 @@ No code changes.
 
 ## Phase 1: Make it runnable
 
-- [ ] `pyproject.toml` + uv lockfile (`uv run madlove` for development)
-- [ ] Switch `pygame` to `pygame-ce` (drop-in replacement, needed for the web build)
-- [ ] Remove `numpy`; replace `noise` with a small pure-Python version
-- [ ] Load assets relative to the package folder, not the working directory
-- [ ] Command-line flags or environment variables instead of editing `config.py`: `--fullscreen`, `--free-mode`, `--cabinet`
-- [ ] README: how to run it for development
-- [ ] README: cabinet setup on Raspberry Pi OS, using a venv (recent Raspberry Pi OS blocks global `pip install`) and a systemd service instead of the old boot script
+- [x] `pyproject.toml` + uv lockfile (`uv run main.py` for development)
+- [x] Switch `pygame` to `pygame-ce` (drop-in replacement, needed for the web build)
+- [x] Remove `numpy`; replace `noise` with a small pure-Python version
+- [x] Load assets relative to the code, not the working directory; save high scores in the platform's app data folder
+- [x] Command-line flags instead of editing `config.py`: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps`
+- [x] Fix `SyntaxWarning`s from `place is 1`-style comparisons
+- [x] README: how to run it for development, with controls
+- [ ] README: cabinet setup on Raspberry Pi OS with uv and a systemd service (written, still needs testing on a Pi)
 
 ## Phase 2: Safety net
 
@@ -67,12 +61,12 @@ Tests come before the refactor, so the refactor has something to check it agains
 
 ## Phase 3: Clean-code refactor
 
-- [ ] Move to a `src/madlove/` package with `scenes/`, `sprites/`, `hud.py`, `audio.py` and `input.py`
+- [ ] Move to a `src/madlove/` package with `scenes/`, `sprites/`, `hud.py`, `audio.py` and `input.py`, and a `madlove` command (`uv run madlove`)
 - [ ] Replace the globals (`score`, the fonts, `time_passed`, the state in `coins` and `scores`) with an explicit game-state object
 - [ ] Remove the import-time side effects and the circular import
 - [ ] Fix the known bugs listed above
 - [ ] Store high scores as JSON instead of pickle (no migration needed, since no 2019 score file survived)
-- [ ] Remove the Firebase code or move it behind an optional extra
+- [ ] Remove the Firebase code (its dependency is already only an optional `online` extra)
 - [ ] Release `v2.0.0`
 
 ## Phase 4: Web build (WebAssembly)

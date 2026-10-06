@@ -1,5 +1,4 @@
 import pygame as pg
-import os
 import config
 
 
@@ -33,6 +32,6 @@ def get_pu_image(pu_type):
     else:
         file = 'pu_{}'.format(pu_type)
 
-    return pg.image.load(os.path.join('assets', 'graphics', '{}.png').format(file)).convert_alpha()
+    return pg.image.load(config.asset('graphics', '{}.png'.format(file))).convert_alpha()
 
 

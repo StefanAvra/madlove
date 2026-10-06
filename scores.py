@@ -2,6 +2,7 @@ from datetime import datetime
 
 import config
 import operator
+import os
 import pickle
 if not config.OFFLINE_MODE:
     import firebase_api
@@ -67,6 +68,7 @@ def update_queue(entry=None):
     global upload_queue
     if entry is not None:
         upload_queue.append(entry)
+    os.makedirs(config.DATA_DIR, exist_ok=True)
     with open(config.UPLOAD_QUEUE, 'wb') as f:
         pickle.dump(upload_queue, f)
 
@@ -98,16 +100,17 @@ def get_place(new):
     place_string = ''
     if place in [4, 5, 6, 7, 8, 9, 10]:
         place_string = '{}th'.format(place)
-    elif place is 1:
+    elif place == 1:
         place_string = '1st'
-    elif place is 2:
+    elif place == 2:
         place_string = '2nd'
-    elif place is 3:
+    elif place == 3:
         place_string = '3rd'
     return place_string.upper(), place
 
 
 def save_highscores():
+    os.makedirs(config.DATA_DIR, exist_ok=True)
     with open(config.HIGHSCORE_FILE, 'wb') as f:
         pickle.dump(highscores, f)
         print('highscores saved to local file')

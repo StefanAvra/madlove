@@ -1,13 +1,15 @@
 import pygame as pg
 import os
 
+import config
+
 pg.mixer.pre_init(44100, -16, 2, 2048)
 pg.mixer.init()
 
 hit_will = None
 bgm = None
-SFX_DIR = 'assets/sounds/sfx'
-MUSIC_DIR = 'assets/sounds/music'
+SFX_DIR = config.asset('sounds', 'sfx')
+MUSIC_DIR = config.asset('sounds', 'music')
 sfx_lib = {}
 music_lib = {}
 
