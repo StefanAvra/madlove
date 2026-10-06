@@ -17,7 +17,8 @@ Graphic Design by Gurkiman
 Music by [Ozzed](https://ozzed.net/) under Creative Commons license (CC BY-SA):
 - "About Ducks"
 - "Boktipset från helvetet"
-- the names of the other two tracks are still being looked up
+- "Here Comes the 8-Bit Empire"
+- "8-Bit Party"
 
 
 [Teaser Video on Youtube](https://www.youtube.com/watch?v=CY5pmC3nwCw)

@@ -78,7 +78,7 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 - [ ] Polish the page: hide the focus outline around the game, and drop the "leave site?" question when reloading
 - [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
 - [ ] Optionally also publish on itch.io
-- [ ] Name all four Ozzed tracks in the README, as CC BY-SA attribution asks. "About Ducks" and "Boktipset från helvetet" are known; two are still missing.
+- [x] Name all four Ozzed tracks in the README, as CC BY-SA attribution asks
 - [ ] Release `v2.0.0`
 
 ### CRT look
