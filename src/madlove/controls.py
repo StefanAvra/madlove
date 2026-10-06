@@ -1,6 +1,8 @@
+"""Joystick and keyboard input. The joystick is opened by init(), not at import."""
+
 import pygame as pg
 
-import config
+from madlove import config
 
 joystick = None
 
@@ -14,18 +16,21 @@ ACTION = 5
 
 pressed = [False] * 6
 
-if config.USE_JOYSTICK:
-    pg.joystick.init()
-    if pg.joystick.get_count():
-        joystick = pg.joystick.Joystick(0)
-        joystick.init()
-
-
 INSERT_COIN = 4
 DEBUG_HUD = pg.K_f
 ADD_BALL = pg.K_b
 ACTIVATE_BOT = pg.K_COMMA
 MUTE_MUSIC = pg.K_m
+
+
+def init():
+    """opens the first joystick, if there is one"""
+    global joystick
+    if config.USE_JOYSTICK:
+        pg.joystick.init()
+        if pg.joystick.get_count():
+            joystick = pg.joystick.Joystick(0)
+            joystick.init()
 
 
 def get_buttons():

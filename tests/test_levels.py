@@ -2,8 +2,7 @@ import os
 
 import pytest
 
-import config
-import levels
+from madlove import config, levels
 
 LEVEL_NOS = sorted(levels._levels)
 BRICK_TYPES = 'bwr'
@@ -50,6 +49,8 @@ def test_powerups_drop(no):
 
 @pytest.mark.parametrize('no', LEVEL_NOS)
 def test_game_scene_builds_every_brick(game, no):
-    scene = game.GameScene(no)
+    from madlove.scenes import play
+
+    scene = play.GameScene(game, no)
     assert scene.total_bricks == count_bricks(levels.Level(no).bricks)
     assert all(0 <= brick.rect.left and brick.rect.right <= config.WIDTH for brick in scene.bricks)

@@ -27,7 +27,7 @@ You need [uv](https://docs.astral.sh/uv/getting-started/installation/), which in
 ```sh
 git clone https://github.com/StefanAvra/madlove.git
 cd madlove
-uv run main.py
+uv run madlove
 ```
 
 The game opens in a 480 × 640 window in free play mode. Options:
@@ -66,6 +66,10 @@ uv run ruff format .     # format
 
 GitHub Actions runs all three on every push. To make `git blame` skip formatting-only commits, run `git config blame.ignoreRevsFile .git-blame-ignore-revs` once.
 
+The code lives in `src/madlove/`: `game.py` has the main loop and the `Game` object that holds the state of a running game, `scenes/` has one module per screen, and `sprites/` has the ball, paddle, bricks and the rest.
+
+The smoke test plays two scripted games and compares every scene change, with its frame and score, against `tests/golden/`. If a change to the gameplay is intended, regenerate the traces with `MADLOVE_UPDATE_GOLDEN=1 uv run pytest tests/test_smoke.py` and say why in the commit message.
+
 ### Raspberry Pi cabinet
 
 The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a CRT over composite video. The original SD card, with its boot script and display settings, is lost. These steps are a starting point and **have not yet been tested on a Pi**.
@@ -92,7 +96,7 @@ The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a 
    [Service]
    User=pi
    WorkingDirectory=/home/pi/madlove
-   ExecStart=/home/pi/.local/bin/uv run --frozen main.py --cabinet
+   ExecStart=/home/pi/.local/bin/uv run --frozen madlove --cabinet
    Restart=always
 
    [Install]
@@ -106,7 +110,7 @@ The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a 
 See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` is the build that premiered at the Rundgang in July 2019, `v1.1.0` the one that toured afterwards. Plans for the future are in [ROADMAP.md](ROADMAP.md).
 
 ## Features
-- **High scores**: players that reach a top ten high score can enter their name. It will be saved to local storage, so high scores will be kept even if powering off. Although their is code for a feature that syncs the high score list to a Firebase DB, this feature has been dropped and was never used.
+- **High scores**: players that reach a top ten high score can enter their name. It will be saved to local storage, so high scores will be kept even if powering off. An online high score list synced to Firebase was written in 2019 but never used; its code was removed in version 2.
 - **Coin acceptor**: if the game is not running in free mode, players will have to enter a coin (0.50 €, configurable) to start the game. When the player is out of lives a countdown will appear during which the player can insert a coin to refill their lives and stay in the game.
 - **8-bit aesthetics**: analog video on CRT monitor, low resolution graphics, 8 bit colour depth. (*Technically it's running on 480p for smoother gameplay.*)
 - **Pause screen**: This is probably the first arcade cabinet to feature a dedicated pause button. We thought it would be good to let the smokers have a break. 

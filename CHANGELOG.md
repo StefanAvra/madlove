@@ -8,10 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 - `ROADMAP.md` with the plan for modernising the game and bringing it to the web.
-- `pyproject.toml` and `uv.lock`: run the game with `uv run main.py`.
-- `main.py` entry point with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
+- `pyproject.toml` and `uv.lock`: run the game with `uv run madlove`.
+- `madlove` command with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
 - README instructions for running the game, its controls and setting up a Raspberry Pi cabinet.
-- Tests (`uv run pytest`): a headless smoke test that plays the whole game, and unit tests for scores, coins and the level data.
+- Tests (`uv run pytest`): a headless smoke test that plays the whole game and compares it against a recorded trace, and unit tests for scores, coins and the level data.
 - Linting and formatting with ruff.
 - GitHub Actions workflow that runs the linter, the format check and the tests.
 
@@ -19,16 +19,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Switched from `pygame` to `pygame-ce`, the actively maintained fork. Requires Python 3.11 or newer.
 - Free play is the default; coins are only required with `--coin-op` or `--cabinet`.
 - The window uses pygame's `SCALED` mode, so the game always draws on an opaque surface. In fullscreen the picture is scaled to fit with black bars, instead of switching the screen resolution.
-- High scores are saved in the platform's app data folder instead of the current directory.
-- `firebase-admin` is now an optional dependency (`online` extra).
+- High scores are saved as JSON (`highscores.json`) in the platform's app data folder, instead of a pickle file in the current directory. Each entry records the date in UTC and whether it was played in free mode.
+- The code is a Python package in `src/madlove/`, installed with the `madlove` command. The 2,000-line `killyourlungs.py` is split into scenes, sprites and a `Game` object that holds the state of a running game; nothing starts or reads files at import any more.
+- Choosing YES in the exit menu ends the main loop instead of calling `sys.exit()`.
 
 ### Removed
 - `numpy` and `noise` dependencies, replaced by small built-in helpers.
+- The unused Firebase code for an online high-score list, with its upload queue and the location and cabinet ID it recorded.
 
 ### Fixed
 - Assets load no matter which directory the game is started from.
 - `SyntaxWarning`s on modern Python from `is` comparisons with numbers.
 - The background colour lost its opacity after the first screen fade, because `render_fading()` modified the shared colour instead of a copy. This was invisible on the 2019 cabinet, but in windows with an alpha channel, such as on macOS, the logo and text were drawn with black or white boxes around them.
+- Every ball added with the debug key `B` started in the same direction, because the default velocity was drawn only once.
 - Power-up graphics (`pu_hotball`, `pu_longer`, `pu_metastasis`, `pu_shoot`, `pu_shorter`) were never committed, so a fresh checkout crashed when a power-up dropped. They have been recovered and added.
 
 ## [1.1.0] - 2019-10-18

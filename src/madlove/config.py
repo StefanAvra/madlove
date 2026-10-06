@@ -1,3 +1,4 @@
+import dataclasses
 import os
 import sys
 
@@ -23,13 +24,16 @@ def default_data_dir():
     return os.path.join(base, 'madlove')
 
 
-def set_data_dir(path):
-    """stores high scores and the upload queue in path, creating it if needed"""
-    global DATA_DIR, HIGHSCORE_FILE, UPLOAD_QUEUE
-    os.makedirs(path, exist_ok=True)
-    DATA_DIR = path
-    HIGHSCORE_FILE = os.path.join(path, 'scores')
-    UPLOAD_QUEUE = os.path.join(path, 'uploadqueue')
+@dataclasses.dataclass
+class Settings:
+    """the options that can change from one run to the next, set from the command line"""
+
+    fullscreen: bool = False
+    free_mode: bool = True  # False: coins are needed to play
+    bot: bool = False
+    show_fps: bool = False
+    show_velocity: bool = False
+    data_dir: str = dataclasses.field(default_factory=default_data_dir)  # where high scores are saved
 
 
 WIDTH = 480
@@ -53,12 +57,9 @@ FLAGS = pg.SCALED
 
 USE_JOYSTICK = True
 
-FREE_MODE = True
-LOCATION = 'virtual'
-CABINET_ID = 0
-OFFLINE_MODE = True
 
 BACKGROUND_COLOR = "#ffb3ce"
+BG_COLOR = pg.Color(BACKGROUND_COLOR)
 FONT = asset('font', 'PressStart2P-Regular.ttf')
 TEXT_COLOR = (0, 0, 0)
 MENU_COLOR_HIGHLIGHT = (255, 255, 255)
@@ -66,11 +67,4 @@ MENU_SHADOW_COLOR = (0, 0, 0)
 MENU_SHADOW_OFFSET = 8
 BALL_COLOR = (0, 0, 0)
 DEBUG_COLOR = (255, 255, 255)
-ENABLE_BOT = False
-SHOW_FPS = False
-SHOW_VELOCITY = False
-DATA_DIR = default_data_dir()
-HIGHSCORE_FILE = os.path.join(DATA_DIR, 'scores')
-UPLOAD_QUEUE = os.path.join(DATA_DIR, 'uploadqueue')
-FIREBASE_CRED = '/path/to/cred.json'
 PLAYER_Y = 625

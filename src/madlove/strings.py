@@ -1,6 +1,6 @@
 import random
 
-__strings = {
+_strings = {
     'lost_life': 'YOU LOST A CIG!\nPRESS START TO LIGHT UP\nANOTHER ONE',
     'stage_text': 'STAGE: {}',
     'lives_text': 'SMOKES: {}',
@@ -33,7 +33,7 @@ __strings = {
     'push_to_kill': 'push button to kill!',
 }
 
-__facts = {
+_facts = {
     0: 'Smoking clogs the arteries\nand causes heart attacks\nand strokes.',
     1: 'Smoking can cause a slow\nand painful death.',
     2: 'Smoking kills.',
@@ -46,9 +46,9 @@ __facts = {
     ' happens to sue another country\nover anti-smoking laws.',
 }
 
-__combos = {25: 'super combo!', 50: 'ultra combo!', 100: 'holy moly!'}
+_combos = {25: 'super combo!', 50: 'ultra combo!', 100: 'holy moly!'}
 
-__credit_views = {
+_credit_views = {
     0: """A project by
 Christian 'Gurkiman' Angele
 &
@@ -91,42 +91,44 @@ Jo Löhmann""",
     5: """© 2019 Gurkiman, Avra""",
 }
 
-__alphabet = [chr(char) for char in range(65, 91)]
+_alphabet = [chr(char) for char in range(65, 91)]
 for num in range(0, 10):
-    __alphabet.append(str(num))
+    _alphabet.append(str(num))
 for char in ['.', '?', '!', '-', ' ']:
-    __alphabet.append(char)
-
-
-fact_order = [i for i in range(len(__facts) - 1)]
-random.shuffle(fact_order)
-current_fact = 0
+    _alphabet.append(char)
 
 
 def get_str(name):
-    return __strings.get(name).upper()
+    return _strings.get(name).upper()
 
 
-def get_fact(number=None):
-    if number is None:
-        global current_fact
-        number = current_fact
-        current_fact += 1
-        if current_fact >= len(fact_order):
-            current_fact = 0
-    return __facts.get(fact_order[number]).upper()
+class Facts:
+    """hands out the smoking facts in a random order, starting over after the last one"""
+
+    def __init__(self):
+        # the last fact is left out, because its lines are too wide for the screen
+        self.order = list(range(len(_facts) - 1))
+        random.shuffle(self.order)
+        self.current = 0
+
+    def next(self):
+        number = self.order[self.current]
+        self.current += 1
+        if self.current >= len(self.order):
+            self.current = 0
+        return _facts[number].upper()
 
 
 def get_combo_msg(multi):
-    return __combos.get(multi)
+    return _combos.get(multi)
 
 
 def get_credits():
     d = {}
-    for key, value in __credit_views.items():
+    for key, value in _credit_views.items():
         d.update({key: value.upper()})
     return d
 
 
 def get_alphabet():
-    return __alphabet
+    return _alphabet

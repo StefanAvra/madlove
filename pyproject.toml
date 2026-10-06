@@ -11,11 +11,12 @@ dependencies = [
     "pygame-ce>=2.5",
 ]
 
-[project.optional-dependencies]
-# Online high-score list (dropped in 2019, kept for reference)
-online = [
-    "firebase-admin>=6",
-]
+[project.scripts]
+madlove = "madlove.__main__:run"
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.13"]
+build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
@@ -25,6 +26,7 @@ dev = [
 
 [tool.ruff]
 line-length = 120
+src = ["src"]
 target-version = "py311"
 
 [tool.ruff.lint]
@@ -35,7 +37,5 @@ quote-style = "preserve"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# the game modules live in the repository root until they move into a package
-pythonpath = ["."]
 # a test that runs longer than this prints the stack of every thread, to show where it hangs
 faulthandler_timeout = 60
