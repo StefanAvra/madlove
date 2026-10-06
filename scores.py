@@ -8,7 +8,7 @@ import config
 if not config.OFFLINE_MODE:
     import firebase_api
 
-highscores = [
+DEFAULT_HIGHSCORES = [
     ('Errol', 323),
     ('Scabbers', 444),
     ('Severus', 400),
@@ -20,6 +20,7 @@ highscores = [
     ('Krum', 2111),
     ('Elphias', 8),
 ]
+highscores = list(DEFAULT_HIGHSCORES)
 
 upload_queue = []
 
