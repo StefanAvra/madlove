@@ -77,6 +77,7 @@ class Game:
         if pg.event.get(pg.QUIT):
             return False
 
+        ctrls.poll()  # the on-screen controls in the browser post their events now
         events = pg.event.get()
         for e in events:
             if e.type == pg.KEYDOWN:
