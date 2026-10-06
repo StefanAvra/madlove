@@ -2092,6 +2092,7 @@ def quit_game():
 def main():
     global time_passed
     audio.init()
+    ctrls.init()
     pg.init()
     screen = pg.display.set_mode(config.DISPLAY, config.FLAGS, config.DEPTH)
     pg.mouse.set_visible(False)
