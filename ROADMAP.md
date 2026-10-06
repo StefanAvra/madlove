@@ -4,15 +4,8 @@ Plan for polishing MadLove after its 2019 run: make it runnable anywhere, put te
 
 ## Known issues
 
-- **Import-time side effects.**
-  - Importing `sound.py` starts the audio mixer.
-  - Importing `controls.py` starts the joystick.
-  - Importing `scores.py` reads and writes files.
-  - `menus.py` and `killyourlungs.py` import each other.
-- **Upload queue bug.** `scores.load_queue()` opens the queue file with `'wb'`, so the queue is emptied at every start. Just fixing the mode would make the queue grow forever in offline mode, so fix it together with the high-score rework in Phase 3.
-- **Ball default velocity.** `Ball.__init__` has `velocity=(random.randint(-3, 3), -3)` as a default argument, which is drawn only once, at import. Only the debug key `B` uses the default, so every extra ball it adds starts in the same direction.
-- **Deprecated `datetime.utcnow()`** in `scores.update_highscores()`; replace it when moving to JSON high scores.
-- **One huge file.** `killyourlungs.py` is 2,243 lines with every scene, every sprite and globals. It does already have a single main loop with scenes, which suits the web build.
+- **Fact 8 is never shown.** The facts before each level skip the last one, about lawsuits, because its lines are up to 33 characters, wider than the screen. Re-wrap it to show it.
+- **Scene modules import each other.** Scenes switch to each other, so for example `scenes/title.py` and `scenes/highscores.py` import one another. This works because they only look up the classes when switching, but adding module-level code that uses another scene would break it.
 
 ## Versioning
 
@@ -40,7 +33,7 @@ No code changes.
 
 ## Phase 1: Make it runnable
 
-- [x] `pyproject.toml` + uv lockfile (`uv run main.py` for development)
+- [x] `pyproject.toml` + uv lockfile (`uv run main.py` for development, `uv run madlove` since Phase 3)
 - [x] Switch `pygame` to `pygame-ce` (drop-in replacement, needed for the web build)
 - [x] Remove `numpy`; replace `noise` with a small pure-Python version
 - [x] Load assets relative to the code, not the working directory; save high scores in the platform's app data folder
@@ -63,25 +56,27 @@ Tests come before the refactor, so the refactor has something to check it agains
 
 ## Phase 3: Clean-code refactor
 
-- [ ] Move to a `src/madlove/` package with `scenes/`, `sprites/`, `hud.py`, `audio.py` and `input.py`, and a `madlove` command (`uv run madlove`)
-- [ ] Replace the globals (`score`, the fonts, `time_passed`, the state in `coins` and `scores`) with an explicit game-state object
-- [ ] Remove the import-time side effects and the circular import
-- [ ] Fix the known bugs listed above
-- [ ] Store high scores as JSON instead of pickle (no migration needed, since no 2019 score file survived)
-- [ ] Remove the Firebase code (its dependency is already only an optional `online` extra)
-- [ ] Release `v2.0.0`
+A golden trace of two scripted games (`tests/golden/`) checked that every step left the gameplay unchanged.
+
+- [x] Move to a `src/madlove/` package with `scenes/`, `sprites/`, `hud.py` and `audio.py`, and a `madlove` command (`uv run madlove`). Input stays in `controls.py`, since `input.py` would shadow Python's `input()`.
+- [x] Replace the globals (`score`, the fonts, `time_passed`, the state in `coins` and `scores`) with an explicit game-state object: `game.Game`
+- [x] Remove the import-time side effects and the circular import between the menus and the game
+- [x] Fix the known bugs: the upload queue went with Firebase, the ball's default velocity is drawn per ball, and `datetime.utcnow()` is gone
+- [x] Store high scores as JSON instead of pickle (no migration needed, since no 2019 score file survived)
+- [x] Remove the Firebase code
 
 ## Phase 4: Web build (WebAssembly)
 
 Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and pygame-ce to WebAssembly and packages the game as a static site. Check its current docs before starting.
 
-- [ ] Make `main()` an `async` function that calls `await asyncio.sleep(0)` once per frame
+- [ ] Make `Game.run()` an `async` function that calls `await asyncio.sleep(0)` once per frame (`Game.step()` already runs a single frame)
 - [ ] Save high scores in browser storage
 - [ ] Default to free mode, or add an on-screen coin/start button
 - [ ] Touch controls for phones (the 480×640 portrait layout already suits phones)
 - [ ] "Click to start" screen, because browsers block audio until the player interacts
 - [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
 - [ ] Optionally also publish on itch.io
+- [ ] Release `v2.0.0`
 
 ### CRT look
 
