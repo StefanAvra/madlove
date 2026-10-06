@@ -1,4 +1,4 @@
-from madlove import config, sound
+from madlove import config
 
 __credit = 0
 __life_to_credit_ratio = 3
@@ -22,7 +22,6 @@ def get_credit():
 def add_coin():
     global __credit
     __credit += 1
-    sound.sfx_lib.get('coin').play()
 
 
 def get_lives():

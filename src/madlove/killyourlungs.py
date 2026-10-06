@@ -4,7 +4,7 @@ import sys
 
 import pygame as pg
 
-from madlove import bot, coins, config, levels, menus, powerups, scores, sound, utils
+from madlove import audio, bot, coins, config, levels, menus, powerups, scores, utils
 from madlove import controls as ctrls
 from madlove import string_resource as str_r
 
@@ -106,8 +106,8 @@ class GameScene(Scene):
         self.total_bricks = len(self.bricks)
         self.all_sprites = pg.sprite.Group()
         self.all_sprites.add(self.player, self.balls, self.bricks, self.bombs)
-        pg.mixer.music.load(config.asset('sounds', 'music', 'bgm.ogg'))
-        pg.mixer.music.set_volume(0.8)
+        audio.load_music('bgm')
+        audio.set_music_volume(0.8)
         self.reset_round()
 
     def render(self, screen):
@@ -202,15 +202,9 @@ class GameScene(Scene):
         if len(self.notif_stack) > 0 and self.notification is None:
             self.notification = self.notif_stack.pop(0)
             if self.notification.std_sfx == 'normal':
-                try:
-                    sound.sfx_lib.get('message').play()
-                except AttributeError:
-                    pass
+                audio.play_sfx('message')
             elif self.notification.std_sfx == 'cancer':
-                try:
-                    sound.sfx_lib.get('cancer').play()
-                except AttributeError:
-                    pass
+                audio.play_sfx('cancer')
 
         if self.notification is not None:
             if self.notification.timer <= 0:
@@ -245,10 +239,7 @@ class GameScene(Scene):
                 self.credit_text_timer = 0
 
     def reset_round(self):
-        try:
-            pg.mixer.music.play(-1)
-        except AttributeError:
-            pass
+        audio.play_music(-1)
 
         self.balls.add(Ball(velocity=(random.randint(-2, 2), -3)))
         self.all_sprites.add(self.balls)
@@ -276,11 +267,8 @@ class GameScene(Scene):
                         if self.heartattack_mode == 'ready':
                             self.heartattack_mode = 'killing'
                             self.heart_color = (255, 255, 255)
-                            pg.mixer.music.stop()
-                            try:
-                                sound.sfx_lib.get('heartattack').play()
-                            except AttributeError:
-                                pass
+                            audio.stop_music()
+                            audio.play_sfx('heartattack')
 
                             self.notif_stack.append(Message(str_r.get_str('heart_killing'), False))
                     for ball in self.balls:
@@ -296,13 +284,10 @@ class GameScene(Scene):
                     for ball in self.balls:
                         ball.speed_up(1.1)
                 if e.key == pg.K_m:
-                    if pg.mixer.music.get_busy():
-                        pg.mixer.music.stop()
+                    if audio.music_busy():
+                        audio.stop_music()
                     else:
-                        try:
-                            pg.mixer.music.play(-1)
-                        except AttributeError:
-                            pass
+                        audio.play_music(-1)
 
                 if e.key == pg.K_b:
                     self.balls.add(Ball())
@@ -317,11 +302,8 @@ class GameScene(Scene):
                         if self.heartattack_mode == 'ready':
                             self.heartattack_mode = 'killing'
                             self.heart_color = (255, 255, 255)
-                            pg.mixer.music.stop()
-                            try:
-                                sound.sfx_lib.get('heartattack').play()
-                            except AttributeError:
-                                pass
+                            audio.stop_music()
+                            audio.play_sfx('heartattack')
 
                             self.notif_stack.append(Message(str_r.get_str('heart_killing'), False))
                     for ball in self.balls:
@@ -407,7 +389,7 @@ class FinishedLevelScene(Scene):
         self.blit_timer = 0
         self.score_timer = 0
 
-        pg.mixer.music.stop()
+        audio.stop_music()
 
     def render(self, screen):
         screen.fill(bg_color)
@@ -451,10 +433,7 @@ class FinishedLevelScene(Scene):
                 if self.time_bonus > 0:
                     self.time_bonus -= scores.get_bonus('time_bonus')
                     score += scores.get_bonus('time_bonus')
-                    try:
-                        sound.sfx_lib.get('point').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('point')
 
                     if self.time_bonus <= 0:
                         self.time_bonus = 0
@@ -462,10 +441,7 @@ class FinishedLevelScene(Scene):
                 elif self.level_clear_bonus > 0:
                     self.level_clear_bonus -= 1000
                     score += 1000
-                    try:
-                        sound.sfx_lib.get('point').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('point')
 
                     if self.level_clear_bonus <= 0:
                         self.level_clear_bonus = 0
@@ -473,10 +449,7 @@ class FinishedLevelScene(Scene):
                 elif self.no_continue_bonus > 0:
                     self.no_continue_bonus -= 1000
                     score += 1000
-                    try:
-                        sound.sfx_lib.get('point').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('point')
 
                     if self.no_continue_bonus <= 0:
                         self.no_continue_bonus = 0
@@ -484,10 +457,7 @@ class FinishedLevelScene(Scene):
                 elif self.collected_all_pus_bonus > 0:
                     self.collected_all_pus_bonus -= 1000
                     score += 1000
-                    try:
-                        sound.sfx_lib.get('point').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('point')
 
                     if self.collected_all_pus_bonus <= 0:
                         self.collected_all_pus_bonus = 0
@@ -495,10 +465,7 @@ class FinishedLevelScene(Scene):
                 elif self.perfect_play_bonus > 0:
                     self.perfect_play_bonus -= 4000
                     score += 4000
-                    try:
-                        sound.sfx_lib.get('point').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('point')
 
                     if self.perfect_play_bonus <= 0:
                         self.perfect_play_bonus = 0
@@ -533,13 +500,10 @@ class LostLifeScene(Scene):
         coins.lose_life()
         self.game_state.lost_life = True
         self.game_over = False
-        pg.mixer.music.stop()
+        audio.stop_music()
 
         if coins.get_lives() <= 0:
-            try:
-                sound.sfx_lib.get('game_over').play()
-            except AttributeError:
-                pass
+            audio.play_sfx('game_over')
 
             self.lost_text = str_r.get_str('zero_lives').splitlines()
             self.game_over = True
@@ -547,10 +511,7 @@ class LostLifeScene(Scene):
             self.game_over_timer = 4000
             print('out of cigs')
         else:
-            try:
-                sound.sfx_lib.get('lost_life').play()
-            except AttributeError:
-                pass
+            audio.play_sfx('lost_life')
 
             self.lost_text = str_r.get_str('lost_life').splitlines()
             print('lost a life')
@@ -607,7 +568,7 @@ class LostLifeScene(Scene):
                         pass
 
     def go_back(self):
-        pg.mixer.music.unpause()
+        audio.unpause_music()
         self.manager.go_to(self.game_state)
 
 
@@ -634,12 +595,9 @@ class TitleScene(Scene):
         self.arrow = Arrow()
         self.bg_arrow = Arrow(True)
         self.blit_elements = [False, False, False, False]
-        pg.mixer.music.load(config.asset('sounds', 'music', 'titlescreen.ogg'))
-        # pg.mixer.music.play(-1)
-        try:
-            sound.sfx_lib.get('intro1').play()
-        except AttributeError:
-            pass
+        audio.load_music('titlescreen')
+        # audio.play_music(-1)
+        audio.play_sfx('intro1')
 
         self.timer = 0
         self.wait_for_music = True
@@ -733,18 +691,15 @@ class TitleScene(Scene):
                             if self.arrow.rect.centery >= 640:
                                 self.bg_arrow.active = True
                                 self.draw_credit = True
-                                if not pg.mixer.music.get_busy():
-                                    try:
-                                        pg.mixer.music.play(1)
-                                    except AttributeError:
-                                        pass
+                                if not audio.music_busy():
+                                    audio.play_music(1)
 
                                     self.wait_for_music = False
         if self.bg_arrow.active:
             self.bg_arrow.update()
             if self.bg_arrow.done:
                 self.title.animate = True
-        if not pg.mixer.music.get_busy() and not self.wait_for_music and not self.fade_leave_to:
+        if not audio.music_busy() and not self.wait_for_music and not self.fade_leave_to:
             self.fadeout_step = 255
             self.fade_leave_to = 3
 
@@ -771,10 +726,7 @@ class TitleScene(Scene):
                 if e.type == pg.JOYBUTTONDOWN:
                     if e.button == 0:
                         if self.ready_to_play:
-                            try:
-                                sound.sfx_lib.get('select').play()
-                            except AttributeError:
-                                pass
+                            audio.play_sfx('select')
 
                             coins.consume_coin()
                             self.fadeout_step = 255
@@ -790,12 +742,12 @@ class TitleScene(Scene):
                 if e.type == pg.JOYAXISMOTION:
                     # if e.axis == 1:
                     #     if e.value < 0:
-                    #         sound.sfx_lib.get('menu_nav').play()
+                    #         audio.play_sfx('menu_nav')
                     #         self.cursor -= 1
                     #         if self.cursor < 0:
                     #             self.cursor = len(self.menu) - 1
                     #     if e.value > 0:
-                    #         sound.sfx_lib.get('menu_nav').play()
+                    #         audio.play_sfx('menu_nav')
                     #         self.cursor += 1
                     #         if self.cursor >= len(self.menu):
                     #             self.cursor = 0
@@ -804,10 +756,7 @@ class TitleScene(Scene):
                 if e.type == pg.KEYDOWN:
                     if e.key in [pg.K_SPACE, pg.K_RETURN]:
                         if self.ready_to_play:
-                            try:
-                                sound.sfx_lib.get('select').play()
-                            except AttributeError:
-                                pass
+                            audio.play_sfx('select')
 
                             coins.consume_coin()
                             self.fadeout_step = 255
@@ -826,12 +775,12 @@ class TitleScene(Scene):
                     if e.key == pg.K_h:
                         self.manager.go_to(HighscoreScene())
                     # if e.key == pg.K_DOWN:
-                    #     sound.sfx_lib.get('menu_nav').play()
+                    #     audio.play_sfx('menu_nav')
                     #     self.cursor += 1
                     #     if self.cursor >= len(self.menu):
                     #         self.cursor = 0
                     # if e.key == pg.K_UP:
-                    #     sound.sfx_lib.get('menu_nav').play()
+                    #     audio.play_sfx('menu_nav')
                     #     self.cursor -= 1
                     #     if self.cursor < 0:
                     #         self.cursor = len(self.menu) - 1
@@ -865,13 +814,10 @@ class GameOver(Scene):
         self.char_timer = 0
         self.char_timer_threshold = 0
         if self.place_no == 1:
-            pg.mixer.music.load(config.asset('sounds', 'music', '1stplace.ogg'))
+            audio.load_music('1stplace')
         else:
-            pg.mixer.music.load(config.asset('sounds', 'music', 'smoke_break.ogg'))
-        try:
-            pg.mixer.music.play(-1)
-        except AttributeError:
-            pass
+            audio.load_music('smoke_break')
+        audio.play_music(-1)
 
     def render(self, screen):
         screen.fill(bg_color)
@@ -965,11 +911,8 @@ class GameOver(Scene):
                     self.blit_cursor = not self.blit_cursor
             elif self.fade_leave and self.fadeout_step <= 0:
                 if self.place_no == 1:
-                    pg.mixer.music.load(config.asset('sounds', 'music', 'smoke_break.ogg'))
-                    try:
-                        pg.mixer.music.play(-1)
-                    except AttributeError:
-                        pass
+                    audio.load_music('smoke_break')
+                    audio.play_music(-1)
 
                 self.manager.go_to(HighscoreScene(highlight_place=self.place_no, mode='gameover'))
             elif not self.fade_leave:
@@ -1047,49 +990,34 @@ class GameOver(Scene):
             if self.alphabet_pointer < 0:
                 self.alphabet_pointer = len(self.alphabet) - 1
             self.name[self.cursor] = self.alphabet[self.alphabet_pointer]
-            try:
-                sound.sfx_lib.get('text').play()
-            except AttributeError:
-                pass
+            audio.play_sfx('text')
 
     def incr_char(self):
         if self.name_input_active and self.blit_elements[4]:
             self.alphabet_pointer += 1
             self.alphabet_pointer = self.alphabet_pointer % (len(self.alphabet))
             self.name[self.cursor] = self.alphabet[self.alphabet_pointer]
-            try:
-                sound.sfx_lib.get('text').play()
-            except AttributeError:
-                pass
+            audio.play_sfx('text')
 
     def prev_char(self):
         if self.name_input_active and self.blit_elements[4]:
             if self.cursor > 0:
                 self.cursor -= 1
                 self.alphabet_pointer = self.alphabet.index(self.name[self.cursor])
-                try:
-                    sound.sfx_lib.get('menu_nav').play()
-                except AttributeError:
-                    pass
+                audio.play_sfx('menu_nav')
 
     def next_char(self):
         if self.name_input_active and self.blit_elements[4]:
             if self.cursor < len(self.name) - 1:
                 self.cursor += 1
                 self.alphabet_pointer = self.alphabet.index(self.name[self.cursor])
-                try:
-                    sound.sfx_lib.get('menu_nav').play()
-                except AttributeError:
-                    pass
+                audio.play_sfx('menu_nav')
 
     def accept_name(self):
         if self.name_input_active:
             self.name_input_active = False
             self.blit_cursor = False
-            try:
-                sound.sfx_lib.get('select').play()
-            except AttributeError:
-                pass
+            audio.play_sfx('select')
             scores.update_highscores((''.join(self.name), self.score))
             scores.save_highscores()
             self.fadeout_step = 255
@@ -1117,8 +1045,8 @@ class ContinueScene(Scene):
         self.draw_coin_text = True
         self.highlight_color = config.TEXT_COLOR
 
-        if pg.mixer.music.get_busy():
-            pg.mixer.music.stop()
+        if audio.music_busy():
+            audio.stop_music()
 
     def render(self, screen):
         screen.fill(bg_color)
@@ -1167,10 +1095,7 @@ class ContinueScene(Scene):
                     self.game_over = True
                 if not self.countdown == int(self.countdown_timer / 1000):
                     self.countdown = int(self.countdown_timer / 1000)
-                    try:
-                        sound.sfx_lib.get('countdown').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('countdown')
         elif self.fadeout_step <= 0:
             if self.fade_leave_to == 'gameover':
                 self.manager.go_to(GameOver(self.game_state))
@@ -1244,10 +1169,7 @@ class ConsumeCoinScene(Scene):
                 if self.score_timer >= 1000:
                     self.cigs_bought = True
                     coins.consume_coin()
-                    try:
-                        sound.sfx_lib.get('coin').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('coin')
                     self.penalty, self.convert_step = scores.get_penalty(score)
             elif not self.points_done:
                 if self.score_timer >= 2000:
@@ -1260,10 +1182,7 @@ class ConsumeCoinScene(Scene):
                         self.penalty = 0
                         self.points_done = True
                         self.score_timer = 0
-                    try:
-                        sound.sfx_lib.get('point').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('point')
             else:
                 if self.score_timer >= 2000 and not self.leave:
                     self.fadeout_step = 255
@@ -1291,14 +1210,11 @@ class OverlayMenuScene(Scene):
         self.highlight_color = config.MENU_COLOR_HIGHLIGHT
         self.animation_clock = 0
         self.music_timer = 0
-        pg.mixer.music.pause()
+        audio.pause_music()
         if self.menu_type == 'pause':
-            try:
-                sound.sfx_lib.get('pause_in').play()
-            except AttributeError:
-                pass
+            audio.play_sfx('pause_in')
             self.animation = Ashtray()
-            pg.mixer.music.load(config.asset('sounds', 'music', 'smoke_break.ogg'))
+            audio.load_music('smoke_break')
 
     def render(self, screen):
 
@@ -1336,11 +1252,8 @@ class OverlayMenuScene(Scene):
 
     def update(self):
         self.music_timer += time_passed
-        if not pg.mixer.music.get_busy() and self.music_timer >= 1000:
-            try:
-                pg.mixer.music.play(-1)
-            except AttributeError:
-                pass
+        if not audio.music_busy() and self.music_timer >= 1000:
+            audio.play_music(-1)
         if self.menu_type == 'pause':
             self.animation_clock += time_passed
             if self.animation_clock >= 100:
@@ -1360,18 +1273,12 @@ class OverlayMenuScene(Scene):
                 if e.type == pg.JOYAXISMOTION:
                     if e.axis == 1:
                         if e.value < 0:
-                            try:
-                                sound.sfx_lib.get('menu_nav').play()
-                            except AttributeError:
-                                pass
+                            audio.play_sfx('menu_nav')
                             self.cursor -= 1
                             if self.cursor < 0:
                                 self.cursor = len(self.menu_entries) - 1
                         if e.value > 0:
-                            try:
-                                sound.sfx_lib.get('menu_nav').play()
-                            except AttributeError:
-                                pass
+                            audio.play_sfx('menu_nav')
                             self.cursor += 1
                             if self.cursor >= len(self.menu_entries):
                                 self.cursor = 0
@@ -1387,33 +1294,21 @@ class OverlayMenuScene(Scene):
                     self.go_back()
                 if self.menu_type != 'pause':
                     if e.key == pg.K_DOWN:
-                        try:
-                            sound.sfx_lib.get('menu_nav').play()
-                        except AttributeError:
-                            pass
+                        audio.play_sfx('menu_nav')
                         self.cursor += 1
                         if self.cursor >= len(self.menu_entries):
                             self.cursor = 0
                     if e.key == pg.K_UP:
-                        try:
-                            sound.sfx_lib.get('menu_nav').play()
-                        except AttributeError:
-                            pass
+                        audio.play_sfx('menu_nav')
                         self.cursor -= 1
                         if self.cursor < 0:
                             self.cursor = len(self.menu_entries) - 1
 
     def go_back(self):
-        pg.mixer.music.stop()
-        try:
-            sound.sfx_lib.get('pause_out').play()
-        except AttributeError:
-            pass
-        pg.mixer.music.load(config.asset('sounds', 'music', 'bgm.ogg'))
-        try:
-            pg.mixer.music.play(-1)
-        except AttributeError:
-            pass
+        audio.stop_music()
+        audio.play_sfx('pause_out')
+        audio.load_music('bgm')
+        audio.play_music(-1)
         self.manager.go_to(self.paused_scene)
 
 
@@ -1517,10 +1412,7 @@ class HighscoreScene(Scene):
                 if e.type == pg.JOYBUTTONDOWN:
                     if e.button == 0:
                         if self.ready_to_play:
-                            try:
-                                sound.sfx_lib.get('select').play()
-                            except AttributeError:
-                                pass
+                            audio.play_sfx('select')
                             coins.consume_coin()
                             self.fadeout_step = 255
                             self.fade_leave_to = 'game'
@@ -1528,10 +1420,7 @@ class HighscoreScene(Scene):
                 if e.type == pg.KEYDOWN:
                     if self.ready_to_play:
                         if e.key in [pg.K_SPACE, pg.K_RETURN]:
-                            try:
-                                sound.sfx_lib.get('select').play()
-                            except AttributeError:
-                                pass
+                            audio.play_sfx('select')
                             coins.consume_coin()
                             self.fadeout_step = 255
                             self.fade_leave_to = 'game'
@@ -1615,7 +1504,7 @@ class IntroScene(Scene):
         self.fadeout_step = 0
         self.fade_leave = False
         self.delay_done = False
-        pg.mixer.music.stop()
+        audio.stop_music()
 
     def render(self, screen):
         # screen.fill(bg_color)
@@ -1641,10 +1530,7 @@ class IntroScene(Scene):
                 if self.timer >= self.text_cursor_speed:
                     self.timer = 0
                     self.text_cursor += 1
-                    try:
-                        sound.sfx_lib.get('text').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('text')
             elif not self.fade_leave and self.timer > 3000:
                 self.fade_leave = True
                 self.fadeout_step = 255
@@ -1726,19 +1612,13 @@ class Ball(pg.sprite.Sprite):
 
     def hit_paddle(self, paddle_rect):
         x_hit = paddle_rect.center[0]
-        try:
-            sound.sfx_lib.get('hit_wall').play()
-        except AttributeError:
-            pass
+        audio.play_sfx('hit_wall')
         # self.velocity = ((self.rect.center[0] - x_hit) * 0.09 + self.velocity[0], -abs(self.velocity[1]))
         self.velocity = (round((self.rect.centerx - x_hit) / 5), -abs(self.velocity[1]))
         self.rect.bottom = paddle_rect.y - 1
 
     def hit_wall(self, left_right):
-        try:
-            sound.sfx_lib.get('hit_wall').play()
-        except AttributeError:
-            pass
+        audio.play_sfx('hit_wall')
         if left_right == 0:
             self.bounce(6)
             self.rect.left = 1
@@ -1747,10 +1627,7 @@ class Ball(pg.sprite.Sprite):
             self.rect.right = pg.display.get_surface().get_width() - 1
 
     def hit_top(self):
-        try:
-            sound.sfx_lib.get('hit_wall').play()
-        except AttributeError:
-            pass
+        audio.play_sfx('hit_wall')
         self.bounce(0)
         self.rect.top = 1
 
@@ -1807,10 +1684,7 @@ class Ball(pg.sprite.Sprite):
                     print(f'added {new_powerup}')
             except KeyError:
                 pass
-        try:
-            sound.sfx_lib.get('hit_brick').play()
-        except AttributeError:
-            pass
+        audio.play_sfx('hit_brick')
 
     def update(self, player, bricks, bombs, game_state):
         if self.hot_timer > 0:
@@ -1931,7 +1805,7 @@ class Bullet(pg.sprite.Sprite):
         self.rect.bottom = y
         self.rect.centerx = x
         self.speed = 6
-        sound.sfx_lib.get('bullet').play()
+        audio.play_sfx('bullet')
 
     def update(self, bricks, game_state):
         # todo: refactor - should be global function
@@ -1956,10 +1830,7 @@ class Bullet(pg.sprite.Sprite):
                 except KeyError:
                     pass
             self.kill()
-            try:
-                sound.sfx_lib.get('hit_brick').play()
-            except AttributeError:
-                pass
+            audio.play_sfx('hit_brick')
 
 
 class Arrow(pg.sprite.Sprite):
@@ -2000,10 +1871,7 @@ class Title(pg.sprite.Sprite):
         else:
             if self.animate:
                 if self.shine_pos == 0:
-                    try:
-                        sound.sfx_lib.get('intro2').play()
-                    except AttributeError:
-                        pass
+                    audio.play_sfx('intro2')
                 if self.shine_pos > self.rect.width:
                     self.animate = False
                 self.image.blit(self.image_clean, (0, 0))
@@ -2223,6 +2091,7 @@ def quit_game():
 
 def main():
     global time_passed
+    audio.init()
     pg.init()
     screen = pg.display.set_mode(config.DISPLAY, config.FLAGS, config.DEPTH)
     pg.mouse.set_visible(False)
@@ -2251,9 +2120,11 @@ def main():
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_1:
                     coins.add_coin()
+                    audio.play_sfx('coin')
             if e.type == pg.JOYBUTTONDOWN:
                 if e.button == ctrls.INSERT_COIN:
                     coins.add_coin()
+                    audio.play_sfx('coin')
 
         manager.scene.handle_events(events)
         manager.scene.update()
