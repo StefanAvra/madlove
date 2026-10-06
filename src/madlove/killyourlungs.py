@@ -1347,7 +1347,7 @@ class HighscoreScene(Scene):
         place = 0
         for highscore in self.game.highscores.entries:
             place += 1
-            new_line = f'{place:<2}   {highscore[0]:<8} {highscore[1]:>10}'
+            new_line = f'{place:<2}   {highscore.name:<8} {highscore.score:>10}'
             if self.mode == 'gameover' and place == self.highlight_place:
                 self.lines.append(self.game.font_16.render(new_line, True, self.highlight_color))
             else:

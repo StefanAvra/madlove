@@ -1,11 +1,12 @@
-import pickle
+import json
+from datetime import UTC, datetime
 
 import pytest
 
 from madlove import scores
-from madlove.scores import Combo, HighScores
+from madlove.scores import Combo, Entry, HighScores
 
-TOP_TEN = [(f'P{place}', 1000 - place * 100) for place in range(1, 11)]  # 900, 800, ... 0
+TOP_TEN = [Entry(f'P{place}', 1000 - place * 100) for place in range(1, 11)]  # 900, 800, ... 0
 
 
 @pytest.fixture
@@ -137,7 +138,7 @@ def test_new_combo_reports_each_change_once(combo):
 
 def test_add_keeps_the_best_ten(highscores):
     highscores.add('NEW', 850, free_mode=True)
-    names = [entry[0] for entry in highscores.entries]
+    names = [entry.name for entry in highscores.entries]
     assert len(names) == 10
     assert names[:3] == ['P1', 'NEW', 'P2']
     assert 'P10' not in names
@@ -145,10 +146,9 @@ def test_add_keeps_the_best_ten(highscores):
 
 def test_add_records_metadata(highscores):
     highscores.add('NEW', 5000, free_mode=False)
-    name, score, date, free_mode = highscores.entries[0]
-    assert (name, score) == ('NEW', 5000)
-    assert date
-    assert free_mode is False
+    entry = highscores.entries[0]
+    assert (entry.name, entry.score, entry.free_mode) == ('NEW', 5000, False)
+    assert datetime.fromisoformat(entry.date).tzinfo == UTC
 
 
 def test_save_and_load(highscores):
@@ -159,20 +159,39 @@ def test_save_and_load(highscores):
 
 
 def test_load_without_a_file_keeps_and_saves_the_list(highscores):
-    highscores.entries = list(reversed(TOP_TEN)) + [('LOW', -1)]
+    highscores.entries = list(reversed(TOP_TEN)) + [Entry('LOW', -1)]
     highscores.load()
     assert highscores.entries == TOP_TEN
-    with open(highscores.path, 'rb') as f:
-        assert pickle.load(f) == TOP_TEN
+    with open(highscores.path, encoding='utf-8') as f:
+        assert [Entry(**entry) for entry in json.load(f)] == TOP_TEN
 
 
 def test_new_list_starts_with_the_defaults(tmp_path):
     table = HighScores(str(tmp_path))
     table.load()
-    assert table.entries == sorted(scores.DEFAULT_HIGHSCORES, key=lambda entry: entry[1], reverse=True)
+    assert table.entries == sorted(scores.DEFAULT_HIGHSCORES, key=lambda entry: entry.score, reverse=True)
 
 
 def test_highest_and_lowest(highscores):
     highscores.save()
     assert highscores.highest() == 900
     assert highscores.lowest() == 0
+
+
+def test_saves_json(highscores):
+    highscores.add('NEW', 5000, free_mode=True)
+    highscores.save()
+    with open(highscores.path, encoding='utf-8') as f:
+        saved = json.load(f)
+    assert saved[0]['name'] == 'NEW'
+    assert saved[0]['score'] == 5000
+    assert saved[0]['free_mode'] is True
+    assert saved[1] == {'name': 'P1', 'score': 900, 'date': None, 'free_mode': None}
+
+
+@pytest.mark.parametrize('content', ['not json', '{"name": "P1"}', '[{"nick": "P1"}]'])
+def test_load_an_unreadable_file_keeps_the_list(highscores, content):
+    with open(highscores.path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    highscores.load()
+    assert highscores.entries == TOP_TEN
