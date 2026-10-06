@@ -2,7 +2,7 @@ import os
 
 import pygame as pg
 
-import config
+from madlove import config
 
 pg.mixer.pre_init(44100, -16, 2, 2048)
 pg.mixer.init()

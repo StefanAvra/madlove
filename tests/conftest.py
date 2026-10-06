@@ -11,7 +11,7 @@ os.environ.setdefault('SDL_AUDIODRIVER', 'dummy')
 import pygame as pg  # noqa: E402
 import pytest  # noqa: E402
 
-import config  # noqa: E402
+from madlove import config  # noqa: E402
 
 # keeps the import of `scores` away from the real high-score file
 config.set_data_dir(tempfile.mkdtemp(prefix='madlove-tests-'))
@@ -29,7 +29,7 @@ def data_dir(tmp_path, monkeypatch):
 @pytest.fixture
 def scores(data_dir, monkeypatch):
     """the scores module with an empty high-score list and a reset combo multiplier"""
-    import scores
+    from madlove import scores
 
     monkeypatch.setattr(scores, 'highscores', [])
     # string names, so the module's double-underscore globals aren't name-mangled
@@ -42,7 +42,7 @@ def scores(data_dir, monkeypatch):
 @pytest.fixture
 def coins(monkeypatch):
     """the coins module with no credit and no lives"""
-    import coins
+    from madlove import coins
 
     monkeypatch.setattr(coins, '__credit', 0)
     monkeypatch.setattr(coins, '__lives', 0)
@@ -52,7 +52,7 @@ def coins(monkeypatch):
 @pytest.fixture
 def game(data_dir, monkeypatch):
     """the game module with an open (headless) display and its fonts loaded, like main() does"""
-    import killyourlungs
+    from madlove import killyourlungs
 
     pg.init()
     pg.display.set_mode(config.DISPLAY, config.FLAGS, config.DEPTH)

@@ -1,7 +1,6 @@
 import pygame as pg
 
-import config
-import killyourlungs
+from madlove import config, killyourlungs
 
 PADDING = 24
 HEADER_SIZE = 40

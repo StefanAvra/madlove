@@ -3,7 +3,7 @@ import os
 import pickle
 from datetime import datetime
 
-import config
+from madlove import config
 
 DEFAULT_HIGHSCORES = [
     ('Errol', 323),

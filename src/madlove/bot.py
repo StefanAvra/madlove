@@ -1,8 +1,7 @@
 import math
 import random
 
-import config
-import utils
+from madlove import config, utils
 
 inaccuracy = 0.4
 _step = 0.0

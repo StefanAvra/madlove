@@ -8,8 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 - `ROADMAP.md` with the plan for modernising the game and bringing it to the web.
-- `pyproject.toml` and `uv.lock`: run the game with `uv run main.py`.
-- `main.py` entry point with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
+- `pyproject.toml` and `uv.lock`: run the game with `uv run madlove`.
+- `madlove` command with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
 - README instructions for running the game, its controls and setting up a Raspberry Pi cabinet.
 - Tests (`uv run pytest`): a headless smoke test that plays the whole game, and unit tests for scores, coins and the level data.
 - Linting and formatting with ruff.

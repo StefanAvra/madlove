@@ -2,8 +2,7 @@ import os
 
 import pytest
 
-import config
-import levels
+from madlove import config, levels
 
 LEVEL_NOS = sorted(levels._levels)
 BRICK_TYPES = 'bwr'

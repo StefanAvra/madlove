@@ -1,22 +1,16 @@
-"""Starts MadLove. Run with `uv run main.py --help` to see the options."""
+"""Starts MadLove. Run with `uv run madlove --help` to see the options."""
 
 import argparse
-import os
-import tomllib
+import importlib.metadata
 
 import pygame as pg
 
-import config
-
-
-def get_version():
-    with open(os.path.join(config.BASE_DIR, 'pyproject.toml'), 'rb') as f:
-        return tomllib.load(f)['project']['version']
+from madlove import config
 
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(prog='madlove', description='MadLove - the arcade game.')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {get_version()}')
+    parser.add_argument('--version', action='version', version=f"%(prog)s {importlib.metadata.version('madlove')}")
     parser.add_argument('--fullscreen', action='store_true', help='run in fullscreen')
     parser.add_argument('--coin-op', action='store_true', help='require coins to play (default: free play)')
     parser.add_argument(
@@ -43,7 +37,7 @@ def apply_args(args):
 def run(argv=None):
     apply_args(parse_args(argv))
     # imported here because these modules read config when they are imported
-    import killyourlungs
+    from madlove import killyourlungs
 
     killyourlungs.main()
 

@@ -1,6 +1,6 @@
 import pygame as pg
 
-import config
+from madlove import config
 
 joystick = None
 

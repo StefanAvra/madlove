@@ -2,7 +2,7 @@ import pickle
 
 import pytest
 
-import config
+from madlove import config
 
 TOP_TEN = [(f'P{place}', 1000 - place * 100) for place in range(1, 11)]  # 900, 800, ... 0
 

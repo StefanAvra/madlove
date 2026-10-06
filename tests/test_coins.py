@@ -1,4 +1,4 @@
-import config
+from madlove import config
 
 
 def test_add_coin(coins):

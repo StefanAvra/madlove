@@ -27,7 +27,7 @@ You need [uv](https://docs.astral.sh/uv/getting-started/installation/), which in
 ```sh
 git clone https://github.com/StefanAvra/madlove.git
 cd madlove
-uv run main.py
+uv run madlove
 ```
 
 The game opens in a 480 × 640 window in free play mode. Options:
@@ -92,7 +92,7 @@ The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a 
    [Service]
    User=pi
    WorkingDirectory=/home/pi/madlove
-   ExecStart=/home/pi/.local/bin/uv run --frozen main.py --cabinet
+   ExecStart=/home/pi/.local/bin/uv run --frozen madlove --cabinet
    Restart=always
 
    [Install]

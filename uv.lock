@@ -27,7 +27,7 @@ wheels = [
 [[package]]
 name = "madlove"
 version = "2.0.0.dev0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "pygame-ce" },
 ]

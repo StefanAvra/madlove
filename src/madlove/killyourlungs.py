@@ -4,17 +4,9 @@ import sys
 
 import pygame as pg
 
-import bot
-import coins
-import config
-import controls as ctrls
-import levels
-import menus
-import powerups
-import scores
-import sound
-import string_resource as str_r
-import utils
+from madlove import bot, coins, config, levels, menus, powerups, scores, sound, utils
+from madlove import controls as ctrls
+from madlove import string_resource as str_r
 
 bg_color = pg.Color(config.BACKGROUND_COLOR)
 font_8 = None

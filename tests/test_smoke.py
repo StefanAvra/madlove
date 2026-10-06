@@ -14,7 +14,7 @@ import random
 import pygame as pg
 import pytest
 
-import config
+from madlove import config
 
 FRAME_MS = 1000 // config.FRAMERATE
 PRESS_EVERY = 30  # frames between presses of Space or Enter, to get through the menus
@@ -48,7 +48,7 @@ class FakeClock:
 @pytest.fixture
 def trace(game, scores, coins, monkeypatch):
     """records [frame, scene, score] for every scene change"""
-    import string_resource
+    from madlove import string_resource
 
     # the facts and level intros are shuffled or counted at import; pin them so the runs repeat exactly
     monkeypatch.setattr(string_resource, 'fact_order', list(range(len(string_resource.fact_order))))
