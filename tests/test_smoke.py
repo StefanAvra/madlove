@@ -6,6 +6,7 @@ any change in gameplay. After an intended change, regenerate it with
 `MADLOVE_UPDATE_GOLDEN=1 uv run pytest tests/test_smoke.py` and explain why in the commit message.
 """
 
+import asyncio
 import json
 import os
 import pathlib
@@ -71,7 +72,7 @@ def run_game(game, monkeypatch, frames, bot):
     monkeypatch.setattr(FakeClock, 'current', None)
     monkeypatch.setattr(pg.time, 'Clock', FakeClock)
     random.seed(2019)
-    game.run()  # returns when it gets the QUIT event
+    asyncio.run(game.run())  # returns when it gets the QUIT event
 
 
 def check_golden(name, trace):

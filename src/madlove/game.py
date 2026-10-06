@@ -1,5 +1,7 @@
 """The game object, the scene manager and the main loop."""
 
+import asyncio
+
 import pygame as pg
 
 from madlove import audio, bot, coins, config, scores
@@ -57,12 +59,12 @@ class Game:
             self.intro_no = 1
         return number
 
-    def run(self):
-        """runs until the game gets a QUIT event"""
+    async def run(self):
+        """runs until the game gets a QUIT event. it's async so the browser build can draw between frames"""
         self.clock = pg.time.Clock()
         self.scenes = SceneManager(self)
         while self.step():
-            pass
+            await asyncio.sleep(0)  # hands control back to the browser once per frame
 
     def step(self):
         """runs one frame. returns False when the game should quit"""
@@ -94,4 +96,4 @@ class Game:
 
 
 def main(settings=None):
-    Game(settings).run()
+    asyncio.run(Game(settings).run())
