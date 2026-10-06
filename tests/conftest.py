@@ -19,8 +19,8 @@ config.set_data_dir(tempfile.mkdtemp(prefix='madlove-tests-'))
 
 @pytest.fixture
 def data_dir(tmp_path, monkeypatch):
-    """points the high-score and upload-queue files at an empty folder"""
-    for name in ('DATA_DIR', 'HIGHSCORE_FILE', 'UPLOAD_QUEUE'):
+    """points the high-score file at an empty folder"""
+    for name in ('DATA_DIR', 'HIGHSCORE_FILE'):
         monkeypatch.setattr(config, name, getattr(config, name))
     config.set_data_dir(str(tmp_path))
     return tmp_path
@@ -32,7 +32,6 @@ def scores(data_dir, monkeypatch):
     import scores
 
     monkeypatch.setattr(scores, 'highscores', [])
-    monkeypatch.setattr(scores, 'upload_queue', [])
     # string names, so the module's double-underscore globals aren't name-mangled
     monkeypatch.setattr(scores, '__multiplier', 0)
     monkeypatch.setattr(scores, '__decrease_timer', 0)

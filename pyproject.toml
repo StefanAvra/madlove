@@ -11,12 +11,6 @@ dependencies = [
     "pygame-ce>=2.5",
 ]
 
-[project.optional-dependencies]
-# Online high-score list (dropped in 2019, kept for reference)
-online = [
-    "firebase-admin>=6",
-]
-
 [dependency-groups]
 dev = [
     "pytest>=8",

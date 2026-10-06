@@ -5,9 +5,6 @@ from datetime import datetime
 
 import config
 
-if not config.OFFLINE_MODE:
-    import firebase_api
-
 DEFAULT_HIGHSCORES = [
     ('Errol', 323),
     ('Scabbers', 444),
@@ -21,8 +18,6 @@ DEFAULT_HIGHSCORES = [
     ('Elphias', 8),
 ]
 highscores = list(DEFAULT_HIGHSCORES)
-
-upload_queue = []
 
 __multiplier = 0
 __decrease_timer = 0
@@ -57,49 +52,10 @@ def lowest_score():
 def update_highscores(new_score=None):
     global highscores
     if new_score is not None:
-        queue_score = new_score + (datetime.utcnow(),)
-        update_queue(queue_score)
-        new_score += (str(datetime.utcnow()), config.FREE_MODE, config.LOCATION, config.CABINET_ID)
+        new_score += (str(datetime.utcnow()), config.FREE_MODE)
         highscores.append(new_score)
     highscores = sorted(highscores, key=lambda t: t[1], reverse=True)
     highscores = highscores[:10]
-    process_queue()
-
-
-def load_queue():
-    global upload_queue
-    try:
-        with open(config.UPLOAD_QUEUE, 'wb') as f:
-            upload_queue = pickle.load(f)
-    except OSError:
-        upload_queue = []
-
-
-def update_queue(entry=None):
-    global upload_queue
-    if entry is not None:
-        upload_queue.append(entry)
-    os.makedirs(config.DATA_DIR, exist_ok=True)
-    with open(config.UPLOAD_QUEUE, 'wb') as f:
-        pickle.dump(upload_queue, f)
-
-
-def process_queue():
-    global upload_queue
-    new_upload_queue = []
-    for entry in upload_queue:
-        if not config.OFFLINE_MODE:
-            try:
-                firebase_api.upload_highscore(entry[1], entry[0], entry[2])
-            except Exception as e:
-                print(e)
-                # copy to new list if not uploaded
-                new_upload_queue.append(entry)
-        else:
-            new_upload_queue.append(entry)
-    print(f'uploaded {len(upload_queue) - len(new_upload_queue)} scores to database')
-    upload_queue = new_upload_queue
-    update_queue()  # saves to pickle file
 
 
 def get_place(new):
@@ -204,5 +160,4 @@ def get_bonus(bonus):
     return boni.get(bonus)
 
 
-load_queue()
 load_highscores()  # make sure highscores are loaded at boot!

@@ -139,17 +139,10 @@ def test_update_highscores_keeps_the_best_ten(top_ten):
 def test_update_highscores_records_metadata(top_ten, monkeypatch):
     monkeypatch.setattr(config, 'FREE_MODE', False)
     top_ten.update_highscores(('NEW', 5000))
-    name, score, date, free_mode, location, cabinet = top_ten.highscores[0]
+    name, score, date, free_mode = top_ten.highscores[0]
     assert (name, score) == ('NEW', 5000)
     assert date
-    assert (free_mode, location, cabinet) == (False, config.LOCATION, config.CABINET_ID)
-
-
-def test_update_highscores_queues_the_score_for_upload(top_ten):
-    top_ten.update_highscores(('NEW', 5000))
-    with open(config.UPLOAD_QUEUE, 'rb') as f:
-        queue = pickle.load(f)
-    assert [entry[:2] for entry in queue] == [('NEW', 5000)]
+    assert free_mode is False
 
 
 def test_save_and_load_highscores(top_ten, monkeypatch):
@@ -171,10 +164,3 @@ def test_highest_and_lowest_score(top_ten):
     top_ten.save_highscores()
     assert top_ten.highest_score() == 900
     assert top_ten.lowest_score() == 0
-
-
-@pytest.mark.xfail(strict=True, reason="load_queue() opens the queue with 'wb' (ROADMAP.md, known issues)")
-def test_load_queue_keeps_saved_entries(scores):
-    scores.update_queue(('NAME', 100, 'date'))
-    scores.load_queue()
-    assert scores.upload_queue == [('NAME', 100, 'date')]
