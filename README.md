@@ -1,5 +1,7 @@
 # MadLove
 
+[![CI](https://github.com/StefanAvra/madlove/actions/workflows/ci.yml/badge.svg)](https://github.com/StefanAvra/madlove/actions/workflows/ci.yml)
+
 In 2018 Gurkiman posted a short animation of a breakout-style video game in which a lung was destroyed by a cigarette. When Avra asked him if this game was real, he replied "of course not". That's when the idea was born. After a quick [prototype](https://stefanavra.github.io/kill-yo-lungs-js/) we decided to make a real arcade game.
 
 The original MadLove Game comes with a custom built 80s style arcade cabinet with a real CRT monitor, arcade buttons and stick. And of course it is coin operated. Seasoned players are able to enter their name on the top 10 high scores list.
@@ -53,6 +55,16 @@ The game opens in a 480 × 640 window in free play mode. Options:
 | Toggle music | M | — |
 
 Debug keys during a game: `B` adds a ball, `N` clears the level, `H` gives the shooting power-up, `O`/`P` slow down/speed up the balls, `F` shows FPS and ball velocity, `,` toggles the bot.
+
+### Development
+
+```sh
+uv run pytest            # tests, including a headless run of the whole game
+uv run ruff check .      # lint
+uv run ruff format .     # format
+```
+
+GitHub Actions runs all three on every push. To make `git blame` skip formatting-only commits, run `git config blame.ignoreRevsFile .git-blame-ignore-revs` once.
 
 ### Raspberry Pi cabinet
 

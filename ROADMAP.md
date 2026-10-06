@@ -10,6 +10,8 @@ Plan for polishing MadLove after its 2019 run: make it runnable anywhere, put te
   - Importing `scores.py` reads and writes files.
   - `menus.py` and `killyourlungs.py` import each other.
 - **Upload queue bug.** `scores.load_queue()` opens the queue file with `'wb'`, so the queue is emptied at every start. Just fixing the mode would make the queue grow forever in offline mode, so fix it together with the high-score rework in Phase 3.
+- **Ball default velocity.** `Ball.__init__` has `velocity=(random.randint(-3, 3), -3)` as a default argument, which is drawn only once, at import. Only the debug key `B` uses the default, so every extra ball it adds starts in the same direction.
+- **Deprecated `datetime.utcnow()`** in `scores.update_highscores()`; replace it when moving to JSON high scores.
 - **One huge file.** `killyourlungs.py` is 2,243 lines with every scene, every sprite and globals. It does already have a single main loop with scenes, which suits the web build.
 
 ## Versioning
@@ -51,13 +53,13 @@ No code changes.
 
 Tests come before the refactor, so the refactor has something to check it against.
 
-- [ ] `ruff` for linting and formatting
-- [ ] Headless smoke test: run with no display and no audio (`SDL_VIDEODRIVER=dummy`, `SDL_AUDIODRIVER=dummy`), let the bot play a few thousand frames, and assert there's no crash
-- [ ] Unit tests for pure logic:
+- [x] `ruff` for linting and formatting
+- [x] Headless smoke test: run with no display and no audio (`SDL_VIDEODRIVER=dummy`, `SDL_AUDIODRIVER=dummy`), let the bot play a few thousand frames, and assert there's no crash. A second run with an idle paddle goes through game over, name entry and high scores.
+- [x] Unit tests for pure logic:
   - `scores`: ranking, `get_place`, `get_penalty`, bonuses
   - `coins`
   - level parsing
-- [ ] Run the checks on GitHub Actions
+- [x] Run the checks on GitHub Actions
 
 ## Phase 3: Clean-code refactor
 

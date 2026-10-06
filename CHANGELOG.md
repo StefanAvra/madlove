@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `pyproject.toml` and `uv.lock`: run the game with `uv run main.py`.
 - `main.py` entry point with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
 - README instructions for running the game, its controls and setting up a Raspberry Pi cabinet.
+- Tests (`uv run pytest`): a headless smoke test that plays the whole game, and unit tests for scores, coins and the level data.
+- Linting and formatting with ruff.
+- GitHub Actions workflow that runs the linter, the format check and the tests.
 
 ### Changed
 - Switched from `pygame` to `pygame-ce`, the actively maintained fork. Requires Python 3.11 or newer.
