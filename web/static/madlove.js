@@ -111,8 +111,9 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
     }
 
     function setup_buttons() {
-        for (const button of document.querySelectorAll('.arcade-button')) {
-            const name = button.dataset.button;  // 'start' or 'action'
+        for (const cell of document.querySelectorAll('.button-cell')) {
+            const name = cell.dataset.button;  // 'start' or 'action'
+            const button = cell.querySelector('.arcade-button');
             let pointer = null;
 
             function release(event) {
@@ -122,17 +123,17 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
                 window.madlove_input[name] = false;
             }
 
-            button.addEventListener('pointerdown', (event) => {
+            cell.addEventListener('pointerdown', (event) => {
                 event.preventDefault();
                 pointer = event.pointerId;
-                button.setPointerCapture(pointer);
+                cell.setPointerCapture(pointer);
                 button.classList.add('pressed');
                 window.madlove_input[name] = true;
                 buzz();
             });
-            button.addEventListener('pointerup', release);
-            button.addEventListener('pointercancel', release);
-            button.addEventListener('lostpointercapture', release);
+            cell.addEventListener('pointerup', release);
+            cell.addEventListener('pointercancel', release);
+            cell.addEventListener('lostpointercapture', release);
         }
     }
 

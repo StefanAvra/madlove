@@ -141,13 +141,16 @@ config = {
         </div>
 
         <div id="buttons" class="panel-part">
-            <div class="button-row" id="row-start">
-                <span class="arcade-button" data-button="start" role="button" aria-label="Start / Pause"><span class="cap"></span></span>
-                <span class="label">Start / Pause</span>
-            </div>
-            <div class="button-row" id="row-action">
-                <span class="arcade-button" data-button="action" role="button" aria-label="Action"><span class="cap"></span></span>
-                <span class="label">Action</span>
+            <!-- on the cabinet's diagonal: Action lower left, Start / Pause upper right -->
+            <div id="cluster">
+                <div class="button-cell" id="cell-start" data-button="start" role="button" aria-label="Start / Pause">
+                    <span class="arcade-button"><span class="cap"></span></span>
+                    <span class="label">Start / Pause</span>
+                </div>
+                <div class="button-cell" id="cell-action" data-button="action" role="button" aria-label="Action">
+                    <span class="arcade-button"><span class="cap"></span></span>
+                    <span class="label">Action</span>
+                </div>
             </div>
         </div>
 

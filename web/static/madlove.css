@@ -90,7 +90,7 @@ body.touch #stage {
         "screen screen"
         "stick  buttons";
     grid-template-rows: auto 1fr;
-    grid-template-columns: 1fr 1.6fr;
+    grid-template-columns: 1fr 1.25fr;
     background: var(--pink);
 }
 
@@ -115,29 +115,41 @@ body.touch #screen {
         border-left: 6px solid var(--ink);
         border-right: 6px solid var(--ink);
     }
-    body.touch #buttons { padding-left: 16px; }
+    /* thumbs rest a little below the middle of the sides */
+    body.touch #stick-zone, body.touch #buttons { padding-top: 14dvh; }
+}
+
+/* the stick and the buttons sit at the same height, clear of the phone's home bar. the whole stick
+   zone takes touches, so the thumb doesn't have to hit the ball */
+#stick-zone, #buttons {
+    align-items: center;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 #stick-zone {
     grid-area: stick;
-    align-items: center;
-    justify-content: center;
+    padding-left: 4vw;
     touch-action: none;
 }
 
 #buttons {
     grid-area: buttons;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 14px;
-    padding-right: 8px;
+}
+
+/* the right thumb pivots near the phone's lower right corner: Action, the button used most, sits
+   lower and closer to it; Start / Pause further up and out, so it isn't hit by accident */
+#cluster {
+    --w: min(76px, 19vw);
+    position: relative;
+    width: calc(var(--w) * 2.6);
+    height: calc(var(--w) * 2.9);
 }
 
 /* ---------- the stick: a black ball on a chrome shaft, with four triangles around it ---------- */
 
 #stick {
-    --size: min(150px, 34vw);
+    --size: min(160px, 38vw);
     position: relative;
     width: var(--size);
     height: var(--size);
@@ -197,22 +209,26 @@ body.touch #screen {
 
 /* ---------- the buttons: black, glossy, pressing in when touched ---------- */
 
-.button-row {
+/* a button with its label underneath; the whole cell takes touches, the label too */
+.button-cell {
+    position: absolute;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 4px;
+    padding: 8px;
+    touch-action: none;
+    cursor: pointer;
 }
-#row-start { margin-left: 14%; }  /* the two buttons sit on a slight diagonal, as on the cabinet */
+#cell-start { right: 0; top: 0; }
+#cell-action { left: 0; bottom: 0; }
 
 .arcade-button {
-    --w: min(64px, 14vw);
     --travel: calc(var(--w) * .14);  /* how far the plunger stands above its ring */
     position: relative;
     width: var(--w);
     height: calc(var(--w) * .85);
     flex: none;
-    touch-action: none;
-    cursor: pointer;
 }
 
 /* the bezel ring the plunger sinks into */
@@ -248,10 +264,10 @@ body.touch #screen {
     filter: brightness(.8);
 }
 
-.button-row .label {
+.button-cell .label {
     font-family: 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 900;
-    font-size: clamp(13px, 3.9vw, 20px);
+    font-size: clamp(11px, 3.4vw, 16px);
     color: var(--ink);
     white-space: nowrap;
 }
