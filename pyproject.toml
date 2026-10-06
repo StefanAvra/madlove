@@ -23,6 +23,10 @@ dev = [
     "pytest>=8",
     "ruff>=0.16",
 ]
+# builds the browser version: uv run --group web python web/build.py
+web = [
+    "pygbag==0.9.3",
+]
 
 [tool.ruff]
 line-length = 120
