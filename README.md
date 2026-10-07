@@ -1,4 +1,4 @@
-# MadLove
+# <img src="web/static/logo.png" alt="MadLove" width="272">
 
 [![CI](https://github.com/StefanAvra/madlove/actions/workflows/ci.yml/badge.svg)](https://github.com/StefanAvra/madlove/actions/workflows/ci.yml)
 
@@ -15,14 +15,13 @@ Programmed by Avra
 Graphic Design by Gurkiman
 
 Music by [Ozzed](https://ozzed.net/) under Creative Commons license (CC BY-SA):
+
 - "About Ducks"
 - "Boktipset från helvetet"
 - "Here Comes the 8-Bit Empire"
 - "8-Bit Party"
 
-
 [Teaser Video on Youtube](https://www.youtube.com/watch?v=CY5pmC3nwCw)
-
 
 ## Running the game
 
@@ -36,28 +35,28 @@ uv run madlove
 
 The game opens in a 480 × 640 window in free play mode. Options:
 
-| Option | Effect |
-|---|---|
-| `--fullscreen` | Run in fullscreen, scaled to fit the screen |
-| `--coin-op` | Require coins to play (press `1` to insert one) |
-| `--cabinet` | Arcade cabinet settings: same as `--fullscreen --coin-op` |
+| Option            | Effect                                                                 |
+| ----------------- | ---------------------------------------------------------------------- |
+| `--fullscreen`    | Run in fullscreen, scaled to fit the screen                            |
+| `--coin-op`       | Require coins to play (press `1` to insert one)                        |
+| `--cabinet`       | Arcade cabinet settings: same as `--fullscreen --coin-op`              |
 | `--data-dir PATH` | Where high scores are saved (default: your platform's app data folder) |
-| `--bot` | Let the bot play |
-| `--show-fps` | Show frames per second |
-| `--debug` | Enable the debug keys |
-| `--version` | Print the version |
+| `--bot`           | Let the bot play                                                       |
+| `--show-fps`      | Show frames per second                                                 |
+| `--debug`         | Enable the debug keys                                                  |
+| `--version`       | Print the version                                                      |
 
 ### Controls
 
-| Action | Keyboard | Arcade cabinet |
-|---|---|---|
-| Move the paddle | ← → | Stick |
-| Navigate menus, change letters of your name | ↑ ↓ | Stick |
-| Start a game | Space / Enter | Start button |
-| Launch the ball, confirm your name | Space | Action button |
-| Smoke break (pause) | Esc | Start button |
-| Insert coin | 1 | Coin acceptor |
-| Toggle music | M | — |
+| Action                                      | Keyboard      | Arcade cabinet |
+| ------------------------------------------- | ------------- | -------------- |
+| Move the paddle                             | ← →           | Stick          |
+| Navigate menus, change letters of your name | ↑ ↓           | Stick          |
+| Start a game                                | Space / Enter | Start button   |
+| Launch the ball, confirm your name          | Space         | Action button  |
+| Smoke break (pause)                         | Esc           | Start button   |
+| Insert coin                                 | 1             | Coin acceptor  |
+| Toggle music                                | M             | —              |
 
 Debug keys, only with `--debug`: during a game `B` adds a ball, `N` clears the level, `H` gives the shooting power-up, `O`/`P` slow down/speed up the balls, `F` shows FPS and ball velocity and `,` toggles the bot. On the title screen `C` shows the credits and `H` the high scores.
 
@@ -109,6 +108,7 @@ The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a 
    ```
 
    Recent Raspberry Pi OS versions don't allow `pip install` into the system Python. uv installs everything into `~/madlove/.venv` instead.
+
 4. Start the game at boot with a systemd service. Save this as `/etc/systemd/system/madlove.service`, replacing `pi` with your user name:
 
    ```ini
@@ -133,7 +133,8 @@ The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a 
 See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` is the build that premiered at the Rundgang in July 2019, `v1.1.0` the one that toured afterwards. Plans for the future are in [ROADMAP.md](ROADMAP.md).
 
 ## Features
+
 - **High scores**: players that reach a top ten high score can enter their name. It will be saved to local storage, so high scores will be kept even if powering off. An online high score list synced to Firebase was written in 2019 but never used; its code was removed in version 2.
 - **Coin acceptor**: if the game is not running in free mode, players will have to enter a coin (0.50 €, configurable) to start the game. When the player is out of lives a countdown will appear during which the player can insert a coin to refill their lives and stay in the game.
-- **8-bit aesthetics**: analog video on CRT monitor, low resolution graphics, 8 bit colour depth. (*Technically it's running on 480p for smoother gameplay.*)
-- **Pause screen**: This is probably the first arcade cabinet to feature a dedicated pause button. We thought it would be good to let the smokers have a break. 
+- **8-bit aesthetics**: analog video on CRT monitor, low resolution graphics, 8 bit colour depth. (_Technically it's running on 480p for smoother gameplay._)
+- **Pause screen**: This is probably the first arcade cabinet to feature a dedicated pause button. We thought it would be good to let the smokers have a break.

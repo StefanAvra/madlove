@@ -1,330 +1,434 @@
 /* MadLove's page: the game screen, the start screen and, on touch screens, the cabinet's control panel. */
 
 @font-face {
-    font-family: 'Press Start 2P';
-    src: url('PressStart2P-Regular.ttf') format('truetype');
-    font-display: block;
+  font-family: "Press Start 2P";
+  src: url("PressStart2P-Regular.ttf") format("truetype");
+  font-display: block;
 }
 
 :root {
-    --bg: #140f12;
-    --pink: #e9b5c0;  /* the cabinet's paint */
-    --pink-shade: #d49ba8;
-    --ink: #0d0b0c;
-    --text: #ffb3ce;  /* the game's background colour */
-    --legend-h: 32px;
+  --bg: #140f12;
+  --pink: #e9b5c0; /* the cabinet's paint */
+  --pink-shade: #d49ba8;
+  --ink: #0d0b0c;
+  --text: #ffb3ce; /* the game's background colour */
+  --legend-h: 32px;
 }
 
-html, body {
-    margin: 0;
-    height: 100%;
-    overflow: hidden;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Press Start 2P', monospace;
-    /* no scrolling, zooming, text selection or long-press menus while playing */
-    touch-action: none;
-    overscroll-behavior: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Press Start 2P", monospace;
+  /* no scrolling, zooming, text selection or long-press menus while playing */
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ---------- layout ---------- */
 
 #stage {
-    position: fixed;
-    inset: 0;
-    display: grid;
-    justify-content: center;
-    align-content: center;
-    grid-template-areas: "screen" "legend";
-    grid-template-rows: auto var(--legend-h);
+  position: fixed;
+  inset: 0;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  grid-template-areas: "screen" "legend";
+  grid-template-rows: auto var(--legend-h);
 }
 
 #screen {
-    grid-area: screen;
-    position: relative;
-    aspect-ratio: 3 / 4;
-    /* as large as fits, keeping 3:4 */
-    height: min(calc(100dvh - var(--legend-h)), calc(100vw * 4 / 3));
-    background: #000;
+  grid-area: screen;
+  position: relative;
+  aspect-ratio: 3 / 4;
+  /* as large as fits, keeping 3:4 */
+  height: min(calc(100dvh - var(--legend-h)), calc(100vw * 4 / 3));
+  background: #000;
 }
 
 #canvas {
-    /* pygbag would place the canvas itself; the template's user_canvas_managed leaves it to us */
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    display: block;
-    image-rendering: pixelated;
-    outline: none;
+  /* pygbag would place the canvas itself; the template's user_canvas_managed leaves it to us */
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  display: block;
+  image-rendering: pixelated;
+  outline: none;
 }
 
 /* crt.js draws the game again here, through the CRT shader. clicks and touches go through to the game */
 #crt {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    pointer-events: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
+/* no width of its own, so it never widens the stage: it stays centred under the screen and, if wider,
+   spills evenly into the dark on both sides */
 #legend {
-    grid-area: legend;
-    align-self: center;
-    text-align: center;
-    font-size: 8px;
-    line-height: 1.6;
-    letter-spacing: 1px;
-    opacity: .75;
-    white-space: nowrap;
+  grid-area: legend;
+  align-self: center;
+  justify-self: center;
+  width: 0;
+  display: flex;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 1.6;
+  letter-spacing: 1px;
+  opacity: 0.75;
+  white-space: nowrap;
 }
 
-.panel-part { display: none; }
+/* keys drawn as outlined keycaps */
+#legend kbd {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 3px 4px 2px;
+  border: 1px solid var(--text);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  font: inherit;
+  line-height: 1;
+}
+
+.panel-part {
+  display: none;
+}
 
 /* ---------- touch screens: the control panel ---------- */
 
 body.touch {
-    --button-w: min(76px, 19vw);
-    /* the panel is at least as tall as the buttons need, with some room below them */
-    --panel-h: calc(var(--button-w) * 2.9 + 48px + env(safe-area-inset-bottom));
+  --button-w: min(76px, 19vw);
+  /* the panel is at least as tall as the buttons need, with some room below them */
+  --panel-h: calc(var(--button-w) * 2.9 + 48px + env(safe-area-inset-bottom));
 }
-body.touch #legend { display: none; }
-body.touch .panel-part { display: flex; }
+body.touch #legend {
+  display: none;
+}
+body.touch .panel-part {
+  display: flex;
+}
 
 /* portrait: the game on top, the panel below. beside a narrower game, as on tablets, the page stays dark */
 body.touch #stage {
-    align-content: stretch;
-    justify-content: stretch;
-    grid-template-areas:
-        "screen"
-        "panel";
-    grid-template-rows: auto 1fr;
-    grid-template-columns: 1fr;
+  align-content: stretch;
+  justify-content: stretch;
+  grid-template-areas:
+    "screen"
+    "panel";
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
 }
 
 #panel {
-    grid-area: panel;
-    background: var(--pink);
-    border-top: 6px solid var(--ink);
+  grid-area: panel;
+  background: var(--pink);
+  border-top: 6px solid var(--ink);
 }
-#panel > * { display: flex; }
-#stick-zone { flex: 1; }
-#buttons { flex: 1.25; }
+#panel > * {
+  display: flex;
+}
+#stick-zone {
+  flex: 1;
+}
+#buttons {
+  flex: 1.25;
+}
 
 body.touch #screen {
-    justify-self: center;
-    height: auto;
-    width: min(100vw, calc((100dvh - var(--panel-h)) * 3 / 4));
+  justify-self: center;
+  height: auto;
+  width: min(100vw, calc((100dvh - var(--panel-h)) * 3 / 4));
 }
 
 /* landscape: stick left of the game, buttons right of it */
 @media (orientation: landscape) {
-    body.touch #stage {
-        grid-template-areas: "stick screen buttons";
-        grid-template-rows: 1fr;
-        grid-template-columns: 1fr auto 1fr;
-    }
-    body.touch #screen {
-        width: auto;
-        height: 100dvh;
-        border-bottom: none;
-        border-left: 6px solid var(--ink);
-        border-right: 6px solid var(--ink);
-    }
-    /* the panel splits into its two halves, one on each side */
-    body.touch #panel { display: contents; }
-    body.touch #stick-zone { grid-area: stick; }
-    body.touch #buttons { grid-area: buttons; }
-    /* thumbs rest a little below the middle of the sides */
-    body.touch #stick-zone, body.touch #buttons { background: var(--pink); padding-top: 14dvh; }
+  body.touch #stage {
+    grid-template-areas: "stick screen buttons";
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr auto 1fr;
+  }
+  body.touch #screen {
+    width: auto;
+    height: 100dvh;
+    border-bottom: none;
+    border-left: 6px solid var(--ink);
+    border-right: 6px solid var(--ink);
+  }
+  /* the panel splits into its two halves, one on each side */
+  body.touch #panel {
+    display: contents;
+  }
+  body.touch #stick-zone {
+    grid-area: stick;
+  }
+  body.touch #buttons {
+    grid-area: buttons;
+  }
+  /* thumbs rest a little below the middle of the sides */
+  body.touch #stick-zone,
+  body.touch #buttons {
+    background: var(--pink);
+    padding-top: 14dvh;
+  }
 }
 
 /* the stick and the buttons sit at the same height, clear of the phone's home bar. the whole stick
    zone takes touches, so the thumb doesn't have to hit the ball */
-#stick-zone, #buttons {
-    align-items: center;
-    justify-content: center;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+#stick-zone,
+#buttons {
+  align-items: center;
+  justify-content: center;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 #stick-zone {
-    padding-left: 4vw;
-    touch-action: none;
+  padding-left: 4vw;
+  touch-action: none;
 }
 
 /* the right thumb pivots near the phone's lower right corner: Action, the button used most, sits
    lower and closer to it; Start / Pause further up and out, so it isn't hit by accident */
 #cluster {
-    --w: var(--button-w);
-    position: relative;
-    width: calc(var(--w) * 2.6);
-    height: calc(var(--w) * 2.9);
+  --w: var(--button-w);
+  position: relative;
+  width: calc(var(--w) * 2.6);
+  height: calc(var(--w) * 2.9);
 }
 
 /* ---------- the stick: a black ball on a chrome shaft, with four triangles around it ---------- */
 
 #stick {
-    --size: min(160px, 38vw);
-    position: relative;
-    width: var(--size);
-    height: var(--size);
+  --size: min(160px, 38vw);
+  position: relative;
+  width: var(--size);
+  height: var(--size);
 }
 
 #stick .arrow {
-    position: absolute;
-    width: 0;
-    height: 0;
-    border: 9px solid transparent;
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
 }
-#stick .arrow.left  { left: 0;  top: 62%; border-right: 14px solid var(--ink); border-left: 0; }
-#stick .arrow.right { right: 0; top: 62%; border-left: 14px solid var(--ink); border-right: 0; }
-#stick .arrow.down  { bottom: 0; left: calc(50% - 9px); border-top: 14px solid var(--ink); border-bottom: 0; }
-#stick .arrow.up    { top: 22%; left: calc(50% - 9px); border-bottom: 14px solid var(--ink); border-top: 0; }
+#stick .arrow.left {
+  left: 0;
+  top: 62%;
+  border-right: 14px solid var(--ink);
+  border-left: 0;
+}
+#stick .arrow.right {
+  right: 0;
+  top: 62%;
+  border-left: 14px solid var(--ink);
+  border-right: 0;
+}
+#stick .arrow.down {
+  bottom: 0;
+  left: calc(50% - 9px);
+  border-top: 14px solid var(--ink);
+  border-bottom: 0;
+}
+#stick .arrow.up {
+  top: 22%;
+  left: calc(50% - 9px);
+  border-bottom: 14px solid var(--ink);
+  border-top: 0;
+}
 
 /* the dust washer the shaft comes out of */
 #stick-washer {
-    position: absolute;
-    left: 50%;
-    top: 68%;
-    width: 38%;
-    height: 17%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background: radial-gradient(ellipse at 50% 40%, #3a3536 0%, var(--ink) 55%);
-    box-shadow: 0 2px 0 rgba(0, 0, 0, .25);
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  width: 38%;
+  height: 17%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 40%, #3a3536 0%, var(--ink) 55%);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
 }
 
 /* madlove.js sets the shaft's length and angle, and the ball's position */
 #stick-shaft {
-    position: absolute;
-    left: 50%;
-    top: 68%;
-    width: 7%;
-    height: 40%;
-    transform-origin: 50% 100%;
-    transform: translate(-50%, -100%);
-    border-radius: 3px;
-    background: linear-gradient(90deg, #6d6a6b, #f2f2f2 40%, #9a9798 70%, #4b4849);
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  width: 7%;
+  height: 40%;
+  transform-origin: 50% 100%;
+  transform: translate(-50%, -100%);
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    #6d6a6b,
+    #f2f2f2 40%,
+    #9a9798 70%,
+    #4b4849
+  );
 }
 
 #stick-ball {
-    --x: 0px;
-    --y: 0px;
-    position: absolute;
-    left: 50%;
-    top: 30%;
-    width: 30%;
-    height: 30%;
-    border-radius: 50%;
-    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y)));
-    background: radial-gradient(circle at 35% 30%, #6a6566 0%, #1d1a1b 32%, #050404 70%);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, .35);
-    transition: transform 40ms linear;
+  --x: 0px;
+  --y: 0px;
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y)));
+  background: radial-gradient(
+    circle at 35% 30%,
+    #6a6566 0%,
+    #1d1a1b 32%,
+    #050404 70%
+  );
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
 }
 
 /* ---------- the buttons: black, glossy, pressing in when touched ---------- */
 
 /* a button with its label underneath; the whole cell takes touches, the label too */
 .button-cell {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    padding: 8px;
-    touch-action: none;
-    cursor: pointer;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  touch-action: none;
+  cursor: pointer;
 }
-#cell-start { right: 0; top: 0; }
-#cell-action { left: 0; bottom: 0; }
+#cell-start {
+  right: 0;
+  top: 0;
+}
+#cell-action {
+  left: 0;
+  bottom: 0;
+}
 
 .arcade-button {
-    --travel: calc(var(--w) * .14);  /* how far the plunger stands above its ring */
-    position: relative;
-    width: var(--w);
-    height: calc(var(--w) * .85);
-    flex: none;
+  --travel: calc(
+    var(--w) * 0.14
+  ); /* how far the plunger stands above its ring */
+  position: relative;
+  width: var(--w);
+  height: calc(var(--w) * 0.85);
+  flex: none;
 }
 
 /* the bezel ring the plunger sinks into */
 .arcade-button::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 58%;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at 50% 35%, #000 0%, #000 45%, #2b2728 62%, #0c0a0b 75%);
-    box-shadow: 0 3px 4px rgba(0, 0, 0, .35);
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 58%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    #000 0%,
+    #000 45%,
+    #2b2728 62%,
+    #0c0a0b 75%
+  );
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.35);
 }
 
 /* the plunger: a glossy black top and, below it, its side, which disappears when pressed */
 .arcade-button .cap {
-    position: absolute;
-    left: 14%;
-    right: 14%;
-    bottom: 14%;
-    height: 44%;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at 42% 28%, #a29c9d 0%, #3a3536 18%, #121011 52%, #050404 75%);
-    box-shadow: 0 var(--travel) 0 #2c2829, 0 calc(var(--travel) + 1px) 2px rgba(0, 0, 0, .6);
-    transform: translateY(calc(-1 * var(--travel)));
-    transition: transform 30ms linear, box-shadow 30ms linear, filter 30ms linear;
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 14%;
+  height: 44%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 42% 28%,
+    #a29c9d 0%,
+    #3a3536 18%,
+    #121011 52%,
+    #050404 75%
+  );
+  box-shadow:
+    0 var(--travel) 0 #2c2829,
+    0 calc(var(--travel) + 1px) 2px rgba(0, 0, 0, 0.6);
+  transform: translateY(calc(-1 * var(--travel)));
+  transition: all 30ms ease-out;
 }
 
 .arcade-button.pressed .cap {
-    transform: translateY(-1px);
-    box-shadow: 0 1px 0 #2c2829, 0 2px 2px rgba(0, 0, 0, .6);
-    filter: brightness(.8);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 #2c2829,
+    0 2px 2px rgba(0, 0, 0, 0.6);
+  filter: brightness(0.8);
 }
 
 .button-cell .label {
-    font-family: 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-weight: 900;
-    font-size: clamp(11px, 3.4vw, 16px);
-    color: var(--ink);
-    white-space: nowrap;
+  font-family: "Arial Black", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(11px, 3.4vw, 16px);
+  color: var(--ink);
+  white-space: nowrap;
 }
 
 /* ---------- the start screen ---------- */
 
 #start {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 28px;
-    background: var(--bg);
-    transition: opacity .4s ease-out;
-    cursor: default;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: var(--bg);
+  transition: opacity 0.4s ease-out;
+  cursor: default;
 }
 
-#start.ready { cursor: pointer; }
-#start.gone { opacity: 0; pointer-events: none; }
+#start.ready {
+  cursor: pointer;
+}
+#start.gone {
+  opacity: 0;
+  pointer-events: none;
+}
 
 #spinner-cabinet {
-    height: min(160px, 30vh);
-    image-rendering: auto;
+  height: min(160px, 30vh);
+  image-rendering: auto;
 }
 
 #start-text {
-    font-size: 14px;
-    letter-spacing: 2px;
-    min-height: 1em;
+  font-size: 14px;
+  letter-spacing: 2px;
+  min-height: 1em;
 }
 
-#start.ready #start-text { animation: blink 1s steps(1) infinite; }
+#start.ready #start-text {
+  animation: blink 1s steps(1) infinite;
+}
 
 @keyframes blink {
-    50% { opacity: 0; }
+  50% {
+    opacity: 0;
+  }
 }
