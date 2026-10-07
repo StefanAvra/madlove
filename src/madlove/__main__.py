@@ -19,6 +19,7 @@ def parse_args(argv=None):
     )
     parser.add_argument('--bot', action='store_true', help='let the bot play')
     parser.add_argument('--show-fps', action='store_true', help='show frames per second')
+    parser.add_argument('--debug', action='store_true', help='enable the debug keys (see the README)')
     return parser.parse_args(argv)
 
 
@@ -28,6 +29,7 @@ def settings_from_args(args):
         free_mode=not (args.coin_op or args.cabinet),
         bot=args.bot,
         show_fps=args.show_fps,
+        debug=args.debug,
         data_dir=args.data_dir,
     )
 

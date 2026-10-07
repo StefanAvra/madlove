@@ -6,14 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-07
+
+The 2019 game made runnable anywhere: a Python package with tests and command-line options, and a browser version with the cabinet's controls and a CRT look, playable at https://stefanavra.github.io/madlove/.
+
 ### Added
 - `ROADMAP.md` with the plan for modernising the game and bringing it to the web.
 - `pyproject.toml` and `uv.lock`: run the game with `uv run madlove`.
-- `madlove` command with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
+- `madlove` command with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps`, `--debug` and `--version`.
 - README instructions for running the game, its controls and setting up a Raspberry Pi cabinet.
 - Tests (`uv run pytest`): a headless smoke test that plays the whole game and compares it against a recorded trace, and unit tests for scores, coins and the level data.
 - Linting and formatting with ruff.
 - GitHub Actions workflow that runs the linter, the format check and the tests.
+- A browser version built with pygbag (`web/build.py`). It saves high scores in the browser's local storage and has no exit menu.
+- The browser version's own page: a start screen with a rotating 3D cabinet, and on touch screens the cabinet's control panel with the stick and the Start / Pause and Action buttons.
+- A CRT look for the browser version: the cabinet's tube on its side, with vertical scanlines, a slight curve and the phosphor mask, from libretro's zfast_crt_geo shader (GPL-2.0-or-later). `?crt=geom` switches to libretro's crt-geom-mini (MIT), `?crt=0` turns it off.
+- The browser version is online at https://stefanavra.github.io/madlove/. GitHub Actions builds and publishes it on every push to master, once the checks pass.
 
 ### Changed
 - Switched from `pygame` to `pygame-ce`, the actively maintained fork. Requires Python 3.11 or newer.
@@ -22,6 +30,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - High scores are saved as JSON (`highscores.json`) in the platform's app data folder, instead of a pickle file in the current directory. Each entry records the date in UTC and whether it was played in free mode.
 - The code is a Python package in `src/madlove/`, installed with the `madlove` command. The 2,000-line `killyourlungs.py` is split into scenes, sprites and a `Game` object that holds the state of a running game; nothing starts or reads files at import any more.
 - Choosing YES in the exit menu ends the main loop instead of calling `sys.exit()`.
+- The main loop is async, so the same code runs in the browser.
+- The debug keys (extra ball, clearing the level, shooting power-up, ball speed, bot, FPS display, and the credits and high-score shortcuts on the title screen) only work with `--debug`, so players can't trigger them by accident.
+- The sound effects are OGG instead of WAV, because the browser version can only play OGG.
 
 ### Removed
 - `numpy` and `noise` dependencies, replaced by small built-in helpers.
@@ -32,7 +43,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `SyntaxWarning`s on modern Python from `is` comparisons with numbers.
 - The background colour lost its opacity after the first screen fade, because `render_fading()` modified the shared colour instead of a copy. This was invisible on the 2019 cabinet, but in windows with an alpha channel, such as on macOS, the logo and text were drawn with black or white boxes around them.
 - Every ball added with the debug key `B` started in the same direction, because the default velocity was drawn only once.
+- Holding the stick up or down on the name entry repeated letters in the opposite direction, because the held stick's up and down were swapped.
 - Power-up graphics (`pu_hotball`, `pu_longer`, `pu_metastasis`, `pu_shoot`, `pu_shorter`) were never committed, so a fresh checkout crashed when a power-up dropped. They have been recovered and added.
+- The browser version kept running, sound and CRT effect included, while its page was hidden or had lost focus, and a phone left with the game open in a tab got hot. Now everything stops until the page is back, and a running level comes back in the smoke break.
+- The CRT effect drew every picture twice on 120 Hz screens. It now draws only when the game has drawn a new one.
 
 ## [1.1.0] - 2019-10-18
 
@@ -69,6 +83,7 @@ The premiere build, shown at the Rundgang of the State Academy of Fine Arts Stut
 - Gamepad and arcade-stick controls.
 - A simple bot that plays the game, for debugging.
 
-[Unreleased]: https://github.com/StefanAvra/madlove/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/StefanAvra/madlove/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/StefanAvra/madlove/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/StefanAvra/madlove/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/StefanAvra/madlove/releases/tag/v1.0.0

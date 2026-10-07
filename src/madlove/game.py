@@ -1,13 +1,16 @@
 """The game object, the scene manager and the main loop."""
 
+import asyncio
+
 import pygame as pg
 
-from madlove import audio, bot, coins, config, scores
+from madlove import audio, bot, coins, config, scores, storage
 from madlove import controls as ctrls
 from madlove import strings as str_r
-from madlove.scenes import title
+from madlove.scenes import menu, play, title
 
 INTRO_IMAGES = 7  # level_intro_1.png to level_intro_7.png
+PAUSED_POLL = 0.25  # seconds between checks whether the browser's page is back
 
 
 class SceneManager:
@@ -30,7 +33,7 @@ class Game:
         self.dt = 0  # milliseconds since the last frame
         self.wallet = coins.Wallet()
         self.combo = scores.Combo()
-        self.highscores = scores.HighScores(self.settings.data_dir)
+        self.highscores = scores.HighScores(storage.highscores_store(self.settings))
         self.highscores.load()
         self.facts = str_r.Facts()
         self.intro_no = 1
@@ -43,6 +46,13 @@ class Game:
         self.screen = pg.display.set_mode(config.DISPLAY, flags, config.DEPTH)
         pg.mouse.set_visible(False)
         pg.display.set_caption(config.CAPTION)
+        if config.WEB:
+            from platform import window  # pygbag adds the browser's window object to this module
+
+            window.canvas.style.imageRendering = 'pixelated'  # scale up without blurring the pixels
+            self.page = window.madlove_page  # set up by web/static/madlove.js
+        else:
+            self.page = None
         self.font_8 = pg.font.Font(config.FONT, 8)
         self.font_16 = pg.font.Font(config.FONT, 16)
         self.font_24 = pg.font.Font(config.FONT, 24)
@@ -57,12 +67,30 @@ class Game:
             self.intro_no = 1
         return number
 
-    def run(self):
-        """runs until the game gets a QUIT event"""
+    def active(self):
+        """False while the browser's page is hidden or has lost focus. always True outside the browser"""
+        return self.page is None or self.page.active
+
+    async def run(self):
+        """runs until the game gets a QUIT event. it's async so the browser build can draw between frames"""
         self.clock = pg.time.Clock()
         self.scenes = SceneManager(self)
         while self.step():
-            pass
+            await asyncio.sleep(0)  # hands control back to the browser once per frame
+            if not self.active():
+                await self.wait_until_active()
+
+    async def wait_until_active(self):
+        """stops the game and its sound while the page is away, so a phone doesn't heat up with the game
+        left open in a tab. a running level comes back in the smoke break"""
+        audio.pause_all()
+        while not self.active():
+            await asyncio.sleep(PAUSED_POLL)
+        audio.unpause_all()
+        self.clock.tick()  # so the next frame's dt doesn't include the time away
+        scene = self.scenes.scene
+        if isinstance(scene, play.GameScene):
+            self.scenes.go_to(menu.OverlayMenuScene(self, scene, 'pause'))
 
     def step(self):
         """runs one frame. returns False when the game should quit"""
@@ -71,6 +99,7 @@ class Game:
         if pg.event.get(pg.QUIT):
             return False
 
+        ctrls.poll()  # the on-screen controls in the browser post their events now
         events = pg.event.get()
         for e in events:
             if e.type == pg.KEYDOWN:
@@ -94,4 +123,4 @@ class Game:
 
 
 def main(settings=None):
-    Game(settings).run()
+    asyncio.run(Game(settings).run())

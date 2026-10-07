@@ -5,13 +5,14 @@ import pytest
 
 from madlove import scores
 from madlove.scores import Combo, Entry, HighScores
+from madlove.storage import FileStore
 
 TOP_TEN = [Entry(f'P{place}', 1000 - place * 100) for place in range(1, 11)]  # 900, 800, ... 0
 
 
 @pytest.fixture
 def highscores(tmp_path):
-    table = HighScores(str(tmp_path))
+    table = HighScores(FileStore(str(tmp_path / 'highscores.json')))
     table.entries = list(TOP_TEN)
     return table
 
@@ -162,12 +163,12 @@ def test_load_without_a_file_keeps_and_saves_the_list(highscores):
     highscores.entries = list(reversed(TOP_TEN)) + [Entry('LOW', -1)]
     highscores.load()
     assert highscores.entries == TOP_TEN
-    with open(highscores.path, encoding='utf-8') as f:
+    with open(highscores.store.path, encoding='utf-8') as f:
         assert [Entry(**entry) for entry in json.load(f)] == TOP_TEN
 
 
 def test_new_list_starts_with_the_defaults(tmp_path):
-    table = HighScores(str(tmp_path))
+    table = HighScores(FileStore(str(tmp_path / 'highscores.json')))
     table.load()
     assert table.entries == sorted(scores.DEFAULT_HIGHSCORES, key=lambda entry: entry.score, reverse=True)
 
@@ -181,7 +182,7 @@ def test_highest_and_lowest(highscores):
 def test_saves_json(highscores):
     highscores.add('NEW', 5000, free_mode=True)
     highscores.save()
-    with open(highscores.path, encoding='utf-8') as f:
+    with open(highscores.store.path, encoding='utf-8') as f:
         saved = json.load(f)
     assert saved[0]['name'] == 'NEW'
     assert saved[0]['score'] == 5000
@@ -191,7 +192,7 @@ def test_saves_json(highscores):
 
 @pytest.mark.parametrize('content', ['not json', '{"name": "P1"}', '[{"nick": "P1"}]'])
 def test_load_an_unreadable_file_keeps_the_list(highscores, content):
-    with open(highscores.path, 'w', encoding='utf-8') as f:
+    with open(highscores.store.path, 'w', encoding='utf-8') as f:
         f.write(content)
     highscores.load()
     assert highscores.entries == TOP_TEN

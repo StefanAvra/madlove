@@ -18,7 +18,7 @@ def init():
     pg.mixer.init()
     print(f'Loading sounds from {SFX_DIR} ...')
     for filename in os.listdir(SFX_DIR):
-        if filename.endswith('.ogg') or filename.endswith('.wav'):
+        if filename.endswith('.ogg'):  # the only format the browser build can play
             print(f'{filename} ...')
             name = os.path.splitext(filename)[0]
             sfx_lib[name] = pg.mixer.Sound(file=os.path.join(SFX_DIR, filename))
@@ -48,6 +48,17 @@ def pause_music():
 
 
 def unpause_music():
+    pg.mixer.music.unpause()
+
+
+def pause_all():
+    """pauses the music and every sound effect that is playing"""
+    pg.mixer.pause()
+    pg.mixer.music.pause()
+
+
+def unpause_all():
+    pg.mixer.unpause()
     pg.mixer.music.unpause()
 
 

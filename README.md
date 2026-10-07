@@ -14,7 +14,11 @@ Programmed by Avra
 
 Graphic Design by Gurkiman
 
-Music by [Ozzed](https://ozzed.net/) under Creative Commons license (CC BY-SA)
+Music by [Ozzed](https://ozzed.net/) under Creative Commons license (CC BY-SA):
+- "About Ducks"
+- "Boktipset från helvetet"
+- "Here Comes the 8-Bit Empire"
+- "8-Bit Party"
 
 
 [Teaser Video on Youtube](https://www.youtube.com/watch?v=CY5pmC3nwCw)
@@ -40,6 +44,7 @@ The game opens in a 480 × 640 window in free play mode. Options:
 | `--data-dir PATH` | Where high scores are saved (default: your platform's app data folder) |
 | `--bot` | Let the bot play |
 | `--show-fps` | Show frames per second |
+| `--debug` | Enable the debug keys |
 | `--version` | Print the version |
 
 ### Controls
@@ -54,7 +59,7 @@ The game opens in a 480 × 640 window in free play mode. Options:
 | Insert coin | 1 | Coin acceptor |
 | Toggle music | M | — |
 
-Debug keys during a game: `B` adds a ball, `N` clears the level, `H` gives the shooting power-up, `O`/`P` slow down/speed up the balls, `F` shows FPS and ball velocity, `,` toggles the bot.
+Debug keys, only with `--debug`: during a game `B` adds a ball, `N` clears the level, `H` gives the shooting power-up, `O`/`P` slow down/speed up the balls, `F` shows FPS and ball velocity and `,` toggles the bot. On the title screen `C` shows the credits and `H` the high scores.
 
 ### Development
 
@@ -69,6 +74,24 @@ GitHub Actions runs all three on every push. To make `git blame` skip formatting
 The code lives in `src/madlove/`: `game.py` has the main loop and the `Game` object that holds the state of a running game, `scenes/` has one module per screen, and `sprites/` has the ball, paddle, bricks and the rest.
 
 The smoke test plays two scripted games and compares every scene change, with its frame and score, against `tests/golden/`. If a change to the gameplay is intended, regenerate the traces with `MADLOVE_UPDATE_GOLDEN=1 uv run pytest tests/test_smoke.py` and say why in the commit message.
+
+### Web version
+
+Play it at https://stefanavra.github.io/madlove/. GitHub Actions builds and publishes it on every push to master, once the checks pass.
+
+The browser version is built with [pygbag](https://github.com/pygame-web/pygbag), which runs Python and pygame-ce as WebAssembly. It plays in free mode, saves high scores in the browser's local storage and has no exit menu.
+
+```sh
+uv run --group web python web/build.py --serve         # build it and play it at http://127.0.0.1:8000
+uv run --group web python web/build.py --serve --lan   # also playable on phones in the same Wi-Fi
+uv run --group web python web/build.py                 # only build it, into build/madlove/build/web
+```
+
+The page is `web/madlove.tmpl`, with its styles and scripts in `web/static/`. While the game loads, it shows the rotating cabinet. Then it asks for a click, tap or key press, because browsers only play sound after the player has interacted with the page. The page loads the Python runtime from pygbag's CDN, so building and playing need an internet connection.
+
+On touch screens, the page shows the cabinet's control panel below the game, or on both sides of it in landscape: the stick, Start / Pause and Action. It works like the cabinet's joystick, so every screen behaves as on the cabinet. Add `?touch=1` to the address to show it anywhere, or `?touch=0` to hide it.
+
+The cabinet's CRT stood on its side, so the page draws the game again through a CRT shader, with vertical scanlines, a slight curve and the phosphor mask (`web/static/crt.js`). Add `?crt=0` to the address to turn it off, or `?crt=geom` to try a second shader. To tune it while playing, change `madlove_crt.settings` in the browser's console. The default shader, `web/static/crt-zfast.glsl`, is libretro's zfast_crt_geo and is licensed under the GPL, version 2 or later, unlike the rest of the code. The second, `web/static/crt-geom.glsl`, is libretro's crt-geom-mini under the MIT license.
 
 ### Raspberry Pi cabinet
 

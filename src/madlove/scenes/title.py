@@ -204,11 +204,11 @@ class TitleScene(base.Scene):
                             #     self.fade_leave_to = 2
                             # elif f == 'credits':
                             #     pass
-                    if e.key == pg.K_c:
+                    if e.key == pg.K_c and self.game.settings.debug:
                         self.manager.go_to(credits.CreditsScene(self.game, 0))
-                    if e.key == pg.K_ESCAPE:
+                    if e.key == pg.K_ESCAPE and self.game.settings.can_quit:
                         self.manager.go_to(menu.OverlayMenuScene(self.game, self, 'exit'))
-                    if e.key == pg.K_h:
+                    if e.key == pg.K_h and self.game.settings.debug:
                         self.manager.go_to(highscores.HighscoreScene(self.game))
                     # if e.key == pg.K_DOWN:
                     #     audio.play_sfx('menu_nav')

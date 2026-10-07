@@ -7,6 +7,13 @@ Plan for polishing MadLove after its 2019 run: make it runnable anywhere, put te
 - **Fact 8 is never shown.** The facts before each level skip the last one, about lawsuits, because its lines are up to 33 characters, wider than the screen. Re-wrap it to show it.
 - **Scene modules import each other.** Scenes switch to each other, so for example `scenes/title.py` and `scenes/highscores.py` import one another. This works because they only look up the classes when switching, but adding module-level code that uses another scene would break it.
 
+## Small changes
+
+Not tied to a phase.
+
+- [ ] **Let falling power-ups land before a level ends.** When the last brick goes, the level ends right away, even while a power-up is still falling. That power-up is neither caught nor missed, so the all-power-ups bonus (100,000 points) is still paid for it: missing one only cancels the bonus when it falls off the screen (`sprites/powerup.py`). The level should end once every falling power-up has been caught or missed. This changes the gameplay, so the golden traces may need regenerating, with the reason in the commit message.
+- [x] **Debug keys only with `--debug`.** `B`, `N`, `H`, `O`/`P`, `,` and `F` during a game, and `C` and `H` on the title screen. `M` (music) stays for everyone.
+
 ## Versioning
 
 Semantic versioning, with git tags for the historic builds:
@@ -15,7 +22,7 @@ Semantic versioning, with git tags for the historic builds:
 |---|---|---|
 | `v1.0.0` | `b0503a6` (2019-07-18) | Rundgang premiere build (the SD card is lost, so the last commit before the premiere is assumed to be it) |
 | `v1.1.0` | `fff788d` (2019-10-18) | End of the 2019 tour: free mode, location/cabinet ID, online + offline high scores |
-| `v2.0.0` | — | Modernised codebase, runs anywhere, web build |
+| `v2.0.0` | merge of Phase 4 (2026-10-07) | Modernised codebase, runs anywhere, web build |
 
 Changes are recorded in `CHANGELOG.md`.
 
@@ -69,27 +76,35 @@ A golden trace of two scripted games (`tests/golden/`) checked that every step l
 
 Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and pygame-ce to WebAssembly and packages the game as a static site. Check its current docs before starting.
 
-- [ ] Make `Game.run()` an `async` function that calls `await asyncio.sleep(0)` once per frame (`Game.step()` already runs a single frame)
-- [ ] Save high scores in browser storage
-- [ ] Default to free mode, or add an on-screen coin/start button
-- [ ] Touch controls for phones (the 480×640 portrait layout already suits phones)
-- [ ] "Click to start" screen, because browsers block audio until the player interacts
-- [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
-- [ ] Optionally also publish on itch.io
-- [ ] Release `v2.0.0`
+- [x] Make `Game.run()` an `async` function that calls `await asyncio.sleep(0)` once per frame
+- [x] Build with pygbag 0.9.3 (`web/build.py`; Python 3.12 in the browser) and convert the WAV sound effects to OGG
+- [x] Save high scores in browser storage (`localStorage`, key `madlove.highscores`)
+- [x] Default to free mode (already the default since Phase 1). The exit menu is off in the browser.
+- [x] Touch controls for phones: the cabinet's control panel (stick, Start / Pause, Action) below the game, working as a virtual joystick
+- ~~Optional second touch mode: the paddle follows your finger, with its speed capped at the stick's, and a tap launches the ball~~ Not needed: the stick works well on phones
+- [x] "Click to start" screen, because browsers block audio until the player interacts: our own page (`web/madlove.tmpl`) with the rotating cabinet while loading
+- [x] Polish the page: no focus outline around the game, no "leave site?" question when reloading
+- [ ] Test the touch controls on real phones: fine on a Pixel 7 Pro (Android), still to test on an iPhone SE 2020 (iOS Safari) once the game is on Pages
+- [x] The phone froze and got hot with the game left open in a tab (Pixel 7 Pro, Brave, 2026-10-07, with the CRT shader). Nothing stopped when the page went away, and SDL's sound kept running on the main thread even when silent. Now the game, its sound and the CRT pass stop while the page is hidden or has lost focus (`madlove_page.active` in `web/static/madlove.js`), and a running level comes back in the smoke break. The CRT also drew every picture twice on 120 Hz screens, and now draws only after the game has. Confirmed on the phone
+- [x] Deploy to GitHub Pages, next to the JS prototype: https://stefanavra.github.io/madlove/, published by the CI workflow on every push to master
+- ~~Optionally also publish on itch.io~~ Skipped
+- [x] Name all four Ozzed tracks in the README, as CC BY-SA attribution asks
+- [x] Release `v2.0.0`
 
 ### CRT look
 
 The original cabinet showed the game on a CRT, fed with analog composite video from the Pi. The web version should recreate that look with a shader. Expect some experimenting.
 
-- [ ] Choose where the shader runs, e.g. a WebGL post-processing pass over pygbag's canvas in a custom HTML template
+- [x] Choose where the shader runs: a WebGL canvas over pygbag's canvas (`web/static/crt.js`). pygame-ce has no shaders, and in the browser it draws on the CPU. SDL draws with WebGL2, so the page asks it to keep its picture (`preserveDrawingBuffer`) and reads it as a texture every frame
 - [ ] Experiment with the effects, comparing against the teaser video and photos of the cabinet:
-  - scanlines and the phosphor mask
+  - [x] scanlines and the phosphor mask: vertical scanlines, because the tube stood on its side. Both are measured in game pixels, one scanline per column and one mask stripe per row, so they look the same on every screen, and fade out where the screen has under about 2 pixels per game pixel
   - composite artefacts: colour bleed, blur, dot crawl
-  - screen curvature, vignette, bloom and glow
+  - [x] screen curvature and vignette
+  - bloom and glow
   - slight flicker or jitter
-- [ ] Look at existing CRT and NTSC shaders (e.g. the libretro collection) for reference, and check their licences before reusing any code
-- [ ] Add a switch to turn the effect off, and check performance on phones
+- [x] Look at existing CRT and NTSC shaders (e.g. the libretro collection) for reference, and check their licences before reusing any code. zfast_crt_geo (GPL-2.0-or-later), the fastest in the libretro forum's benchmarks with one texture read per pixel. crt-geom-mini (MIT), the permissive alternative, is ported too, for comparing (`?crt=geom`)
+- [x] Add a switch to turn the effect off: `?crt=0`
+- [ ] Check performance on phones, and whether the scanlines shimmer there (480 lines across about 2.4 device pixels each)
 
 ## Phase 5: Optional extras
 

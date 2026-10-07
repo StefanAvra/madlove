@@ -1,0 +1,189 @@
+<html lang="en"><script src="{{cookiecutter.cdn}}pythons.js" type=module id="site" data-python="python{{cookiecutter.PYBUILD}}" data-LINES=42 data-COLUMNS=132 data-os="vtx,snd,gui" async defer>#<!--
+
+# MadLove's page for pygbag, based on pygbag 0.9.3's default.tmpl. The Python part below loads and starts
+# the game; the HTML part after it is the page: start screen, game screen and the cabinet's control panel,
+# styled and driven by madlove.css and madlove.js. crt.js draws the game again through a CRT shader,
+# crt-zfast.glsl or crt-geom.glsl. web/build.py copies those next to index.html.
+
+print("Loading {{cookiecutter.title}} from {{cookiecutter.archive}}.apk, pygbag {{cookiecutter.version}}")
+
+import sys
+import asyncio
+import platform
+import json
+from pathlib import Path
+
+# do not rename
+async def custom_site():
+    import embed
+
+    platform.window.transfer.hidden = true
+    platform.window.canvas.style.visibility = "visible"
+
+    bundle = "{{cookiecutter.archive}}"
+
+    # the C or js loader could do that but be explicit.
+    appdir = Path(f"/data/data/{bundle}")
+    appdir.mkdir()
+
+    # unpack filesystem from compressed archive into work dir
+    if platform.window.location.host.find('.itch.zone')>0:
+        import zipfile
+        async with platform.fopen("{{cookiecutter.archive}}.apk", "rb") as archive:
+            with zipfile.ZipFile(archive) as zip_ref:
+                zip_ref.extractall(appdir.as_posix())
+    else:
+        import tarfile
+        async with platform.fopen("{{cookiecutter.archive}}.tar.gz", "rb") as archive:
+            tar = tarfile.open(fileobj=archive, mode="r:gz")
+            tar.extractall(path=appdir.as_posix(), filter='tar')
+            tar.close()
+
+    # preloader will change to work dir and prepend it to sys.path
+    platform.run_main(PyConfig, loaderhome= appdir / "assets", loadermain=None)
+
+    # wait preloading complete : that includes images and wasm compilation of bundled modules
+    while embed.counter()<0:
+        await asyncio.sleep(.1)
+
+    main = appdir / "assets" / "main.py"
+
+    # browsers only play sound after the player has clicked, tapped or pressed a key: madlove.js asks for it
+    # on the start screen and sets MM.UME then
+    if not platform.window.MM.UME:
+        __import__(__name__).__file__ = main
+        platform.window.madlove_page.ready()
+        while not platform.window.MM.UME:
+            await asyncio.sleep(.1)
+
+    # start async top level machinery if not started and add a console in any case if requested.
+    await TopLevel_async_handler.start_toplevel(platform.shell, console=window.python.config.debug)
+
+    # now that apk is mounted we have access to font cache
+    # but we need to fill __file__/__name__ that are not yet set
+    __import__(__name__).__file__ = main
+
+    await shell.source(main)
+
+    # if you don't reach that step
+    # your main.py has an infinite sync loop somewhere !
+
+    platform.window.madlove_page.started()
+    print("madlove.tmpl: done")
+
+    shell.interactive()
+
+asyncio.run( custom_site() )
+
+
+
+# BEGIN BLOCK
+#
+# do not alter that comment block it is separating python code from html code
+# =============================================================================
+# --></script><head><!--
+//=============================================================================
+--><script type="application/javascript">
+// END BLOCK
+
+// this dict is available under PyConfig.config from __main__
+config = {
+    xtermjs : "{{cookiecutter.xtermjs}}" ,
+    _sdl2 : "canvas",
+    user_canvas : 1,
+    user_canvas_managed : 1,  // madlove.css sizes the canvas, not pygbag
+    gui_divider : 1,
+    ume_block : {{cookiecutter.ume_block}},
+    can_close : 1,  // no "leave this page?" question on reload
+    archive : "{{cookiecutter.archive}}",
+    gui_debug : 2,
+    cdn : "{{cookiecutter.cdn}}",
+    autorun : {{cookiecutter.autorun}},
+    PYBUILD : "{{cookiecutter.PYBUILD}}",
+    fb_ar   :  0.75,
+    fb_width : "480",
+    fb_height : "640"
+}
+</script>
+
+    <title>{{cookiecutter.title}}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#140f12">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="madlove.css">
+    <script src="madlove.js"></script>
+    <script src="crt.js"></script>
+</head>
+
+<body>
+    <!-- pygbag's download status, kept hidden -->
+    <div id="transfer" hidden>
+        <div id="status"></div>
+        <progress value="0" max="100" id="progress"></progress>
+    </div>
+
+    <div id="stage">
+        <div id="screen">
+            <canvas id="canvas" width="480" height="640" oncontextmenu="event.preventDefault()" tabindex="1"></canvas>
+        </div>
+
+        <!-- the control panel, on touch screens -->
+        <div id="panel" class="panel-part">
+            <div id="stick-zone" aria-label="Stick">
+                <div id="stick">
+                    <span class="arrow up"></span>
+                    <span class="arrow down"></span>
+                    <span class="arrow left"></span>
+                    <span class="arrow right"></span>
+                    <span id="stick-washer"></span>
+                    <span id="stick-shaft"></span>
+                    <span id="stick-ball"></span>
+                </div>
+            </div>
+
+            <div id="buttons">
+                <!-- on the cabinet's diagonal: Action lower left, Start / Pause upper right -->
+                <div id="cluster">
+                    <div class="button-cell" id="cell-start" data-button="start" role="button" aria-label="Start / Pause">
+                        <span class="arcade-button"><span class="cap"></span></span>
+                        <span class="label">Start / Pause</span>
+                    </div>
+                    <div class="button-cell" id="cell-action" data-button="action" role="button" aria-label="Action">
+                        <span class="arcade-button"><span class="cap"></span></span>
+                        <span class="label">Action</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="legend">&larr; &rarr; MOVE &middot; SPACE LAUNCH &middot; ENTER START &middot; ESC SMOKE BREAK &middot; M MUSIC</div>
+    </div>
+
+    <div id="start">
+        <img id="spinner-cabinet" src="spinner.webp" alt="">
+        <div id="start-text">LOADING</div>
+    </div>
+
+    <canvas id="canvas3d" width="1" height="1" hidden></canvas>
+    <div id="html"></div>
+    <div id="pyconsole" hidden>
+        <div id="terminal" tabIndex=1 align="left"></div>
+    </div>
+    <div id="dlg" hidden>
+        <input type="file" id="dlg_multifile" multiple accept="image/*">
+    </div>
+
+    <script type="application/javascript">
+    async function custom_onload(debug_hidden) {
+        // called by pygbag before Python loads. append #debug to the URL to see the Python console
+        pyconsole.hidden = debug_hidden
+        transfer.hidden = true
+    }
+    function custom_prerun() {}
+    function custom_postrun() {}
+    </script>
+</body>
+</html>

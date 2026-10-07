@@ -1,6 +1,6 @@
 [project]
 name = "madlove"
-version = "2.0.0.dev0"
+version = "2.0.0"
 description = "Breakout-style arcade game about smoking, built for a coin-operated cabinet in 2019."
 readme = "README.md"
 license = "MIT"
@@ -22,6 +22,10 @@ build-backend = "uv_build"
 dev = [
     "pytest>=8",
     "ruff>=0.16",
+]
+# builds the browser version: uv run --group web python web/build.py
+web = [
+    "pygbag==0.9.3",
 ]
 
 [tool.ruff]

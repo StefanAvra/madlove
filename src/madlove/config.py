@@ -6,6 +6,7 @@ import pygame as pg
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+WEB = sys.platform == 'emscripten'  # running in the browser, built with pygbag
 
 
 def asset(*parts):
@@ -33,6 +34,8 @@ class Settings:
     bot: bool = False
     show_fps: bool = False
     show_velocity: bool = False
+    debug: bool = False  # the keys for testing: extra balls, clearing the level and so on
+    can_quit: bool = True  # False in the browser, where quitting would leave a frozen page
     data_dir: str = dataclasses.field(default_factory=default_data_dir)  # where high scores are saved
 
 
