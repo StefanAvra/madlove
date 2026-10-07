@@ -12,7 +12,7 @@ Plan for polishing MadLove after its 2019 run: make it runnable anywhere, put te
 Not tied to a phase.
 
 - [ ] **Let falling power-ups land before a level ends.** When the last brick goes, the level ends right away, even while a power-up is still falling. That power-up is neither caught nor missed, so the all-power-ups bonus (100,000 points) is still paid for it: missing one only cancels the bonus when it falls off the screen (`sprites/powerup.py`). The level should end once every falling power-up has been caught or missed. This changes the gameplay, so the golden traces may need regenerating, with the reason in the commit message.
-- [ ] **Debug keys only with `--debug`.** During a game, `B` (extra ball), `N` (clear the level), `H` (shooting power-up), `O`/`P` (ball speed) and `,` (bot) should only work when the game runs with a new `--debug` flag, so players can't trigger them by accident. Also decide about `F` (FPS and ball velocity) and the title screen's `C` (credits) and `H` (high scores). `M` (music) stays for everyone. Update the README's list of debug keys.
+- [x] **Debug keys only with `--debug`.** `B`, `N`, `H`, `O`/`P`, `,` and `F` during a game, and `C` and `H` on the title screen. `M` (music) stays for everyone.
 
 ## Versioning
 

@@ -246,6 +246,28 @@ class GameScene(base.Scene):
             self.all_sprites.add(self.balls)
             print(new_ball_pos)
 
+    def handle_debug_key(self, key):
+        """the keys for testing, which only work with --debug"""
+        if key == pg.K_o:
+            for ball in self.balls:
+                ball.speed_up(0.9)
+        if key == pg.K_p:
+            for ball in self.balls:
+                ball.speed_up(1.1)
+        if key == pg.K_b:
+            self.balls.add(Ball())
+            self.all_sprites.add(self.balls)
+        if key == pg.K_COMMA:
+            self.game.settings.bot = not self.game.settings.bot
+        if key == pg.K_f:
+            self.game.settings.show_fps = not self.game.settings.show_fps
+            self.game.settings.show_velocity = not self.game.settings.show_velocity
+        if key == pg.K_n:
+            self.bricks.empty()
+        if key == pg.K_h:
+            pu_event = pg.event.Event(pg.USEREVENT, powerup='shoot', timer=5000)
+            pg.event.post(pu_event)
+
     def handle_events(self, events):
         for e in events:
             if e.type == pg.JOYBUTTONDOWN:
@@ -266,26 +288,13 @@ class GameScene(base.Scene):
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_ESCAPE:
                     self.manager.go_to(menu.OverlayMenuScene(self.game, self, 'pause'))
-                if e.key == pg.K_o:
-                    for ball in self.balls:
-                        ball.speed_up(0.9)
-                if e.key == pg.K_p:
-                    for ball in self.balls:
-                        ball.speed_up(1.1)
+                if self.game.settings.debug:
+                    self.handle_debug_key(e.key)
                 if e.key == pg.K_m:
                     if audio.music_busy():
                         audio.stop_music()
                     else:
                         audio.play_music(-1)
-
-                if e.key == pg.K_b:
-                    self.balls.add(Ball())
-                    self.all_sprites.add(self.balls)
-                if e.key == pg.K_COMMA:
-                    self.game.settings.bot = not self.game.settings.bot
-                if e.key == pg.K_f:
-                    self.game.settings.show_fps = not self.game.settings.show_fps
-                    self.game.settings.show_velocity = not self.game.settings.show_velocity
                 if e.key == pg.K_SPACE:
                     if True not in [ball.sticky for ball in self.balls]:
                         if self.heartattack_mode == 'ready':
@@ -297,12 +306,6 @@ class GameScene(base.Scene):
                             self.notif_stack.append(Message(str_r.get_str('heart_killing'), False))
                     for ball in self.balls:
                         ball.sticky = False
-
-                if e.key == pg.K_n:
-                    self.bricks.empty()
-                if e.key == pg.K_h:
-                    pu_event = pg.event.Event(pg.USEREVENT, powerup='shoot', timer=5000)
-                    pg.event.post(pu_event)
 
             if e.type == pg.USEREVENT:
                 s = ''

@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 - `ROADMAP.md` with the plan for modernising the game and bringing it to the web.
 - `pyproject.toml` and `uv.lock`: run the game with `uv run madlove`.
-- `madlove` command with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps` and `--version`.
+- `madlove` command with command-line options: `--fullscreen`, `--coin-op`, `--cabinet`, `--data-dir`, `--bot`, `--show-fps`, `--debug` and `--version`.
 - README instructions for running the game, its controls and setting up a Raspberry Pi cabinet.
 - Tests (`uv run pytest`): a headless smoke test that plays the whole game and compares it against a recorded trace, and unit tests for scores, coins and the level data.
 - Linting and formatting with ruff.
@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The code is a Python package in `src/madlove/`, installed with the `madlove` command. The 2,000-line `killyourlungs.py` is split into scenes, sprites and a `Game` object that holds the state of a running game; nothing starts or reads files at import any more.
 - Choosing YES in the exit menu ends the main loop instead of calling `sys.exit()`.
 - The main loop is async, so the same code runs in the browser.
+- The debug keys (extra ball, clearing the level, shooting power-up, ball speed, bot, FPS display, and the credits and high-score shortcuts on the title screen) only work with `--debug`, so players can't trigger them by accident.
 - The sound effects are OGG instead of WAV, because the browser version can only play OGG.
 
 ### Removed
