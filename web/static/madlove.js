@@ -1,4 +1,5 @@
-// MadLove's page: the start screen and, on touch screens, the cabinet's control panel.
+// MadLove's page: the start screen, the pause while the page is away and, on touch screens, the
+// cabinet's control panel.
 //
 // The panel imitates the cabinet's joystick. Its state lives in window.madlove_input, which the game
 // reads every frame (madlove.controls.VirtualStick) and turns into the same events as the real stick
@@ -18,6 +19,7 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
     // ---------- the start screen ----------
 
     window.madlove_page = {
+        active: true,  // false while the page is hidden or has lost focus; the game and the CRT then stop
         // Python calls this when the game is loaded but the browser still needs a click, tap or key
         ready() {
             const start = document.getElementById('start');
@@ -39,6 +41,31 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
     }
     window.addEventListener('pointerdown', unlock_sound, true);
     window.addEventListener('keydown', unlock_sound, true);
+
+    // ---------- the pause while the page is away ----------
+
+    // a phone got hot with the game left open in a tab, so nothing runs while the page is hidden or
+    // something else has the focus. the game (madlove.game.Game.run) stops and pauses its sound, and
+    // comes back in the smoke break if a level was running
+    const releasers = [];  // let go of the stick and the buttons, so nothing stays held after the pause
+
+    function update_active() {
+        const active = document.visibilityState === 'visible' && document.hasFocus();
+        if (active === window.madlove_page.active) return;
+        window.madlove_page.active = active;
+        // SDL's sound keeps running on the page's main thread even when paused, so stop it too
+        const sound = window.Module && window.Module.SDL2 && window.Module.SDL2.audioContext;
+        if (active) {
+            window.madlove_crt.resume();
+            if (sound) sound.resume();
+        } else {
+            window.madlove_crt.pause();
+            if (sound) sound.suspend();
+            for (const release of releasers) release();
+        }
+    }
+    document.addEventListener('visibilitychange', update_active);
+    for (const type of ['pagehide', 'pageshow', 'blur', 'focus']) window.addEventListener(type, update_active);
 
     // ---------- the control panel ----------
 
@@ -93,6 +120,10 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
             pointer = null;
             set(0, 0);
         }
+        releasers.push(() => {
+            pointer = null;
+            set(0, 0);
+        });
 
         zone.addEventListener('pointerdown', (event) => {
             event.preventDefault();
@@ -117,11 +148,15 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
             const button = cell.querySelector('.arcade-button');
             let pointer = null;
 
-            function release(event) {
-                if (event.pointerId !== pointer) return;
+            function let_go() {
                 pointer = null;
                 button.classList.remove('pressed');
                 window.madlove_input[name] = false;
+            }
+            releasers.push(let_go);
+
+            function release(event) {
+                if (event.pointerId === pointer) let_go();
             }
 
             cell.addEventListener('pointerdown', (event) => {
@@ -142,6 +177,7 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
         if (touch) document.body.classList.add('touch');
         setup_stick();
         setup_buttons();
+        update_active();
         // no long-press menu anywhere on the page
         document.addEventListener('contextmenu', (event) => event.preventDefault());
     });

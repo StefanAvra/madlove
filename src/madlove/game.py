@@ -7,9 +7,10 @@ import pygame as pg
 from madlove import audio, bot, coins, config, scores, storage
 from madlove import controls as ctrls
 from madlove import strings as str_r
-from madlove.scenes import title
+from madlove.scenes import menu, play, title
 
 INTRO_IMAGES = 7  # level_intro_1.png to level_intro_7.png
+PAUSED_POLL = 0.25  # seconds between checks whether the browser's page is back
 
 
 class SceneManager:
@@ -49,6 +50,9 @@ class Game:
             from platform import window  # pygbag adds the browser's window object to this module
 
             window.canvas.style.imageRendering = 'pixelated'  # scale up without blurring the pixels
+            self.page = window.madlove_page  # set up by web/static/madlove.js
+        else:
+            self.page = None
         self.font_8 = pg.font.Font(config.FONT, 8)
         self.font_16 = pg.font.Font(config.FONT, 16)
         self.font_24 = pg.font.Font(config.FONT, 24)
@@ -63,12 +67,30 @@ class Game:
             self.intro_no = 1
         return number
 
+    def active(self):
+        """False while the browser's page is hidden or has lost focus. always True outside the browser"""
+        return self.page is None or self.page.active
+
     async def run(self):
         """runs until the game gets a QUIT event. it's async so the browser build can draw between frames"""
         self.clock = pg.time.Clock()
         self.scenes = SceneManager(self)
         while self.step():
             await asyncio.sleep(0)  # hands control back to the browser once per frame
+            if not self.active():
+                await self.wait_until_active()
+
+    async def wait_until_active(self):
+        """stops the game and its sound while the page is away, so a phone doesn't heat up with the game
+        left open in a tab. a running level comes back in the smoke break"""
+        audio.pause_all()
+        while not self.active():
+            await asyncio.sleep(PAUSED_POLL)
+        audio.unpause_all()
+        self.clock.tick()  # so the next frame's dt doesn't include the time away
+        scene = self.scenes.scene
+        if isinstance(scene, play.GameScene):
+            self.scenes.go_to(menu.OverlayMenuScene(self, scene, 'pause'))
 
     def step(self):
         """runs one frame. returns False when the game should quit"""

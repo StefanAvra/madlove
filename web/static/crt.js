@@ -4,7 +4,8 @@
 // and crt-geom-mini (crt-geom.glsl) with ?crt=geom in the URL. ?crt=0 turns the effect off.
 //
 // window.madlove_crt.settings holds the shader's settings, which can be changed while the game runs,
-// for example from the browser's console.
+// for example from the browser's console. madlove.js pauses the effect while the page is hidden or has
+// lost focus.
 
 "use strict";
 
@@ -57,19 +58,32 @@
   window.madlove_crt = {
     settings: shader ? shader.settings : {},
     start() {}, // madlove.js calls this when the game runs
+    pause() {}, // and these when the page goes away and comes back
+    resume() {},
   };
   if (!shader) return;
 
   // the shader reads the game's canvas after SDL has drawn it. WebGL clears a canvas once it is on
-  // screen, unless asked to keep the picture, so ask for that when SDL creates its context
+  // screen, unless asked to keep the picture, so ask for that when SDL creates its context. SDL's draw
+  // calls also tell the shader when there is a new picture: screens at 120 Hz ask for twice as many
+  // frames as the game draws
+  let game_drew = false;
   const get_context = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, attributes) {
-    if (this.id === "canvas" && (type === "webgl" || type === "webgl2")) {
-      attributes = Object.assign({}, attributes, {
-        preserveDrawingBuffer: true,
-      });
+    if (this.id !== "canvas" || (type !== "webgl" && type !== "webgl2"))
+      return get_context.call(this, type, attributes);
+    attributes = Object.assign({}, attributes, { preserveDrawingBuffer: true });
+    const gl = get_context.call(this, type, attributes);
+    if (gl) {
+      for (const name of ["drawArrays", "drawElements"]) {
+        const draw = gl[name];
+        gl[name] = function (...args) {
+          game_drew = true;
+          return draw.apply(this, args);
+        };
+      }
     }
-    return get_context.call(this, type, attributes);
+    return gl;
   };
 
   const VERTEX_SHADER = `
@@ -147,15 +161,22 @@
 
       const settings = shader.settings;
       let frames = 0;
+      let request = 0; // the pending animation frame, 0 if none
       function frame() {
+        request = 0;
+        if (window.madlove_page.active) request = requestAnimationFrame(frame);
         // the screen's size in device pixels, so the shader knows how much detail fits
         const width = Math.round(crt.clientWidth * devicePixelRatio);
         const height = Math.round(crt.clientHeight * devicePixelRatio);
-        if (width !== crt.width || height !== crt.height) {
+        const resized = width !== crt.width || height !== crt.height;
+        if (resized) {
           crt.width = width;
           crt.height = height;
           gl.viewport(0, 0, width, height);
+        } else if (!game_drew) {
+          return; // the canvas keeps showing the last picture
         }
+        game_drew = false;
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, game);
         gl.uniform2f(texture_size, game.width, game.height);
         gl.uniform2f(output_size, width, height);
@@ -164,11 +185,18 @@
         for (const [setting, location] of setting_uniforms)
           gl.uniform1f(location, settings[setting]);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-        requestAnimationFrame(frame);
       }
 
+      window.madlove_crt.pause = () => {
+        cancelAnimationFrame(request);
+        request = 0;
+      };
+      window.madlove_crt.resume = () => {
+        if (!request) request = requestAnimationFrame(frame);
+      };
+
       game.parentElement.appendChild(crt);
-      requestAnimationFrame(frame);
+      if (window.madlove_page.active) window.madlove_crt.resume();
     } catch (error) {
       // the game's own canvas stays visible
       console.warn("CRT effect off:", error);

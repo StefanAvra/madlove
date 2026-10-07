@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Every ball added with the debug key `B` started in the same direction, because the default velocity was drawn only once.
 - Holding the stick up or down on the name entry repeated letters in the opposite direction, because the held stick's up and down were swapped.
 - Power-up graphics (`pu_hotball`, `pu_longer`, `pu_metastasis`, `pu_shoot`, `pu_shorter`) were never committed, so a fresh checkout crashed when a power-up dropped. They have been recovered and added.
+- The browser version kept running, sound and CRT effect included, while its page was hidden or had lost focus, and a phone left with the game open in a tab got hot. Now everything stops until the page is back, and a running level comes back in the smoke break.
+- The CRT effect drew every picture twice on 120 Hz screens. It now draws only when the game has drawn a new one.
 
 ## [1.1.0] - 2019-10-18
 

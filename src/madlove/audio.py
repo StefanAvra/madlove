@@ -51,6 +51,17 @@ def unpause_music():
     pg.mixer.music.unpause()
 
 
+def pause_all():
+    """pauses the music and every sound effect that is playing"""
+    pg.mixer.pause()
+    pg.mixer.music.pause()
+
+
+def unpause_all():
+    pg.mixer.unpause()
+    pg.mixer.music.unpause()
+
+
 def music_busy():
     return pg.mixer.music.get_busy()
 
