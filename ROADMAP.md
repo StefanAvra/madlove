@@ -85,6 +85,7 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 - [x] "Click to start" screen, because browsers block audio until the player interacts: our own page (`web/madlove.tmpl`) with the rotating cabinet while loading
 - [x] Polish the page: no focus outline around the game, no "leave site?" question when reloading
 - [ ] Test the touch controls on real phones (iOS Safari and Android Chrome)
+- [ ] **Next:** the phone froze and got hot with the game left open in a tab (Pixel 7 Pro, Brave, 2026-10-07, with the CRT shader). Find out why. Suggested fix: stop the game, and the CRT pass in `web/static/crt.js`, when the page loses focus or is hidden, and continue when it comes back
 - [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
 - [ ] Optionally also publish on itch.io
 - [x] Name all four Ozzed tracks in the README, as CC BY-SA attribution asks
