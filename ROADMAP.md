@@ -22,7 +22,7 @@ Semantic versioning, with git tags for the historic builds:
 |---|---|---|
 | `v1.0.0` | `b0503a6` (2019-07-18) | Rundgang premiere build (the SD card is lost, so the last commit before the premiere is assumed to be it) |
 | `v1.1.0` | `fff788d` (2019-10-18) | End of the 2019 tour: free mode, location/cabinet ID, online + offline high scores |
-| `v2.0.0` | — | Modernised codebase, runs anywhere, web build |
+| `v2.0.0` | merge of Phase 4 (2026-10-07) | Modernised codebase, runs anywhere, web build |
 
 Changes are recorded in `CHANGELOG.md`.
 
@@ -89,7 +89,7 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 - [x] Deploy to GitHub Pages, next to the JS prototype: https://stefanavra.github.io/madlove/, published by the CI workflow on every push to master
 - ~~Optionally also publish on itch.io~~ Skipped
 - [x] Name all four Ozzed tracks in the README, as CC BY-SA attribution asks
-- [ ] Release `v2.0.0`
+- [x] Release `v2.0.0`
 
 ### CRT look
 

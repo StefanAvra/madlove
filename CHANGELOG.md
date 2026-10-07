@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-07
+
+The 2019 game made runnable anywhere: a Python package with tests and command-line options, and a browser version with the cabinet's controls and a CRT look, playable at https://stefanavra.github.io/madlove/.
+
 ### Added
 - `ROADMAP.md` with the plan for modernising the game and bringing it to the web.
 - `pyproject.toml` and `uv.lock`: run the game with `uv run madlove`.
@@ -79,6 +83,7 @@ The premiere build, shown at the Rundgang of the State Academy of Fine Arts Stut
 - Gamepad and arcade-stick controls.
 - A simple bot that plays the game, for debugging.
 
-[Unreleased]: https://github.com/StefanAvra/madlove/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/StefanAvra/madlove/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/StefanAvra/madlove/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/StefanAvra/madlove/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/StefanAvra/madlove/releases/tag/v1.0.0
