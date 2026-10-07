@@ -5,6 +5,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
   check:
@@ -27,3 +28,40 @@ jobs:
         run: uv run --frozen ruff format --check .
       - name: Test
         run: uv run --frozen pytest
+
+  # builds the web version and publishes it to https://stefanavra.github.io/madlove/
+  build-web:
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+      - name: Build
+        run: uv run --frozen --group web python web/build.py
+      # the page loads the game from the tar.gz; only itch.io loads the apk, which is just as big
+      - name: Remove the itch.io archive
+        run: rm build/madlove/build/web/madlove.apk
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/madlove/build/web
+
+  deploy:
+    needs: build-web
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # one deploy at a time, and a running one is never cancelled halfway
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

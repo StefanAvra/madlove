@@ -77,6 +77,8 @@ The smoke test plays two scripted games and compares every scene change, with it
 
 ### Web version
 
+Play it at https://stefanavra.github.io/madlove/. GitHub Actions builds and publishes it on every push to master, once the checks pass.
+
 The browser version is built with [pygbag](https://github.com/pygame-web/pygbag), which runs Python and pygame-ce as WebAssembly. It plays in free mode, saves high scores in the browser's local storage and has no exit menu.
 
 ```sh

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A browser version built with pygbag (`web/build.py`). It saves high scores in the browser's local storage and has no exit menu.
 - The browser version's own page: a start screen with a rotating 3D cabinet, and on touch screens the cabinet's control panel with the stick and the Start / Pause and Action buttons.
 - A CRT look for the browser version: the cabinet's tube on its side, with vertical scanlines, a slight curve and the phosphor mask, from libretro's zfast_crt_geo shader (GPL-2.0-or-later). `?crt=geom` switches to libretro's crt-geom-mini (MIT), `?crt=0` turns it off.
+- The browser version is online at https://stefanavra.github.io/madlove/. GitHub Actions builds and publishes it on every push to master, once the checks pass.
 
 ### Changed
 - Switched from `pygame` to `pygame-ce`, the actively maintained fork. Requires Python 3.11 or newer.

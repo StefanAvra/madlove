@@ -81,13 +81,13 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 - [x] Save high scores in browser storage (`localStorage`, key `madlove.highscores`)
 - [x] Default to free mode (already the default since Phase 1). The exit menu is off in the browser.
 - [x] Touch controls for phones: the cabinet's control panel (stick, Start / Pause, Action) below the game, working as a virtual joystick
-- [ ] Optional second touch mode: the paddle follows your finger, with its speed capped at the stick's, and a tap launches the ball
+- ~~Optional second touch mode: the paddle follows your finger, with its speed capped at the stick's, and a tap launches the ball~~ Not needed: the stick works well on phones
 - [x] "Click to start" screen, because browsers block audio until the player interacts: our own page (`web/madlove.tmpl`) with the rotating cabinet while loading
 - [x] Polish the page: no focus outline around the game, no "leave site?" question when reloading
-- [ ] Test the touch controls on real phones (iOS Safari and Android Chrome)
+- [ ] Test the touch controls on real phones: fine on a Pixel 7 Pro (Android), still to test on an iPhone SE 2020 (iOS Safari) once the game is on Pages
 - [x] The phone froze and got hot with the game left open in a tab (Pixel 7 Pro, Brave, 2026-10-07, with the CRT shader). Nothing stopped when the page went away, and SDL's sound kept running on the main thread even when silent. Now the game, its sound and the CRT pass stop while the page is hidden or has lost focus (`madlove_page.active` in `web/static/madlove.js`), and a running level comes back in the smoke break. The CRT also drew every picture twice on 120 Hz screens, and now draws only after the game has. Confirmed on the phone
-- [ ] Deploy to GitHub Pages, next to the JS prototype at `stefanavra.github.io`
-- [ ] Optionally also publish on itch.io
+- [x] Deploy to GitHub Pages, next to the JS prototype: https://stefanavra.github.io/madlove/, published by the CI workflow on every push to master
+- ~~Optionally also publish on itch.io~~ Skipped
 - [x] Name all four Ozzed tracks in the README, as CC BY-SA attribution asks
 - [ ] Release `v2.0.0`
 
