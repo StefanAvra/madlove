@@ -64,6 +64,16 @@ html, body {
     outline: none;
 }
 
+/* crt.js draws the game again here, through the CRT shader. clicks and touches go through to the game */
+#crt {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+}
+
 #legend {
     grid-area: legend;
     align-self: center;

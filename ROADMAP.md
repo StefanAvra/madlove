@@ -94,14 +94,16 @@ Use [pygbag](https://github.com/pygame-web/pygbag), which compiles CPython and p
 
 The original cabinet showed the game on a CRT, fed with analog composite video from the Pi. The web version should recreate that look with a shader. Expect some experimenting.
 
-- [ ] Choose where the shader runs, e.g. a WebGL post-processing pass over pygbag's canvas in a custom HTML template
+- [x] Choose where the shader runs: a WebGL canvas over pygbag's canvas (`web/static/crt.js`). pygame-ce has no shaders, and in the browser it draws on the CPU. SDL draws with WebGL2, so the page asks it to keep its picture (`preserveDrawingBuffer`) and reads it as a texture every frame
 - [ ] Experiment with the effects, comparing against the teaser video and photos of the cabinet:
-  - scanlines and the phosphor mask
+  - [x] scanlines and the phosphor mask: vertical scanlines, because the tube stood on its side. Both are measured in game pixels, one scanline per column and one mask stripe per row, so they look the same on every screen, and fade out where the screen has under about 2 pixels per game pixel
   - composite artefacts: colour bleed, blur, dot crawl
-  - screen curvature, vignette, bloom and glow
+  - [x] screen curvature and vignette
+  - bloom and glow
   - slight flicker or jitter
-- [ ] Look at existing CRT and NTSC shaders (e.g. the libretro collection) for reference, and check their licences before reusing any code
-- [ ] Add a switch to turn the effect off, and check performance on phones
+- [x] Look at existing CRT and NTSC shaders (e.g. the libretro collection) for reference, and check their licences before reusing any code. zfast_crt_geo (GPL-2.0-or-later), the fastest in the libretro forum's benchmarks with one texture read per pixel. crt-geom-mini (MIT), the permissive alternative, is ported too, for comparing (`?crt=geom`)
+- [x] Add a switch to turn the effect off: `?crt=0`
+- [ ] Check performance on phones, and whether the scanlines shimmer there (480 lines across about 2.4 device pixels each)
 
 ## Phase 5: Optional extras
 

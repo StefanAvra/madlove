@@ -89,6 +89,8 @@ The page is `web/madlove.tmpl`, with its styles and scripts in `web/static/`. Wh
 
 On touch screens, the page shows the cabinet's control panel below the game, or on both sides of it in landscape: the stick, Start / Pause and Action. It works like the cabinet's joystick, so every screen behaves as on the cabinet. Add `?touch=1` to the address to show it anywhere, or `?touch=0` to hide it.
 
+The cabinet's CRT stood on its side, so the page draws the game again through a CRT shader, with vertical scanlines, a slight curve and the phosphor mask (`web/static/crt.js`). Add `?crt=0` to the address to turn it off, or `?crt=geom` to try a second shader. To tune it while playing, change `madlove_crt.settings` in the browser's console. The default shader, `web/static/crt-zfast.glsl`, is libretro's zfast_crt_geo and is licensed under the GPL, version 2 or later, unlike the rest of the code. The second, `web/static/crt-geom.glsl`, is libretro's crt-geom-mini under the MIT license.
+
 ### Raspberry Pi cabinet
 
 The game was designed to run on a Raspberry Pi 3 with a 480 × 640 picture on a CRT over composite video. The original SD card, with its boot script and display settings, is lost. These steps are a starting point and **have not yet been tested on a Pi**.

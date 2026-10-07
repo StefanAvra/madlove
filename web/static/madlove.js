@@ -27,6 +27,7 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
         // Python calls this when the game runs
         started() {
             document.getElementById('start').classList.add('gone');
+            window.madlove_crt.start();
         },
     };
 

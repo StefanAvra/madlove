@@ -2,7 +2,8 @@
 
 # MadLove's page for pygbag, based on pygbag 0.9.3's default.tmpl. The Python part below loads and starts
 # the game; the HTML part after it is the page: start screen, game screen and the cabinet's control panel,
-# styled and driven by madlove.css and madlove.js. web/build.py copies those next to index.html.
+# styled and driven by madlove.css and madlove.js. crt.js draws the game again through a CRT shader,
+# crt-zfast.glsl or crt-geom.glsl. web/build.py copies those next to index.html.
 
 print("Loading {{cookiecutter.title}} from {{cookiecutter.archive}}.apk, pygbag {{cookiecutter.version}}")
 
@@ -114,6 +115,7 @@ config = {
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="madlove.css">
     <script src="madlove.js"></script>
+    <script src="crt.js"></script>
 </head>
 
 <body>
