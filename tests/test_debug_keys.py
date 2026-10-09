@@ -1,6 +1,7 @@
 import pygame as pg
 import pytest
 
+from madlove import audio
 from madlove import game as game_module
 from madlove.__main__ import parse_args, settings_from_args
 from madlove.scenes import credits, highscores, play, title
@@ -15,11 +16,14 @@ def test_game_keys_need_debug(game, debug):
     game.settings.debug = debug
     scene = play.GameScene(game, 1)
     balls = len(scene.balls)
+    music = audio.music_busy()
     press(scene, pg.K_b)
     press(scene, pg.K_COMMA)
     press(scene, pg.K_f)
     press(scene, pg.K_n)
+    press(scene, pg.K_m)
     assert (len(scene.balls) == balls + 1) == debug
+    assert (audio.music_busy() != music) == debug
     assert game.settings.bot == debug
     assert game.settings.show_fps == debug
     assert (len(scene.bricks) == 0) == debug

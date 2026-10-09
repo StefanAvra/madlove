@@ -56,9 +56,8 @@ The game opens in a 480 × 640 window in free play mode. Options:
 | Launch the ball, confirm your name          | Space         | Action button  |
 | Smoke break (pause)                         | Esc           | Start button   |
 | Insert coin                                 | 1             | Coin acceptor  |
-| Toggle music                                | M             | —              |
 
-Debug keys, only with `--debug`: during a game `B` adds a ball, `N` clears the level, `H` gives the shooting power-up, `O`/`P` slow down/speed up the balls, `F` shows FPS and ball velocity and `,` toggles the bot. On the title screen `C` shows the credits and `H` the high scores.
+Debug keys, only with `--debug`: during a game `B` adds a ball, `N` clears the level, `H` gives the shooting power-up, `O`/`P` slow down/speed up the balls, `F` shows FPS and ball velocity, `M` toggles the music and `,` toggles the bot. On the title screen `C` shows the credits and `H` the high scores.
 
 ### Development
 

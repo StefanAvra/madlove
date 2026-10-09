@@ -267,6 +267,11 @@ class GameScene(base.Scene):
         if key == pg.K_h:
             pu_event = pg.event.Event(pg.USEREVENT, powerup='shoot', timer=5000)
             pg.event.post(pu_event)
+        if key == pg.K_m:
+            if audio.music_busy():
+                audio.stop_music()
+            else:
+                audio.play_music(-1)
 
     def handle_events(self, events):
         for e in events:
@@ -290,11 +295,6 @@ class GameScene(base.Scene):
                     self.manager.go_to(menu.OverlayMenuScene(self.game, self, 'pause'))
                 if self.game.settings.debug:
                     self.handle_debug_key(e.key)
-                if e.key == pg.K_m:
-                    if audio.music_busy():
-                        audio.stop_music()
-                    else:
-                        audio.play_music(-1)
                 if e.key == pg.K_SPACE:
                     if True not in [ball.sticky for ball in self.balls]:
                         if self.heartattack_mode == 'ready':
