@@ -89,6 +89,8 @@ The page is `web/madlove.tmpl`, with its styles and scripts in `web/static/`. Wh
 
 On touch screens, the page shows the cabinet's control panel below the game, or on both sides of it in landscape: the stick, Start / Pause and Action. It works like the cabinet's joystick, so every screen behaves as on the cabinet. Add `?touch=1` to the address to show it anywhere, or `?touch=0` to hide it.
 
+The game moves in steps of 1/60 s and runs two of them per picture at 30 frames per second, where iOS's Low Power Mode holds Safari: it plays at the right speed, but less smoothly. The start screen measures the time between frames and asks the player to turn Low Power Mode off when it finds them held at 30. Add `?fps=1` to the address to see what it measures, in batches of 30 frames, during the game too.
+
 The cabinet's CRT stood on its side, so the page draws the game again through a CRT shader, with vertical scanlines, a slight curve and the phosphor mask (`web/static/crt.js`). Add `?crt=0` to the address to turn it off, or `?crt=geom` to try a second shader. To tune it while playing, change `madlove_crt.settings` in the browser's console. The default shader, `web/static/crt-zfast.glsl`, is libretro's zfast_crt_geo and is licensed under the GPL, version 2 or later, unlike the rest of the code. The second, `web/static/crt-geom.glsl`, is libretro's crt-geom-mini under the MIT license.
 
 ### Raspberry Pi cabinet

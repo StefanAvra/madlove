@@ -441,6 +441,36 @@ body.touch #screen {
   min-height: 1em;
 }
 
+#start-warning {
+  max-width: min(340px, calc(100vw - 32px));
+  font-size: 10px;
+  line-height: 1.8;
+  text-align: center;
+  color: #fff;
+}
+
+#start-warning[hidden] {
+  display: none;
+}
+
+#start-warning span {
+  color: var(--text);
+}
+
+/* ?fps=1: what madlove.js measures */
+#fps-readout {
+  position: fixed;
+  top: env(safe-area-inset-top, 0);
+  left: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 4px;
+  font: 9px/1.4 ui-monospace, Menlo, monospace;
+  color: #fff;
+  background: rgb(0 0 0 / 0.7);
+  pointer-events: none;
+}
+
 #start.ready #start-text {
   animation: blink 1s steps(1) infinite;
 }

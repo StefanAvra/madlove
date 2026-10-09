@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- The browser version's start screen warns when the screen is held at 30 frames per second, as iOS's Low Power Mode does, because the game then shows only every other step. Browsers don't tell a page about Low Power Mode, so it measures the time between frames. `?fps=1` shows what it measures.
+
 ### Changed
 - The game moves in fixed steps of 1/60 s and runs as many per picture as the time since the last one, up to three, so it plays at the same speed on screens slower than 60 frames per second, such as Safari's 30 in Low Power Mode, where it played at half speed. Every step moves the ball as far as before and checks its collisions, so it hits, and clips, the same bricks at any frame rate. The fades and the heart attack's flashing count steps too. Below 20 frames per second the game slows down.
 

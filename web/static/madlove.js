@@ -109,6 +109,65 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
         };
     }, 20);
 
+    // ---------- the frame rate ----------
+
+    // at 30 frames per second the game shows every other step of its 60 a second (madlove.game), so the
+    // ball and the paddle jump. iOS's Low Power Mode holds Safari at 30, and no browser tells a page about
+    // it, so the start screen measures the time between frames and asks the player to turn it off. a page that is
+    // busy loading also misses frames, but then their times vary; a capped one shows almost only frames
+    // of about 33 ms
+    const FRAMES_MEASURED = 30;
+    const CAPPED_SHARE = 0.75;  // of the frames measured, how many have to look capped
+    const CAPPED_MIN = 30;  // milliseconds; 33.3 at 30 frames per second
+    const CAPPED_MAX = 37;
+    const FULL_SPEED_MAX = 22;  // a median below this, about 45 frames per second and up, is full speed
+    const FRAME_GAP = 100;  // longer gaps are the page being away or blocked, not the frame rate
+
+    // ?fps=1 in the URL shows what is measured, in the top left corner, and goes on measuring in the game
+    const SHOW_FPS = params.get('fps') === '1';
+    const FPS_LINES = 8;  // the batches shown, the newest at the top
+
+    let frame_times = [];
+    let last_frame = 0;
+    let gaps = 0;  // frames left out for being longer than FRAME_GAP, in the current batch
+    let measuring = 0;  // the pending animation frame, 0 once the game runs
+    let fps_lines = [];
+
+    function measure(time) {
+        measuring = requestAnimationFrame(measure);
+        const interval = time - last_frame;
+        last_frame = time;
+        if (interval > FRAME_GAP) gaps++;
+        if (interval <= 0 || interval > FRAME_GAP) return;
+        frame_times.push(interval);
+        if (frame_times.length < FRAMES_MEASURED) return;
+        const capped = frame_times.filter((t) => t >= CAPPED_MIN && t <= CAPPED_MAX).length;
+        const sorted = frame_times.slice().sort((a, b) => a - b);
+        const median = sorted[FRAMES_MEASURED >> 1];
+        const warning = document.getElementById('start-warning');
+        if (capped >= CAPPED_SHARE * FRAMES_MEASURED) warning.hidden = false;
+        else if (median < FULL_SPEED_MAX) warning.hidden = true;  // back from turning it off
+        if (SHOW_FPS) {
+            const ms = (t) => t.toFixed(1).padStart(5);
+            fps_lines.unshift(
+                `${Math.round(1000 / median).toString().padStart(3)} FPS` +
+                ` MED${ms(median)} MIN${ms(sorted[0])} MAX${ms(sorted[FRAMES_MEASURED - 1])}` +
+                ` CAP${Math.round((100 * capped) / FRAMES_MEASURED).toString().padStart(4)}%` +
+                ` GAPS ${gaps} ${warning.hidden ? '' : 'WARN'}`,
+            );
+            fps_lines = fps_lines.slice(0, FPS_LINES);
+            document.getElementById('fps-readout').textContent = fps_lines.join('\n');
+        }
+        frame_times = [];
+        gaps = 0;
+    }
+
+    function stop_measuring() {
+        if (SHOW_FPS) return;
+        cancelAnimationFrame(measuring);
+        measuring = 0;
+    }
+
     // ---------- the start screen ----------
 
     window.madlove_page = {
@@ -142,6 +201,7 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
             loading.done = true;
             show_progress();
             document.getElementById('start').classList.add('gone');
+            stop_measuring();
             window.madlove_crt.start();
         },
     };
@@ -291,6 +351,13 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
         setup_stick();
         setup_buttons();
         update_active();
+        if (SHOW_FPS) {
+            const readout = document.createElement('pre');
+            readout.id = 'fps-readout';
+            readout.textContent = 'MEASURING';
+            document.body.appendChild(readout);
+        }
+        measuring = requestAnimationFrame(measure);
         // no long-press menu anywhere on the page
         document.addEventListener('contextmenu', (event) => event.preventDefault());
     });
