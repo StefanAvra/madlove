@@ -6,6 +6,9 @@
 
 pygbag packs a folder with a main.py, so this first copies web/main.py and the madlove package into
 build/madlove. The page comes from web/madlove.tmpl, plus the files in web/static and the game's font.
+
+The music is the smaller one from web/music (see web/make_music.py). Only the title screen's is packed with
+the game; the page downloads the rest from music/ while the game runs (madlove.audio).
 """
 
 import argparse
@@ -22,6 +25,8 @@ WEB = ROOT / 'web'
 APP_DIR = ROOT / 'build' / 'madlove'  # the folder name becomes the name of the packed game, madlove.apk
 SITE_DIR = APP_DIR / 'build' / 'web'
 FONT = ROOT / 'src' / 'madlove' / 'assets' / 'font' / 'PressStart2P-Regular.ttf'
+MUSIC_DIR = APP_DIR / 'madlove' / 'assets' / 'sounds' / 'music'
+PACKED_MUSIC = ['titlescreen.ogg']  # what the game starts with
 PORT = 8000
 # not 'localhost': pygbag takes pages on localhost for its own test server, and loads pygame from there
 HOST = '127.0.0.1'
@@ -31,6 +36,10 @@ def stage():
     if APP_DIR.exists():
         shutil.rmtree(APP_DIR)
     shutil.copytree(ROOT / 'src' / 'madlove', APP_DIR / 'madlove', ignore=shutil.ignore_patterns('__pycache__', '.*'))
+    shutil.rmtree(MUSIC_DIR)
+    MUSIC_DIR.mkdir()
+    for name in PACKED_MUSIC:
+        shutil.copy(WEB / 'music' / name, MUSIC_DIR)
     shutil.copy(WEB / 'main.py', APP_DIR / 'main.py')
 
 
@@ -39,6 +48,7 @@ def build():
     subprocess.run(command + [str(APP_DIR)], check=True)
     # after pygbag, so these files are served next to index.html but not packed into the game
     shutil.copytree(WEB / 'static', SITE_DIR, dirs_exist_ok=True)
+    shutil.copytree(WEB / 'music', SITE_DIR / 'music', ignore=lambda folder, names: PACKED_MUSIC)
     shutil.copy(FONT, SITE_DIR)
     print(f'built {SITE_DIR}')
 

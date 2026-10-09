@@ -1,6 +1,7 @@
 """The game object, the scene manager and the main loop."""
 
 import asyncio
+import json
 
 import pygame as pg
 
@@ -51,6 +52,8 @@ class Game:
 
             window.canvas.style.imageRendering = 'pixelated'  # scale up without blurring the pixels
             self.page = window.madlove_page  # set up by web/static/madlove.js
+            # the music that isn't in the game's archive downloads now, while the title screen plays
+            self.page.fetch_music(audio.MUSIC_DIR, json.dumps(audio.missing_music()))
         else:
             self.page = None
         self.font_8 = pg.font.Font(config.FONT, 8)
@@ -99,6 +102,7 @@ class Game:
         if pg.event.get(pg.QUIT):
             return False
 
+        audio.update()  # music that was still downloading starts once it's there
         ctrls.poll()  # the on-screen controls in the browser post their events now
         events = pg.event.get()
         for e in events:

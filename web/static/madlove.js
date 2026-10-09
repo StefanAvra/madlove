@@ -67,6 +67,33 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
     }
     fetch_archive();
 
+    // ---------- the music ----------
+
+    const MUSIC_TRIES = 3;
+    const MUSIC_RETRY = 2000;  // milliseconds before trying a track again
+
+    async function download_music(folder, names) {
+        for (const name of names) {
+            const url = `music/${name}.ogg`;
+            for (let tries = 1; ; tries++) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`${url}: ${response.status}`);
+                    const bytes = new Uint8Array(await response.arrayBuffer());
+                    // all at once, so Python never finds half a file
+                    window.FS.writeFile(`${folder}/${name}.ogg`, bytes);
+                    break;
+                } catch (error) {
+                    if (tries >= MUSIC_TRIES) {
+                        console.error('madlove.js: could not download the music', error);  // it stays silent
+                        break;
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, MUSIC_RETRY));
+                }
+            }
+        }
+    }
+
     // pygbag sets window.Module when it starts Python
     const hook = setInterval(() => {
         const module = window.Module;
@@ -103,6 +130,12 @@ window.madlove_input = { x: 0, y: 0, start: false, action: false };
             const start = document.getElementById('start');
             start.classList.add('ready');
             document.getElementById('start-text').textContent = touch ? 'TAP TO PLAY' : 'CLICK OR PRESS ANY KEY';
+        },
+        // Python calls this when the game starts, with the folder of its music and, as JSON, the tracks
+        // that aren't in the archive. they download one after the other, in the order the game first
+        // plays them, from music/ next to this page; madlove.audio plays each once it's there
+        fetch_music(folder, names) {
+            download_music(folder, JSON.parse(names));
         },
         // Python calls this when the game runs
         started() {
