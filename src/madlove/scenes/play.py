@@ -108,7 +108,7 @@ class GameScene(base.Scene):
         )
 
         if self.notification is not None:
-            text = self.game.font_16.render(self.notification.msg, True, self.notification.color)
+            text = hud.text(self.game.font_16, self.notification.msg, self.notification.color)
             pos = text.get_rect()
             pos.center = (screen.get_width() / 2, 550)
             screen.blit(text, pos)
@@ -355,7 +355,6 @@ class Message:
 
 
 def render_heartattack(scene, screen):
-    heart_bg = pg.Surface((config.WIDTH, config.HEIGHT)).convert_alpha()
     if scene.heartattack_mode == 'killing':
         scene.heart_beat += 1
         if scene.heart_beat >= 4:
@@ -368,6 +367,5 @@ def render_heartattack(scene, screen):
             scene.heart_fade += 4 * scene.heart_fade_inv
         scene.heart_color.a = 80 * round(scene.heart_fade / 80)
 
-    heart_bg.fill(config.BG_COLOR)
-    heart_bg.fill(scene.heart_color)
-    screen.blit(heart_bg, (0, 0))
+    color = pg.Color(scene.heart_color)  # a tuple while it flashes, opaque
+    hud.cover(screen, color, color.a)
