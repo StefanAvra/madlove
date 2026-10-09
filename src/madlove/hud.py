@@ -1,9 +1,25 @@
 """Drawing helpers shared by the scenes: score display, screen fades, blinking text and centring."""
 
+import functools
+
 import pygame as pg
 
 from madlove import config, utils
 from madlove import strings as str_r
+
+
+@functools.cache
+def cover_surface(size):
+    """one surface the size of the screen, which cover() fills again each time"""
+    return pg.Surface(size).convert()
+
+
+def cover(screen, color, alpha=255):
+    """draws color over the whole screen, from alpha 0, not at all, to 255, hiding what's below"""
+    surface = cover_surface(screen.get_size())
+    surface.fill(color)
+    surface.set_alpha(alpha)
+    screen.blit(surface, (0, 0))
 
 
 def render_fading(screen, fade_step, invert_fading=0):
@@ -12,17 +28,28 @@ def render_fading(screen, fade_step, invert_fading=0):
         alpha = abs(fade_step - 254)
     else:
         alpha = fade_step
-    fading_surf = pg.Surface(screen.get_size(), pg.SRCALPHA)
-    fade_color = pg.Color(config.BG_COLOR)  # copy, so the global background color stays opaque
     alpha = 80 * round(alpha / 80)  # fades a bit rougher
-    # print('fading {} {}'.format(('out' if invert_fading else 'in'), alpha))
-    fade_color.a = alpha
-    fading_surf.fill(fade_color)
-    screen.blit(fading_surf, (0, 0))
+    cover(screen, config.BG_COLOR, alpha)
     # decrease fade_step until 0
     fade_step -= 10
 
     return fade_step
+
+
+@functools.cache
+def pack_image():
+    """the cigarette pack next to the lives, loaded the first time the HUD is drawn: it needs the display"""
+    return pg.image.load(config.asset('graphics', 'pack.png')).convert()
+
+
+@functools.lru_cache(maxsize=64)
+def _text(font, string, color):
+    return font.render(string, True, color)
+
+
+def text(font, string, color):
+    """font.render(string, True, color), kept for the next frames that show the same: don't draw on it"""
+    return _text(font, string, tuple(pg.Color(color)))  # the same key for a tuple and a Color
 
 
 def render_hud(game, screen, hud_score, stage, lives, timer, highlight_combo=0):
@@ -36,22 +63,21 @@ def render_hud(game, screen, hud_score, stage, lives, timer, highlight_combo=0):
             color = (0, 0, 0)
         else:
             color = (255, 255, 255)
-        score_text = game.font_16.render(str_r.get_str('combo').format(game.combo.value), True, color)
+        score_text = text(game.font_16, str_r.get_str('combo').format(game.combo.value), color)
     else:
-        score_text = game.font_16.render(str(hud_score), True, config.TEXT_COLOR)
+        score_text = text(game.font_16, str(hud_score), config.TEXT_COLOR)
 
-    stage_text = game.font_16.render(stage, True, config.TEXT_COLOR)
+    stage_text = text(game.font_16, stage, config.TEXT_COLOR)
     stage_pos = stage_text.get_rect()
     stage_pos.midtop = (screen.get_width() / 2, 8)
     screen.blit(stage_text, stage_pos)
 
-    lives_text = game.font_16.render(str(lives), True, config.TEXT_COLOR)
+    lives_text = text(game.font_16, str(lives), config.TEXT_COLOR)
     lives__text_pos = lives_text.get_rect()
     lives__text_pos.topright = (screen.get_width() - 28, 8)
     screen.blit(lives_text, lives__text_pos)
 
-    pack = pg.image.load(config.asset('graphics', 'pack.png')).convert()
-    screen.blit(pack, (screen.get_width() - 24, 8))
+    screen.blit(pack_image(), (screen.get_width() - 24, 8))
 
     score_pos = score_text.get_rect()
     score_pos.topleft = (8, 8)
