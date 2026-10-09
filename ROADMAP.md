@@ -12,7 +12,7 @@ Plan for polishing MadLove after its 2019 run: make it runnable anywhere, put te
 Not tied to a phase.
 
 - [ ] **Let falling power-ups land before a level ends.** When the last brick goes, the level ends right away, even while a power-up is still falling. That power-up is neither caught nor missed, so the all-power-ups bonus (100,000 points) is still paid for it: missing one only cancels the bonus when it falls off the screen (`sprites/powerup.py`). The level should end once every falling power-up has been caught or missed. This changes the gameplay, so the golden traces may need regenerating, with the reason in the commit message.
-- [x] **Debug keys only with `--debug`.** `B`, `N`, `H`, `O`/`P`, `,` and `F` during a game, and `C` and `H` on the title screen. `M` (music) stays for everyone.
+- [x] **Debug keys only with `--debug`.** `B`, `N`, `H`, `O`/`P`, `,`, `F` and, since `v2.1.0`, `M` (music) during a game, and `C` and `H` on the title screen.
 
 ## Versioning
 
@@ -23,6 +23,7 @@ Semantic versioning, with git tags for the historic builds:
 | `v1.0.0` | `b0503a6` (2019-07-18) | Rundgang premiere build (the SD card is lost, so the last commit before the premiere is assumed to be it) |
 | `v1.1.0` | `fff788d` (2019-10-18) | End of the 2019 tour: free mode, location/cabinet ID, online + offline high scores |
 | `v2.0.0` | merge of Phase 4 (2026-10-07) | Modernised codebase, runs anywhere, web build |
+| `v2.1.0` | release commit (2026-10-09) | Faster-loading web build, loading progress, less work per frame |
 
 Changes are recorded in `CHANGELOG.md`.
 

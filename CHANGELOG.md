@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-09
+
+The browser version starts with a 2.2 MB download instead of 7.3 MB, shows how far it has loaded, and does less work every frame.
+
+### Added
+- A favicon and home-screen icon for the browser version, and the MadLove logo at the top of the README, made from the title screen's graphics by `web/make_logo.py`.
+- The browser version's start screen shows the loading progress: the cabinet turns black and white and fills with colour from the bottom as the game loads.
+
+### Changed
+- The browser version's music is about half the size of the game's own, made by `web/make_music.py` from Ozzed's MP3s. Only the title screen's track comes with the game; the others download while it runs, and a track asked for before it has arrived starts as soon as it does.
+- The level intro images only hold the photo. The black space for the fact's text and the pack's logo below the photo are drawn from the title screen's graphics, in the same pink as the rest of the game. The browser version's photos have 256 colours, made by `web/make_intros.py`.
+- Less work every frame: the HUD's cigarette pack and the bricks' images are loaded once, the HUD's text is only rendered when it changes, and the fades and the heart attack reuse one surface instead of making a new one each frame.
+- A better transition for the buttons on the browser version's control panel.
+- `M` (music) is a debug key, only with `--debug`, and is no longer listed in the browser version's footer.
+
 ## [2.0.0] - 2026-10-07
 
 The 2019 game made runnable anywhere: a Python package with tests and command-line options, and a browser version with the cabinet's controls and a CRT look, playable at https://stefanavra.github.io/madlove/.
@@ -83,7 +98,8 @@ The premiere build, shown at the Rundgang of the State Academy of Fine Arts Stut
 - Gamepad and arcade-stick controls.
 - A simple bot that plays the game, for debugging.
 
-[Unreleased]: https://github.com/StefanAvra/madlove/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/StefanAvra/madlove/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/StefanAvra/madlove/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/StefanAvra/madlove/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/StefanAvra/madlove/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/StefanAvra/madlove/releases/tag/v1.0.0
