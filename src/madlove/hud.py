@@ -1,5 +1,7 @@
 """Drawing helpers shared by the scenes: score display, screen fades, blinking text and centring."""
 
+import functools
+
 import pygame as pg
 
 from madlove import config, utils
@@ -23,6 +25,12 @@ def render_fading(screen, fade_step, invert_fading=0):
     fade_step -= 10
 
     return fade_step
+
+
+@functools.cache
+def pack_image():
+    """the cigarette pack next to the lives, loaded the first time the HUD is drawn: it needs the display"""
+    return pg.image.load(config.asset('graphics', 'pack.png')).convert()
 
 
 def render_hud(game, screen, hud_score, stage, lives, timer, highlight_combo=0):
@@ -50,8 +58,7 @@ def render_hud(game, screen, hud_score, stage, lives, timer, highlight_combo=0):
     lives__text_pos.topright = (screen.get_width() - 28, 8)
     screen.blit(lives_text, lives__text_pos)
 
-    pack = pg.image.load(config.asset('graphics', 'pack.png')).convert()
-    screen.blit(pack, (screen.get_width() - 24, 8))
+    screen.blit(pack_image(), (screen.get_width() - 24, 8))
 
     score_pos = score_text.get_rect()
     score_pos.topleft = (8, 8)
