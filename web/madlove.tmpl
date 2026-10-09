@@ -26,18 +26,26 @@ async def custom_site():
     appdir = Path(f"/data/data/{bundle}")
     appdir.mkdir()
 
+    # madlove.js downloads the compressed archive as soon as the page opens, to show its progress, and
+    # writes it to this file when it has it
+    archive = f"/tmp/{bundle}.archive"
+    saved = 0
+    while not saved:
+        await asyncio.sleep(.05)
+        saved = platform.window.madlove_page.save_archive(archive)
+    if saved < 0:
+        raise RuntimeError("could not download the game's archive")
+
     # unpack filesystem from compressed archive into work dir
     if platform.window.location.host.find('.itch.zone')>0:
         import zipfile
-        async with platform.fopen("{{cookiecutter.archive}}.apk", "rb") as archive:
-            with zipfile.ZipFile(archive) as zip_ref:
-                zip_ref.extractall(appdir.as_posix())
+        with zipfile.ZipFile(archive) as zip_ref:
+            zip_ref.extractall(appdir.as_posix())
     else:
         import tarfile
-        async with platform.fopen("{{cookiecutter.archive}}.tar.gz", "rb") as archive:
-            tar = tarfile.open(fileobj=archive, mode="r:gz")
+        with tarfile.open(archive, mode="r:gz") as tar:
             tar.extractall(path=appdir.as_posix(), filter='tar')
-            tar.close()
+    Path(archive).unlink()
 
     # preloader will change to work dir and prepend it to sys.path
     platform.run_main(PyConfig, loaderhome= appdir / "assets", loadermain=None)
@@ -164,7 +172,12 @@ config = {
     </div>
 
     <div id="start">
-        <img id="spinner-cabinet" src="spinner.webp" alt="">
+        <!-- the cabinet turns in black and white and fills with colour from the bottom as the game loads.
+             not id="spinner": pygbag hides that one -->
+        <div id="loader">
+            <img id="loader-bw" src="spinner.webp" alt="">
+            <img id="loader-colour" src="spinner.webp" alt="">
+        </div>
         <div id="start-text">LOADING</div>
     </div>
 
