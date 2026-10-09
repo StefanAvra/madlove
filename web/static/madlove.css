@@ -412,9 +412,27 @@ body.touch #screen {
   pointer-events: none;
 }
 
-#spinner-cabinet {
+#loader {
+  position: relative;
   height: min(160px, 30vh);
-  image-rendering: auto;
+}
+
+#loader img {
+  display: block;
+  height: 100%;
+}
+
+#loader-bw {
+  filter: grayscale(1);
+}
+
+/* the same animation over the black and white one, both showing the same frame; madlove.js sets
+   --loaded, from 0 to 1 */
+#loader-colour {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(calc((1 - var(--loaded, 0)) * 100%) 0 0 0);
+  transition: clip-path 0.3s ease-out;
 }
 
 #start-text {
