@@ -8,7 +8,8 @@ pygbag packs a folder with a main.py, so this first copies web/main.py and the m
 build/madlove. The page comes from web/madlove.tmpl, plus the files in web/static and the game's font.
 
 The music is the smaller one from web/music (see web/make_music.py). Only the title screen's is packed with
-the game; the page downloads the rest from music/ while the game runs (madlove.audio).
+the game; the page downloads the rest from music/ while the game runs (madlove.audio). The level intros are the
+smaller ones from web/graphics (see web/make_intros.py).
 """
 
 import argparse
@@ -36,6 +37,7 @@ def stage():
     if APP_DIR.exists():
         shutil.rmtree(APP_DIR)
     shutil.copytree(ROOT / 'src' / 'madlove', APP_DIR / 'madlove', ignore=shutil.ignore_patterns('__pycache__', '.*'))
+    shutil.copytree(WEB / 'graphics', APP_DIR / 'madlove' / 'assets' / 'graphics', dirs_exist_ok=True)
     shutil.rmtree(MUSIC_DIR)
     MUSIC_DIR.mkdir()
     for name in PACKED_MUSIC:

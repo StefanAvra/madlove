@@ -5,6 +5,21 @@ import pygame as pg
 from madlove import audio, config, hud
 from madlove.scenes import base, play
 
+PHOTO_POS = (7, 191)  # the photo, on black under the fact's text
+LOGO_TOP = 416  # the pack's logo below it, made like the title screen's
+TITLE_POS = (68, 423)
+
+
+def intro_image(number):
+    """the screen behind the fact: the level intro's photo above the pack's logo"""
+    image = pg.Surface(config.DISPLAY).convert()
+    image.fill((0, 0, 0))
+    image.blit(pg.image.load(config.asset('graphics', f'level_intro_{number}.png')).convert(), PHOTO_POS)
+    image.fill(config.BG_COLOR, (0, LOGO_TOP, config.WIDTH, config.HEIGHT - LOGO_TOP))
+    image.blit(pg.image.load(config.asset('graphics', 'arrow.png')).convert_alpha(), (0, LOGO_TOP))
+    image.blit(pg.image.load(config.asset('graphics', 'title.png')).convert_alpha(), TITLE_POS)
+    return image
+
 
 class IntroScene(base.Scene):
     # should be called before the next level/play.GameScene()
@@ -13,7 +28,7 @@ class IntroScene(base.Scene):
         self.next_lvl = next_lvl
         self.text = self.game.facts.next()
         self.text_cursor = 0
-        self.intro = pg.image.load(config.asset('graphics', f'level_intro_{self.game.next_intro()}.png'))
+        self.intro = intro_image(self.game.next_intro())
         self.timer = 0
         self.text_cursor_speed = 40
         self.fadein_step = 255
