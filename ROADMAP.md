@@ -24,6 +24,7 @@ Semantic versioning, with git tags for the historic builds:
 | `v1.1.0` | `fff788d` (2019-10-18) | End of the 2019 tour: free mode, location/cabinet ID, online + offline high scores |
 | `v2.0.0` | merge of Phase 4 (2026-10-07) | Modernised codebase, runs anywhere, web build |
 | `v2.1.0` | release commit (2026-10-09) | Faster-loading web build, loading progress, less work per frame |
+| `v2.2.0` | release commit (2026-10-09) | Full speed at any frame rate, Low Power Mode warning |
 
 Changes are recorded in `CHANGELOG.md`.
 

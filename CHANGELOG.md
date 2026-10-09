@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-10-09
+
+The game plays at full speed on screens slower than 60 frames per second, such as Safari's 30 in Low Power Mode, and the browser version's start screen asks the player to turn Low Power Mode off.
+
 ### Added
 - The browser version's start screen warns when the screen is held at 30 frames per second, as iOS's Low Power Mode does, because the game then shows only every other step. Browsers don't tell a page about Low Power Mode, so it measures the time between frames. `?fps=1` shows what it measures.
 
@@ -104,7 +108,8 @@ The premiere build, shown at the Rundgang of the State Academy of Fine Arts Stut
 - Gamepad and arcade-stick controls.
 - A simple bot that plays the game, for debugging.
 
-[Unreleased]: https://github.com/StefanAvra/madlove/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/StefanAvra/madlove/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/StefanAvra/madlove/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/StefanAvra/madlove/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/StefanAvra/madlove/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/StefanAvra/madlove/compare/v1.0.0...v1.1.0
