@@ -12,6 +12,10 @@ from madlove.scenes import menu, play, title
 
 INTRO_IMAGES = 7  # level_intro_1.png to level_intro_7.png
 PAUSED_POLL = 0.25  # seconds between checks whether the browser's page is back
+# the game moves in steps: the ball and the paddle move a fixed distance per step, so it plays the same,
+# corner clips included, at any frame rate. a slower screen gets more steps per picture
+STEP_MS = 1000 / config.FRAMERATE
+MAX_STEPS = 3  # per picture; on a screen slower than FRAMERATE / MAX_STEPS the game slows down instead
 
 
 class SceneManager:
@@ -31,7 +35,9 @@ class Game:
     def __init__(self, settings=None):
         self.settings = settings or config.Settings()
         self.score = 0
-        self.dt = 0  # milliseconds since the last frame
+        self.dt = 0  # milliseconds the current step of the game stands for, about STEP_MS
+        self.steps = 1  # steps of the game in the current picture
+        self.lag = 0  # milliseconds the steps so far are behind the clock, or ahead if below 0
         self.wallet = coins.Wallet()
         self.combo = scores.Combo()
         self.highscores = scores.HighScores(storage.highscores_store(self.settings))
@@ -95,9 +101,23 @@ class Game:
         if isinstance(scene, play.GameScene):
             self.scenes.go_to(menu.OverlayMenuScene(self, scene, 'pause'))
 
+    def catch_up(self, elapsed):
+        """splits the milliseconds since the last picture into steps of about STEP_MS. returns how many
+        steps to run and the milliseconds each stands for. a picture gets at least one step and at most
+        MAX_STEPS; time beyond that is let go, so a slow device slows the game down instead of jumping"""
+        self.lag += elapsed
+        steps = min(max(round(self.lag / STEP_MS), 1), MAX_STEPS)
+        self.lag -= steps * STEP_MS
+        if self.lag > STEP_MS / 2:
+            elapsed -= self.lag
+            self.lag = 0
+        self.lag = max(self.lag, -STEP_MS / 2)  # a short picture doesn't take a step from the next one
+        return steps, elapsed / steps
+
     def step(self):
-        """runs one frame. returns False when the game should quit"""
-        self.dt = self.clock.tick(config.FRAMERATE)
+        """runs one picture: one or more steps of the game, then draws it. returns False when the game
+        should quit"""
+        self.steps, self.dt = self.catch_up(self.clock.tick(config.FRAMERATE))
 
         if pg.event.get(pg.QUIT):
             return False
@@ -117,7 +137,8 @@ class Game:
 
         # each call can switch scenes; the next one then goes to the new scene
         self.scenes.scene.handle_events(events)
-        self.scenes.scene.update()
+        for _ in range(self.steps):
+            self.scenes.scene.update()
         self.scenes.scene.render(self.screen)
         if self.settings.show_fps:
             fps = self.font_8.render(str(int(self.clock.get_fps())), True, config.DEBUG_COLOR)

@@ -57,7 +57,7 @@ class LostLifeScene(base.Scene):
         screen.blit(self.text_bg_surf, text_bg_pos)
 
         if self.fadeout_step > 0 >= self.game_over_timer:
-            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1)
+            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1, self.game.steps)
 
     def update(self):
         if self.game_over:
@@ -129,9 +129,9 @@ class ContinueScene(base.Scene):
 
         # fade screen
         if self.fadein_step > 0:
-            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0)
+            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0, self.game.steps)
         if self.fadeout_step > 0:
-            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1)
+            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1, self.game.steps)
 
     def update(self):
         if self.fade_leave_to is None:
@@ -211,9 +211,9 @@ class ConsumeCoinScene(base.Scene):
 
         # fade screen
         if self.fadein_step > 0:
-            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0)
+            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0, self.game.steps)
         if self.fadeout_step > 0:
-            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1)
+            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1, self.game.steps)
 
     def update(self):
         self.consume_coins_values = [self.game.score, self.penalty, self.game.wallet.credit, self.game.wallet.lives]

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- The game moves in fixed steps of 1/60 s and runs as many per picture as the time since the last one, up to three, so it plays at the same speed on screens slower than 60 frames per second, such as Safari's 30 in Low Power Mode, where it played at half speed. Every step moves the ball as far as before and checks its collisions, so it hits, and clips, the same bricks at any frame rate. The fades and the heart attack's flashing count steps too. Below 20 frames per second the game slows down.
+
 ## [2.1.0] - 2026-10-09
 
 The browser version starts with a 2.2 MB download instead of 7.3 MB, shows how far it has loaded, and does less work every frame.

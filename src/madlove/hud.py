@@ -22,8 +22,8 @@ def cover(screen, color, alpha=255):
     screen.blit(surface, (0, 0))
 
 
-def render_fading(screen, fade_step, invert_fading=0):
-    # fade screen
+def render_fading(screen, fade_step, invert_fading=0, steps=1):
+    """draws the fade at fade_step and returns the next one, steps of the game later (game.steps)"""
     if invert_fading:
         alpha = abs(fade_step - 254)
     else:
@@ -31,7 +31,7 @@ def render_fading(screen, fade_step, invert_fading=0):
     alpha = 80 * round(alpha / 80)  # fades a bit rougher
     cover(screen, config.BG_COLOR, alpha)
     # decrease fade_step until 0
-    fade_step -= 10
+    fade_step -= 10 * steps
 
     return fade_step
 

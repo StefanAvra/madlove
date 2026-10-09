@@ -77,8 +77,6 @@ class OverlayMenuScene(base.Scene):
             audio.load_music('smoke_break')
 
     def render(self, screen):
-
-        self.highlight_clock += self.game.dt
         # make_outline(self.menu_surf, config.BG_COLOR)
         self.menu_surf.fill(config.BG_COLOR)
         self.menu_drop_shadow.fill(config.MENU_SHADOW_COLOR)
@@ -111,6 +109,7 @@ class OverlayMenuScene(base.Scene):
         screen.blit(self.menu_surf, menu_pos)
 
     def update(self):
+        self.highlight_clock += self.game.dt
         self.music_timer += self.game.dt
         if not audio.music_busy() and self.music_timer >= 1000:
             audio.play_music(-1)

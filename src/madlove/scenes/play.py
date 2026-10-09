@@ -128,9 +128,9 @@ class GameScene(base.Scene):
 
         # fade screen
         if self.fadein_step > 0:
-            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0)
+            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0, self.game.steps)
         if self.fadeout_step > 0:
-            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1)
+            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1, self.game.steps)
 
     def update(self):
         self.timer += self.game.dt
@@ -355,17 +355,18 @@ class Message:
 
 
 def render_heartattack(scene, screen):
-    if scene.heartattack_mode == 'killing':
-        scene.heart_beat += 1
-        if scene.heart_beat >= 4:
-            scene.heart_beat = 0
-            scene.heart_color = utils.invert_color(scene.heart_color)
-    elif scene.heartattack_mode == 'ready':
-        scene.heart_fade += 4 * scene.heart_fade_inv
-        if not 0 < scene.heart_fade < 255:
-            scene.heart_fade_inv *= -1
+    for _ in range(scene.game.steps):  # the flashing goes on as many steps as the picture stands for
+        if scene.heartattack_mode == 'killing':
+            scene.heart_beat += 1
+            if scene.heart_beat >= 4:
+                scene.heart_beat = 0
+                scene.heart_color = utils.invert_color(scene.heart_color)
+        elif scene.heartattack_mode == 'ready':
             scene.heart_fade += 4 * scene.heart_fade_inv
-        scene.heart_color.a = 80 * round(scene.heart_fade / 80)
+            if not 0 < scene.heart_fade < 255:
+                scene.heart_fade_inv *= -1
+                scene.heart_fade += 4 * scene.heart_fade_inv
+            scene.heart_color.a = 80 * round(scene.heart_fade / 80)
 
     color = pg.Color(scene.heart_color)  # a tuple while it flashes, opaque
     hud.cover(screen, color, color.a)

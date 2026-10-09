@@ -115,9 +115,9 @@ class GameOver(base.Scene):
 
         # fade screen
         if self.fadein_step > 0:
-            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0)
+            self.fadein_step = hud.render_fading(screen, self.fadein_step, 0, self.game.steps)
         if self.fadeout_step > 0:
-            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1)
+            self.fadeout_step = hud.render_fading(screen, self.fadeout_step, 1, self.game.steps)
 
     def update(self):
         if False in self.blit_elements:
